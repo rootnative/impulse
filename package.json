@@ -1,0 +1,42 @@
+{
+  "name": "impulse-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Workspace root for @rootnative/impulse — a declarative gesture library for React Native, built on react-native-gesture-handler.",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "build": "turbo run build --filter=./packages/*",
+    "dev": "turbo run dev --parallel",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "example": "pnpm --filter @rootnative/impulse-example start",
+    "example:ios": "pnpm --filter @rootnative/impulse-example ios",
+    "example:android": "pnpm --filter @rootnative/impulse-example android",
+    "example:web": "pnpm --filter @rootnative/impulse-example web",
+    "check:versions": "node scripts/check-versions.mjs",
+    "check:versions:fix": "node scripts/check-versions.mjs --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-native": "^5.0.0",
+    "globals": "^14.0.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  }
+}
