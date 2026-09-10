@@ -1,3 +1,9 @@
+<!--
+  Absolute URL, not a relative path: this README is the npm package page, and
+  npm does not resolve repository-relative image paths.
+-->
+<img src="https://raw.githubusercontent.com/rootnative/impulse/main/assets/brand/impulse-mark.png" alt="" width="88" height="88" />
+
 # @rootnative/impulse
 
 [![npm](https://img.shields.io/npm/v/@rootnative/impulse.svg)](https://www.npmjs.com/package/@rootnative/impulse)

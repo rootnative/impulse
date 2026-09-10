@@ -1,0 +1,13 @@
+<!--
+  Heavier proportions, for sizes where the shaft thins to a hairline hanging
+  off the head: favicons, and anything below roughly 20 px.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Impulse">
+  <title>Impulse</title>
+  <g transform="translate(2.66 -2.66)">
+    <g>
+      <path d="M 23.33 54.1 L 46.67 30.77 L 33.23 17.33 L 9.9 40.67 Z" fill="#9a83d8" />
+      <path d="M 48.79 42.79 L 48.79 15.21 L 21.21 15.21 Z" fill="#6b4fbb" />
+    </g>
+  </g>
+</svg>

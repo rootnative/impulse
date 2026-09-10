@@ -1,0 +1,13 @@
+<!--
+  Lighter tones, for any dark surface where the #6b4fbb head loses contrast
+  against the ground.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Impulse">
+  <title>Impulse</title>
+  <g transform="translate(3.01 -3.01)">
+    <g>
+      <path d="M 20.01 54.03 L 44.26 29.78 L 34.22 19.74 L 9.97 43.99 Z" fill="#c9bced" />
+      <path d="M 48.01 42.01 L 48.01 15.99 L 21.99 15.99 Z" fill="#9a83d8" />
+    </g>
+  </g>
+</svg>
