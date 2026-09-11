@@ -1,0 +1,109 @@
+name: CI / Build & Test
+
+# Run when a change can affect what this workflow checks.
+#
+# `example/**` is in the list because the example app defines its own
+# `typecheck` and `lint` scripts, and `pnpm run typecheck` runs Turborepo
+# across every workspace package. If the example is not in the filter, a
+# change that breaks the example typecheck passes review.
+#
+# The filter is deliberately wide. A wide filter costs an occasional run that
+# proves nothing. A narrow filter costs a green build that is wrong.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/**"
+      - "example/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - "tsconfig.base.json"
+      - "tsconfig.json"
+      - "jest.config.js"
+      - ".nvmrc"
+      - ".npmrc"
+      - ".github/workflows/ci-build.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "example/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - "tsconfig.base.json"
+      - "tsconfig.json"
+      - "jest.config.js"
+      - ".nvmrc"
+      - ".npmrc"
+      - ".github/workflows/ci-build.yml"
+
+# The token only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      # `cache: pnpm` is set on purpose. setup-node defaults
+      # `package-manager-cache` to true, reads the lockfile it finds, and then
+      # needs that package manager on PATH. pnpm is installed in the step
+      # above, so the default is correct here and naming it makes that clear.
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The Turborepo `typecheck` and `test` tasks both declare
+      # `dependsOn: ["^build"]`, so each one builds its dependencies first.
+      # The explicit build step below still has work to do: it builds the
+      # package itself, which proves the published `dist` compiles.
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build package
+        run: pnpm run build
+
+      # The package ships ESM only. A CJS bundle with code splitting defeats
+      # the Reanimated Babel plugin and ships worklets that crash on a device.
+      # That defect cost `@rootnative/components` two releases, and a unit
+      # test cannot see it, so assert the shipped format here instead.
+      - name: Built output is ESM
+        run: |
+          dist=packages/core/dist
+          if [ ! -f "$dist/index.js" ]; then
+            echo "::error::$dist/index.js is missing after build."
+            exit 1
+          fi
+          if [ -n "$(find "$dist" -name '*.cjs' -print -quit)" ]; then
+            echo "::error::The build produced a CJS file. Impulse ships ESM only — read the comment in packages/core/tsup.config.ts."
+            exit 1
+          fi
+          if grep -rq 'require(' "$dist" --include='*.js'; then
+            echo "::error::The built output calls require(). The bundle is not ESM. Read the comment in packages/core/tsup.config.ts."
+            exit 1
+          fi

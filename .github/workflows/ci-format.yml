@@ -1,0 +1,59 @@
+name: CI / Format & Lint
+
+# This workflow has no path filter, and ci-build.yml has one.
+#
+# The reason is the check below. `check:versions` reads both READMEs and the
+# CHANGELOG, and version drift shows up in exactly those files. ci-build.yml
+# filters to `packages/**` and friends, so it skips a README-only change —
+# which is the change that breaks the guard. The guard therefore lives here,
+# and this workflow runs on every push and pull request.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+# The token only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-format-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-lint:
+    name: Format & lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Prettier does not format Markdown here. It pads every table cell to
+      # the width of the widest row, and it reflows JSX inside `tsx` fences.
+      # `.prettierignore` holds the full reason.
+      - name: Format check
+        run: pnpm run format:check
+
+      - name: Lint
+        run: pnpm run lint
+
+      # The release-consistency guard. It verifies that exactly one public
+      # package exists, that the CHANGELOG has a section for the current
+      # version, that the link footer resolves, that the status lines in both
+      # READMEs are current, and that no `v`-prefixed version string reaches a
+      # published surface. `pnpm run check:versions:fix` repairs most of it.
+      - name: Version consistency
+        run: pnpm run check:versions
