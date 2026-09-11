@@ -38,6 +38,16 @@
       "react-native": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./compose": {
+      "types": "./dist/compose/index.d.ts",
+      "react-native": "./dist/compose/index.js",
+      "default": "./dist/compose/index.js"
+    },
+    "./raw": {
+      "types": "./dist/raw/index.d.ts",
+      "react-native": "./dist/raw/index.js",
+      "default": "./dist/raw/index.js"
+    },
     "./gesture-handler": {
       "types": "./dist/gesture-handler/index.d.ts",
       "react-native": "./dist/gesture-handler/index.js",

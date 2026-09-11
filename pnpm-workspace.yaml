@@ -1,3 +1,12 @@
 packages:
   - 'packages/*'
   - 'example'
+
+# pnpm 11 and later ignore pnpm settings in .npmrc, so they live here too.
+# A hoisted layout is mandatory: Metro runs with disableHierarchicalLookup,
+# so it cannot find a nested dependency such as react-native's `invariant`.
+nodeLinker: hoisted
+shamefullyHoist: true
+strictPeerDependencies: false
+autoInstallPeers: true
+engineStrict: true

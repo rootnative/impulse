@@ -11,7 +11,7 @@
 
 **Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
 
-> **Status:** `0.0.0-alpha.0` — scaffold. Nothing is published. The repository holds its build, test, and lint pipeline and the `@rootnative/impulse/gesture-handler` interop subpath. **No intent hook is implemented yet.** Read the API below as a decision that has been made, not as a shipped feature.
+> **Status:** `0.0.0-alpha.0` — pre-release. Nothing is published. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **No intent hook is implemented yet** — `useTap`, `useDrag`, `useSwipe`, and the rest are designed but not written. Read the intent API below as a decision that has been made, not as a shipped feature.
 
 ## What it is for
 
@@ -60,6 +60,16 @@ That independence is why this is a separate repository rather than a package ins
 | [example/](example/) | Expo app for manual validation, one screen per intent. A device pass is a release requirement, not a nicety. |
 | [scripts/](scripts/) | `check-versions.mjs`, the release-consistency guard. |
 
+Inside `packages/core/src`:
+
+| Path | What it is |
+| --- | --- |
+| `compose/` | `useGestures` — the only place RNGH's `Race` / `Simultaneous` / `Exclusive` are referenced. |
+| `relations/` | `alongside` / `blocks` / `deferTo` resolution to RNGH's three external-gesture relations. One module, so the three-way choice is decided once. |
+| `raw/` | `useRawGesture`, the mechanism-level escape hatch. |
+| `internal/` | Not public. The shared memoisation helper, `useLatestCallback`, `useStableList`, and keyed dev warnings. |
+| `gesture-handler/` | The RNGH interop subpath — pure re-exports, pinned to reference identity by a test. |
+
 ## Develop
 
 Requires Node 20 or later and pnpm 10.
@@ -79,7 +89,7 @@ pnpm run check:versions   # verify every version reference agrees with core's
 To run one test, target the package first:
 
 ```bash
-pnpm --filter @rootnative/impulse test -- gestureHandlerInterop
+pnpm --filter @rootnative/impulse test -- gestureIdentity
 ```
 
 ## Runtime
@@ -88,7 +98,7 @@ Expo SDK 57 — React 19.2.3, React Native 0.86.3, Reanimated 4.5.1, Worklets 0.
 
 ## Roadmap
 
-1. **Composition and coexistence core** — `useGestures` with all three modes, `alongside` / `blocks` / `deferTo` resolution, `useRawGesture`, the memoisation helper, and `useDrag` / `useTap` to exercise them.
+1. **Composition and coexistence core** — `useGestures` with all three modes, `alongside` / `blocks` / `deferTo` resolution, `useRawGesture`, and the memoisation helper are **done**. `useDrag` and `useTap`, which exercise them on a device, are not.
 2. **The intent set** — `useDoubleTap`, `useLongPress`, `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`.
 3. **The Inertia bridge** — `@rootnative/impulse/inertia`, adapting a release payload into Inertia's release transitions.
 

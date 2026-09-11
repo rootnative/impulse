@@ -1,5 +1,9 @@
-import { type ComponentType, type RefObject } from 'react'
-import { type GestureType } from 'react-native-gesture-handler'
+import { type ComponentProps, type ComponentType, type RefObject } from 'react'
+import {
+  type ComposedGesture,
+  type GestureDetector,
+  type GestureType,
+} from 'react-native-gesture-handler'
 
 /**
  * A gesture that an Impulse gesture can be placed in a relation with.
@@ -36,6 +40,30 @@ type _AssertReferenceIsAccepted = Assert<
 >
 type _AssertReferenceIsComplete = Assert<
   RelationArgument extends GestureReference ? true : false
+>
+
+/**
+ * A gesture that can be handed to `<GestureDetector>`: a single recognizer,
+ * or a composition of them.
+ *
+ * RNGH spells this inline in `GestureDetector`'s props and exports no name
+ * for it, so Impulse names it — every hook result's `gesture` has this type,
+ * and so does every member `useGestures` accepts.
+ */
+export type AttachableGesture = GestureType | ComposedGesture
+
+/**
+ * Compile-time proof that `AttachableGesture` is exactly what
+ * `<GestureDetector>` accepts. Same purpose as the assertions above: RNGH
+ * does not export the type, so this one is written out, and a hand-copied
+ * type is one that absorbs an upstream change without a word.
+ */
+type DetectorGesture = ComponentProps<typeof GestureDetector>['gesture']
+type _AssertAttachableIsAccepted = Assert<
+  AttachableGesture extends DetectorGesture ? true : false
+>
+type _AssertAttachableIsComplete = Assert<
+  DetectorGesture extends AttachableGesture ? true : false
 >
 
 /** One reference, or several. Every coexistence option accepts both. */

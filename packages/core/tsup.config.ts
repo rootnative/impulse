@@ -3,6 +3,8 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
+    'compose/index': 'src/compose/index.ts',
+    'raw/index': 'src/raw/index.ts',
     'gesture-handler/index': 'src/gesture-handler/index.ts',
   },
   // ESM, not CJS, and the choice is load-bearing for worklets.

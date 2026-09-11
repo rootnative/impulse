@@ -12,7 +12,7 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
 
-> **Status:** `0.0.0-alpha.0` — scaffold, not published. The intent hooks are **not implemented**. What ships today is the `@rootnative/impulse/gesture-handler` interop subpath and the `GestureDetector` re-export. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.0` — pre-release, not published. The intent hooks are **not implemented**. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus the `@rootnative/impulse/gesture-handler` interop subpath. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 
@@ -28,19 +28,77 @@ Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires, a
 
 ## What ships today
 
-- **`GestureDetector`**, re-exported from the root entry. Every hook's result is handed to it, so reaching for it is not a reason to add a second gesture import to an app.
-- **`@rootnative/impulse/gesture-handler`** — RNGH's own primitives, re-exported under their original names by reference. It is the escape hatch for the cases the intent hooks will not model, and it keeps `@rootnative/impulse` the only gesture import in an app.
-- **Types** — `CoexistenceOptions` (`alongside` / `blocks` / `deferTo`), `ComposeMode`, `GestureReference`.
-- **`@rootnative/impulse/jest-preset`** — one-line Jest wiring, layered on `@react-native/jest-preset`.
+### `useGestures` — composition
+
+Composition is **data, not nesting**. One flat list plus the relation that holds over it, and the result is itself a member, so precedence reads left to right instead of inside out.
 
 ```tsx
-import { GestureDetector } from '@rootnative/impulse'
-import { Gesture } from '@rootnative/impulse/gesture-handler'
+import { GestureDetector, useGestures } from '@rootnative/impulse'
+
+// tap and double-tap race; the winner runs alongside the drag
+const { gesture } = useGestures(
+  [useGestures([tap, double], { mode: 'race' }), drag],
+  { mode: 'simultaneous' },
+)
+
+return (
+  <GestureDetector gesture={gesture}>
+    <View />
+  </GestureDetector>
+)
 ```
+
+`mode` is `'race'` (first to activate wins), `'simultaneous'` (each recognizes independently), or `'exclusive'` (a later member activates only after every earlier one fails).
+
+### `alongside` / `blocks` / `deferTo` — coexistence
+
+RNGH exposes three external-gesture relations whose names describe the mechanism and give no hint which one a case wants. These name the outcome, and each maps to exactly one of them.
+
+```tsx
+useRawGesture(build, deps, { alongside: pinchRef }) // both recognize at once
+useRawGesture(build, deps, { blocks: listRef })     // this gesture wins
+useRawGesture(build, deps, { deferTo: scrollRef })  // the other one wins
+```
+
+All three may be set at once — they are independent relations, not a choice of one. Naming the same gesture in two of them warns in development.
+
+### `useRawGesture` — the escape hatch
+
+For a recognizer the intent hooks will not model. You own the dependency list, the thread, and the payload; Impulse still owns gesture identity, relation resolution, and a `ref` other hooks can name.
+
+```tsx
+import { useRawGesture } from '@rootnative/impulse'
+import { Directions, Gesture } from '@rootnative/impulse/gesture-handler'
+
+const fling = useRawGesture(
+  () => Gesture.Fling().direction(Directions.RIGHT).onEnd(onFling),
+  [onFling],
+  { deferTo: scrollRef },
+)
+```
+
+### The rest
+
+- **`GestureDetector`**, re-exported from the root entry. Every hook's result is handed to it, so reaching for it is not a reason to add a second gesture import to an app.
+- **`@rootnative/impulse/gesture-handler`** — RNGH's own primitives, re-exported under their original names by reference. It keeps `@rootnative/impulse` the only gesture import in an app.
+- **Subpaths** — `@rootnative/impulse/compose` and `@rootnative/impulse/raw`, so an app that uses one hook does not ship the set.
+- **Types** — `AttachableGesture`, `CoexistenceOptions`, `ComposeMode`, `GestureReference`, `GestureReferences`.
+- **`@rootnative/impulse/jest-preset`** — one-line Jest wiring, layered on `@react-native/jest-preset`.
+
+## Gesture identity is stable by construction
+
+A gesture whose shape changed is re-attached by `<GestureDetector>`, and a re-attach mid-drag drops the drag. An inline callback or an inline `deferTo: [ref]` is enough to cause it. Impulse builds every gesture once and configures it in the same place, routes JS-thread callbacks through a latest-value ref so they are never gesture dependencies, and compares coexistence options by content rather than by array identity.
+
+Worklet callbacks are the deliberate exception: a worklet is captured as written and serialized to the UI thread, so it stays a direct dependency and changing it does rebuild the gesture. That asymmetry is why the callback name states its thread.
 
 ## What does not ship yet
 
-Every intent hook — `useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe` — and the `useGestures` composition surface. They are designed and the design is locked; none of them is written. Do not depend on this package for gesture recognition yet.
+Every intent hook — `useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`. They are designed and the design is locked; none of them is written. Do not depend on this package for gesture recognition yet.
+
+Two further limits today:
+
+- **`useGestures` does not take coexistence options.** RNGH's three relations are methods on a single gesture, and a composed gesture does not have them. Set them on the member hooks instead.
+- **No warning when `<GestureHandlerRootView>` is missing.** Its absence is silent — the gesture simply never fires — and RNGH does not export the context that would let Impulse detect it.
 
 ## Testing
 
