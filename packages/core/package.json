@@ -48,6 +48,11 @@
       "react-native": "./dist/raw/index.js",
       "default": "./dist/raw/index.js"
     },
+    "./tap": {
+      "types": "./dist/tap/index.d.ts",
+      "react-native": "./dist/tap/index.js",
+      "default": "./dist/tap/index.js"
+    },
     "./gesture-handler": {
       "types": "./dist/gesture-handler/index.d.ts",
       "react-native": "./dist/gesture-handler/index.js",

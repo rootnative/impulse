@@ -4,6 +4,7 @@ import {
   type GestureDetector,
   type GestureType,
 } from 'react-native-gesture-handler'
+import { type SharedValue } from 'react-native-reanimated'
 
 /**
  * A gesture that an Impulse gesture can be placed in a relation with.
@@ -66,6 +67,17 @@ type _AssertAttachableIsComplete = Assert<
   DetectorGesture extends AttachableGesture ? true : false
 >
 
+/**
+ * Extra touchable area around a view, in points. A number widens every edge;
+ * an object widens the edges it names.
+ *
+ * Derived from RNGH's own method signature rather than copied, for the same
+ * reason `GestureReference` is: RNGH does not export the type from its package
+ * entry, and a hand-written copy is one that absorbs an upstream change
+ * without a word.
+ */
+export type HitSlop = Parameters<GestureType['hitSlop']>[0]
+
 /** One reference, or several. Every coexistence option accepts both. */
 export type GestureReferences = GestureReference | GestureReference[]
 
@@ -122,3 +134,54 @@ export interface CoexistenceOptions {
  * chain, so precedence reads left to right instead of inside out.
  */
 export type ComposeMode = 'race' | 'simultaneous' | 'exclusive'
+
+/**
+ * A point in a gesture payload, in points.
+ *
+ * Grouped rather than spelled as two flat fields, because every payload that
+ * carries more than one point — a drag's position and its origin, a pinch's
+ * focal point — would otherwise need a prefix per pair and the consumer would
+ * pick between `absoluteX` and `focalX` from memory. That flat union is
+ * exactly what the intent payloads exist to replace.
+ */
+export interface Point {
+  readonly x: number
+  readonly y: number
+}
+
+/**
+ * What every intent hook returns: the gesture, a handle other hooks can name
+ * in their coexistence options, and whether the gesture is being recognized
+ * right now.
+ *
+ * Each hook extends this with the shared values its own intent produces —
+ * `drag.x`, `pinch.scale`, `rotate.angle`. The three members here are the
+ * part that is the same whatever the intent.
+ */
+export interface IntentResult<G extends GestureType> {
+  /** The configured gesture. Hand it to `<GestureDetector>`. */
+  readonly gesture: G
+  /**
+   * A handle on this gesture for another hook's `alongside` / `blocks` /
+   * `deferTo`.
+   *
+   * Prefer it over passing `other.gesture`: a gesture object is replaced when
+   * its dependencies change, and this ref is created once and read by RNGH at
+   * the moment it resolves relations, so a relation written against it keeps
+   * pointing at the live gesture.
+   *
+   * It is populated when `<GestureDetector>` mounts the gesture, not when the
+   * hook runs, so reading `.current` during the first render gives
+   * `undefined`.
+   */
+  readonly ref: RefObject<GestureType | undefined>
+  /**
+   * `true` while the gesture is active — for a tap, while the finger is down;
+   * for a drag, while it is being dragged.
+   *
+   * A shared value, so a pressed or grabbed state can be driven on the UI
+   * thread through `useAnimatedStyle` without a re-render. Reading `.value`
+   * during render works but tells you only what was true at the last commit.
+   */
+  readonly isActive: SharedValue<boolean>
+}

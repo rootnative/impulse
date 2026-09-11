@@ -8,6 +8,7 @@ import {
 } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { TapScreen } from './screens/TapScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
@@ -19,7 +20,7 @@ import { version as impulseVersion } from '@rootnative/impulse/package.json'
  * pass its graduation gate, because a test runner cannot tell you whether a
  * gesture feels right on a device.
  */
-type Route = 'home'
+type Route = 'home' | 'tap'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -37,14 +38,14 @@ type ScreenEntry = readonly [route: IntentRoute, Screen: ScreenComponent]
  * they live in a navigator.
  *
  * A tuple list rather than a record: `Object.entries` widens its keys back to
- * `string`, and the cast that recovers them cannot be written while the list
- * is empty — which it is at this commit, because no intent hook exists yet.
+ * `string`, and the cast that recovers them would be needed to narrow them
+ * again.
  *
  * A route belongs in `Route` and here, in the same edit. A name in one and
  * not the other is a crash on navigate, and neither TypeScript nor the
  * navigator will tell you first.
  */
-const SCREENS: readonly ScreenEntry[] = []
+const SCREENS: readonly ScreenEntry[] = [['tap', TapScreen]]
 
 /**
  * Bind a screen to the navigator's back action. Built once at module scope so
@@ -74,7 +75,20 @@ type HomeSection = {
   links: ReadonlyArray<HomeLink>
 }
 
-const SECTIONS: ReadonlyArray<HomeSection> = []
+const SECTIONS: ReadonlyArray<HomeSection> = [
+  {
+    title: 'Discrete',
+    blurb:
+      'One touch, one meaning. These recognize and are done, rather than streaming a value.',
+    links: [
+      {
+        route: 'tap',
+        label: 'useTap',
+        description: 'a single tap, with a pressed state driven by isActive',
+      },
+    ],
+  },
+]
 
 /** The roadmap, shown while the gallery is empty. Drop a milestone's row when its screens land. */
 const MILESTONES = [
@@ -82,7 +96,7 @@ const MILESTONES = [
     key: 'core',
     label: 'Milestone 1 — composition and coexistence',
     detail:
-      'useGestures, alongside / blocks / deferTo, useRawGesture, useDrag, useTap',
+      'useGestures, alongside / blocks / deferTo, useRawGesture, useTap — done. useDrag remains.',
   },
   {
     key: 'intents',

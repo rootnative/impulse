@@ -55,6 +55,6 @@ module.exports = {
     require.resolve('./jest-setup.cjs'),
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-native-community|@rootnative/impulse|react-native-gesture-handler|react-native-worklets)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native-community|@rootnative/impulse|react-native-gesture-handler|react-native-reanimated|react-native-worklets)/)',
   ],
 }
