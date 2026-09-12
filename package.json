@@ -22,6 +22,8 @@
     "example:android": "pnpm --filter @rootnative/impulse-example android",
     "example:web": "pnpm --filter @rootnative/impulse-example web",
     "build:brand": "node scripts/build-brand.mjs",
+    "check:artifact": "node scripts/check-artifact.mjs",
+    "preflight": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run check:versions && pnpm run check:artifact",
     "check:versions": "node scripts/check-versions.mjs",
     "check:versions:fix": "node scripts/check-versions.mjs --fix"
   },

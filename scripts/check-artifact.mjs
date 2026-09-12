@@ -1,0 +1,172 @@
+#!/usr/bin/env node
+/**
+ * Artifact guard — what the build actually produced, and what the tarball
+ * would actually carry.
+ *
+ * Every other gate in this repository reads source. This one reads output,
+ * because both failures it catches are invisible from source and visible only
+ * to a consumer who has already installed the package:
+ *
+ *   1. **The bundle is not ESM.** A CJS bundle with code splitting defeats
+ *      the Reanimated Babel plugin: esbuild emits a cross-chunk hook call as
+ *      `_reanimated.useAnimatedStyle.call(void 0, cb)`, the plugin
+ *      auto-workletizes by callee name, reads `call`, never matches, and the
+ *      callback ships un-workletized. The UI thread then receives a plain
+ *      object and the component dies with `TypeError: updater is not a
+ *      function`. That defect cost `@rootnative/components` two releases.
+ *      Impulse hands worklets to Reanimated on every gesture callback, so it
+ *      is exposed to exactly the same failure, and no unit test can see it.
+ *
+ *   2. **The tarball carries the wrong files.** `files` in package.json
+ *      carries negations (`!**\/__tests__`, `!**\/*.test.*`), and `src` ships
+ *      on purpose so an agent can read the real source. A broken negation
+ *      therefore publishes the test suite, and a missing entry publishes a
+ *      package whose `exports` point at files that are not there.
+ *
+ * Run it after `build`. It lives in a script rather than inline in the
+ * workflows because it had three copies — ci-build.yml, release.yml, and
+ * release-manual.yml — and three copies of a guard is two that go stale.
+ *
+ * Usage:
+ *   node scripts/check-artifact.mjs     # non-zero exit on a bad artifact
+ */
+
+import { execFileSync } from 'node:child_process'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const here = dirname(fileURLToPath(import.meta.url))
+const repoRoot = resolve(here, '..')
+const packageDir = join(repoRoot, 'packages', 'core')
+const distDir = join(packageDir, 'dist')
+
+/** Everything `exports` in package.json promises, plus the metadata files. */
+const REQUIRED_IN_TARBALL = [
+  'dist/index.js',
+  'dist/index.d.ts',
+  'dist/compose/index.js',
+  'dist/raw/index.js',
+  'dist/tap/index.js',
+  'dist/drag/index.js',
+  'dist/gesture-handler/index.js',
+  'src/index.ts',
+  'README.md',
+  'LICENSE',
+  'CHANGELOG.md',
+]
+
+const problems = []
+const fail = (message) => problems.push(message)
+
+/** Every file under `dir`, as paths relative to it. */
+function walk(dir, base = dir) {
+  const out = []
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) {
+      out.push(...walk(full, base))
+    } else {
+      out.push(full.slice(base.length + 1))
+    }
+  }
+  return out
+}
+
+// ── 1. The built output is ESM ──────────────────────────────────────────────
+
+if (!existsSync(distDir)) {
+  fail('packages/core/dist does not exist. Run `pnpm run build` first.')
+} else {
+  const built = walk(distDir)
+
+  if (!built.includes('index.js')) {
+    fail('packages/core/dist/index.js is missing after build.')
+  }
+
+  const cjs = built.filter((f) => f.endsWith('.cjs'))
+  if (cjs.length > 0) {
+    fail(
+      `The build produced CJS files (${cjs.join(', ')}). Impulse ships ESM ` +
+        `only — read the comment in packages/core/tsup.config.ts.`,
+    )
+  }
+
+  // A `require(` in the emitted JavaScript means the bundle is not ESM,
+  // whatever the extension says.
+  const requiring = built
+    .filter((f) => f.endsWith('.js'))
+    .filter((f) => readFileSync(join(distDir, f), 'utf8').includes('require('))
+  if (requiring.length > 0) {
+    fail(
+      `The built output calls require() in ${requiring.join(', ')}. The ` +
+        `bundle is not ESM. Read the comment in packages/core/tsup.config.ts.`,
+    )
+  }
+}
+
+// ── 2. The tarball carries what it should ───────────────────────────────────
+
+// `npm pack --dry-run` writes nothing and reports what it would include, so
+// this is the real `files` resolution rather than a re-implementation of it.
+let packed
+try {
+  // `--ignore-scripts` so `prepack` does not fire. This guard inspects the
+  // artifact that is already on disk — the one `build` produced a step
+  // earlier — and a rebuild here would both corrupt the `--json` output with
+  // tsup's log and hide a missing `dist` by quietly regenerating it.
+  const raw = execFileSync(
+    'npm',
+    ['pack', '--dry-run', '--ignore-scripts', '--json'],
+    {
+      cwd: packageDir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  )
+  packed = JSON.parse(raw)[0].files.map((f) => f.path)
+} catch (error) {
+  fail(`\`npm pack --dry-run\` failed: ${error.message}`)
+}
+
+if (packed) {
+  for (const required of REQUIRED_IN_TARBALL) {
+    if (!packed.includes(required)) {
+      fail(
+        `${required} is missing from the tarball. Check "files" and ` +
+          `"exports" in packages/core/package.json.`,
+      )
+    }
+  }
+
+  const tests = packed.filter(
+    (f) => f.includes('__tests__') || /\.test\./.test(f),
+  )
+  if (tests.length > 0) {
+    fail(
+      `The tarball carries test files (${tests.join(', ')}). The "files" ` +
+        `negations in packages/core/package.json are broken.`,
+    )
+  }
+}
+
+// ── Report ──────────────────────────────────────────────────────────────────
+
+for (const problem of problems) {
+  // The `::error::` prefix is what makes a failure show up against the step in
+  // a GitHub Actions log; it is inert everywhere else.
+  const prefix = process.env.GITHUB_ACTIONS === 'true' ? '::error::' : 'ERROR  '
+  console.error(`${prefix}${problem}`)
+}
+
+if (problems.length > 0) {
+  console.error(
+    `\n[check-artifact] ${problems.length} problem(s) with the built artifact.`,
+  )
+  process.exit(1)
+}
+
+console.log(
+  `[check-artifact] ok — dist is ESM, and the tarball carries ` +
+    `${packed.length} files with no tests among them.`,
+)

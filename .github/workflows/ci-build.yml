@@ -88,22 +88,10 @@ jobs:
       - name: Build package
         run: pnpm run build
 
-      # The package ships ESM only. A CJS bundle with code splitting defeats
-      # the Reanimated Babel plugin and ships worklets that crash on a device.
-      # That defect cost `@rootnative/components` two releases, and a unit
-      # test cannot see it, so assert the shipped format here instead.
-      - name: Built output is ESM
-        run: |
-          dist=packages/core/dist
-          if [ ! -f "$dist/index.js" ]; then
-            echo "::error::$dist/index.js is missing after build."
-            exit 1
-          fi
-          if [ -n "$(find "$dist" -name '*.cjs' -print -quit)" ]; then
-            echo "::error::The build produced a CJS file. Impulse ships ESM only — read the comment in packages/core/tsup.config.ts."
-            exit 1
-          fi
-          if grep -rq 'require(' "$dist" --include='*.js'; then
-            echo "::error::The built output calls require(). The bundle is not ESM. Read the comment in packages/core/tsup.config.ts."
-            exit 1
-          fi
+      # Reads the built output and the tarball `files` would produce. Shared
+      # with both release workflows through `scripts/check-artifact.mjs`, so
+      # the guard that runs here is the guard that runs on the publishing
+      # path — a guard that runs on pull requests but not on release protects
+      # the branch and not the users.
+      - name: Artifact check
+        run: pnpm run check:artifact

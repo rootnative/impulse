@@ -79,6 +79,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "prepack": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "jest",

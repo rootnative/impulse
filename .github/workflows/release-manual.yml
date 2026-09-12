@@ -1,0 +1,216 @@
+name: Release (manual)
+
+# **This filename is part of the release credentials. Do not rename it.**
+#
+# npm binds a trusted publisher to an exact `owner/repo` plus an exact
+# workflow filename, and a package may have up to ten of them. This file is
+# the second one for @rootnative/impulse, and it must be registered on
+# npmjs.com in its own right — registering release.yml does not cover it.
+# `rootnative/ui` learned this the hard way: it registered one workflow, later
+# added another, and the first run of the new file died at publish with a 404
+# that named nothing. See RELEASING.md.
+#
+# ## What this is for
+#
+# `release.yml` is the normal path. It publishes the ref it is dispatched
+# from, tags it, and cuts a GitHub Release. Reach for this file only when that
+# shape does not fit:
+#
+#   - Publishing an exact commit. `workflow_dispatch` can target a branch or a
+#     tag, not a SHA; this takes one.
+#   - Re-running a publish whose git tag and GitHub Release already exist,
+#     because the first attempt died after npm accepted the tarball.
+#   - Any release where the normal path is blocked and the gates still have to
+#     run.
+#
+# ## What this is not
+#
+# It is **not** a faster path. It runs the same `pnpm run preflight` as
+# `release.yml`, and there is no input that skips it.
+# `rootnative/ui`'s manual release ran only `build` — not even lint or test —
+# so a hotfix could publish code that nothing had checked. That is the defect
+# this file is written against, not a feature to copy.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or full commit SHA to publish from."
+        required: true
+        type: string
+      version:
+        description: "Version to release. Must already be the version in packages/core/package.json at that ref."
+        required: true
+        type: string
+      tag:
+        description: "npm dist-tag."
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - alpha
+          - beta
+          - rc
+      dry_run:
+        description: "Run every gate and pack the tarball, but publish nothing and tag nothing."
+        required: false
+        default: false
+        type: boolean
+      create_release:
+        description: "Push the git tag and cut a GitHub Release. Turn off only when they already exist."
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+# Shares one concurrency group with `release.yml`. Two publishing workflows
+# that can run at once is how a repository ends up with two versions racing
+# for the same dist-tag.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release @rootnative/impulse from a named ref
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the named ref
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          # Tags are needed to prove this version has not already been cut.
+          fetch-depth: 0
+
+      # Says out loud what is about to be published. The whole risk of a
+      # by-ref release is that the ref is not what the operator pictured, and
+      # a SHA in the input box is the easiest thing in this workflow to get
+      # wrong.
+      - name: Report what is checked out
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          {
+            echo "### Publishing from \`$REF\`"
+            echo ""
+            echo "- Commit: \`$(git rev-parse HEAD)\`"
+            echo "- Subject: $(git log -1 --pretty=%s)"
+            echo "- Author: $(git log -1 --pretty=%an), $(git log -1 --pretty=%ad --date=short)"
+            echo "- On main: $(git merge-base --is-ancestor HEAD origin/main 2>/dev/null && echo yes || echo '**no** — this commit is not an ancestor of main')"
+          } >> "$GITHUB_STEP_SUMMARY"
+          git log -1 --pretty=fuller
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+          # Required even under trusted publishing: the OIDC token is
+          # exchanged at a registry, and this is what names it.
+          registry-url: https://registry.npmjs.org
+
+      # Pinned to an exact version, not a range, and matching the pin in
+      # `rootnative/inertia`. An unpinned upgrade silently re-versions the
+      # release path on every run: in inertia, `npm version <same-version>`
+      # was a no-op through one release and a hard error two days later, which
+      # broke the next two attempts with no change in the repository. Bump
+      # this on purpose, in its own commit. Trusted publishing needs npm
+      # >= 11.5.1, and relying on whatever the runner ships is how that
+      # requirement gets missed.
+      - name: Install npm (OIDC trusted publishing requires >=11.5.1)
+        run: npm install -g npm@11.19.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Is publishing this version, now, to this dist-tag the thing that was
+      # meant? npm version, the version matching what is committed, the tag
+      # not already existing, and the dist-tag suiting the version.
+      - name: Check the release
+        run: node scripts/check-release.mjs --version "${{ inputs.version }}" --dist-tag "${{ inputs.tag }}"
+
+      # The same gate list `pnpm run preflight` runs locally and `ci-build`
+      # runs on a pull request: format, lint, typecheck, test, build,
+      # check:versions, check:artifact. One script, so a guard cannot run on
+      # pull requests and not on the path that publishes — which is how
+      # `rootnative/ui` shipped two releases with every animated component
+      # dead on native. There is deliberately no input that skips it.
+      - name: Preflight
+        run: pnpm run preflight
+
+      # Tag and push BEFORE publishing, which is `rootnative/inertia`'s order
+      # and was learned there the hard way. Do the reversible thing first: a
+      # tag push can be rejected — tag protection, a token without the right
+      # scope — and an npm publish can never be undone. Publishing first left
+      # inertia with packages live on npm and no tag at all. This way round, a
+      # failed push fails the run with nothing released, and the recovery is
+      # `git tag -d` plus a re-run.
+      - name: Tag the release
+        if: ${{ !inputs.dry_run && inputs.create_release }}
+        env:
+          TAG: core@${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      # OIDC only, like `release.yml`. No `NODE_AUTH_TOKEN` here either: an
+      # escape hatch with a standing credential in it is the thing that gets
+      # reached for, and then it is not an escape hatch any more.
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/core
+        run: npm publish --provenance --access public --tag "${{ inputs.tag }}"
+
+      - name: Explain a publish failure
+        if: ${{ failure() && !inputs.dry_run }}
+        run: |
+          echo "::error::If the publish failed with a 404 on PUT /@rootnative%2fimpulse, it is almost certainly authentication, not a missing package."
+          echo "Check, in order:"
+          echo "  1. Is '.github/workflows/release-manual.yml' registered as a trusted publisher for @rootnative/impulse on npmjs.com? npm binds to the exact filename, and registering release.yml does NOT cover this file. A package may hold up to ten publishers, so add this one alongside it."
+          echo "  2. Is this the first publish of the package? Trusted publishing cannot be configured before a package exists — publish that one from a laptop, per RELEASING.md."
+          echo "  3. Does the job still have 'id-token: write'?"
+
+      - name: Create the GitHub Release
+        if: ${{ !inputs.dry_run && inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: core@${{ inputs.version }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" --title "$VERSION" --generate-notes $prerelease
+
+      - name: Summary
+        env:
+          VERSION: ${{ inputs.version }}
+          DIST_TAG: ${{ inputs.tag }}
+          DRY: ${{ inputs.dry_run }}
+          TAGGED: ${{ inputs.create_release }}
+        run: |
+          {
+            if [ "$DRY" = "true" ]; then
+              echo ""
+              echo "### Dry run — nothing was published"
+              echo ""
+              echo "Every gate passed and the tarball packed. \`$VERSION\` was **not** published and no tag was pushed."
+            else
+              echo ""
+              echo "### Released \`$VERSION\`"
+              echo ""
+              echo "- npm: \`@rootnative/impulse@$VERSION\` on dist-tag \`$DIST_TAG\`"
+              if [ "$TAGGED" = "true" ]; then
+                echo "- Tag: \`core@$VERSION\`"
+              else
+                echo "- Tag: **not pushed** — create_release was off. Confirm \`core@$VERSION\` exists and points at this commit."
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

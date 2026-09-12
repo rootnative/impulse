@@ -11,7 +11,7 @@
 
 **Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
 
-> **Status:** `0.0.0-alpha.0` — pre-release. Nothing is published. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap` and `useDrag` are the intent hooks so far.** `useSwipe`, `usePinch`, and the rest are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened.
+> **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap` and `useDrag` are the intent hooks so far.** `useSwipe`, `usePinch`, and the rest are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened.
 
 ## What it is for
 

@@ -1,0 +1,188 @@
+name: Release
+
+# **This filename is part of the release credentials. Do not rename it.**
+#
+# npm binds a trusted publisher to an exact `owner/repo` plus an exact
+# workflow filename. A package may have up to ten of them, so adding a second
+# publishing workflow is fine — what is not fine is adding one and forgetting
+# to register it. Renaming or adding revokes nothing and warns about nothing:
+# the run dies at the publish step with npm's auth-as-404
+# (`404 PUT /@rootnative%2fimpulse`), after every gate has passed.
+# `rootnative/ui` lost a release to exactly that.
+#
+# Two workflows publish this package, and **both** must be registered as
+# trusted publishers on npmjs.com:
+#
+#   .github/workflows/release.yml         ← this file, the normal path
+#   .github/workflows/release-manual.yml  ← the escape hatch
+#
+# The gates both run are `pnpm run preflight`, so the list is the same one
+# CI and a laptop run.
+
+# Manual only, and deliberately so. This repository publishes what is already
+# committed: it does **not** bump the version, write the CHANGELOG, or touch
+# the README status lines. `scripts/check-versions.mjs` requires a
+# `## [<version>]` CHANGELOG section and current status lines for any
+# non-prerelease version, and it refuses to invent a release note — so a
+# workflow that bumped the version here would fail its own guard one step
+# later. The bump is a commit a human makes and reviews.
+#
+# The full sequence is in RELEASING.md.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release. Must already be the version in packages/core/package.json."
+        required: true
+        type: string
+      tag:
+        description: "npm dist-tag."
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - alpha
+          - beta
+          - rc
+      dry_run:
+        description: "Run every gate and pack the tarball, but publish nothing and tag nothing."
+        required: false
+        default: false
+        type: boolean
+
+# `id-token: write` is what mints the OIDC token npm exchanges for publish
+# rights. Without it the publish falls back to looking for a token and fails.
+# `contents: write` is for the tag and the GitHub Release.
+permissions:
+  contents: write
+  id-token: write
+
+# No `cancel-in-progress`. A cancelled publish can leave a version on npm with
+# no tag in git, and an npm version cannot be republished.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release @rootnative/impulse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # Tags are needed to prove this version has not already been cut.
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+          # Required even under trusted publishing: the OIDC token is
+          # exchanged at a registry, and this is what names it.
+          registry-url: https://registry.npmjs.org
+
+      # Pinned to an exact version, not a range, and matching the pin in
+      # `rootnative/inertia`. An unpinned upgrade silently re-versions the
+      # release path on every run: in inertia, `npm version <same-version>`
+      # was a no-op through one release and a hard error two days later, which
+      # broke the next two attempts with no change in the repository. Bump
+      # this on purpose, in its own commit. Trusted publishing needs npm
+      # >= 11.5.1, and relying on whatever the runner ships is how that
+      # requirement gets missed.
+      - name: Install npm (OIDC trusted publishing requires >=11.5.1)
+        run: npm install -g npm@11.19.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Is publishing this version, now, to this dist-tag the thing that was
+      # meant? npm version, the version matching what is committed, the tag
+      # not already existing, and the dist-tag suiting the version.
+      - name: Check the release
+        run: node scripts/check-release.mjs --version "${{ inputs.version }}" --dist-tag "${{ inputs.tag }}"
+
+      # The same gate list `pnpm run preflight` runs locally and `ci-build`
+      # runs on a pull request: format, lint, typecheck, test, build,
+      # check:versions, check:artifact. One script, so a guard cannot run on
+      # pull requests and not on the path that publishes — which is how
+      # `rootnative/ui` shipped two releases with every animated component
+      # dead on native. There is deliberately no input that skips it.
+      - name: Preflight
+        run: pnpm run preflight
+
+      # Tag and push BEFORE publishing, which is `rootnative/inertia`'s order
+      # and was learned there the hard way. Do the reversible thing first: a
+      # tag push can be rejected — tag protection, a token without the right
+      # scope — and an npm publish can never be undone. Publishing first left
+      # inertia with packages live on npm and no tag at all. This way round, a
+      # failed push fails the run with nothing released, and the recovery is
+      # `git tag -d` plus a re-run.
+      - name: Tag the release
+        if: ${{ !inputs.dry_run }}
+        env:
+          TAG: core@${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      # No `NODE_AUTH_TOKEN`, and none should be added. This path is OIDC
+      # only: if npm will not authenticate it, the right answer is to register
+      # this workflow as a trusted publisher, not to park a standing
+      # credential in the repository that silently takes precedence over it.
+      # The first publish of a new package name — which npm cannot register a
+      # trusted publisher for, because the package does not exist yet — is
+      # done from a laptop instead. RELEASING.md carries that sequence.
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/core
+        run: npm publish --provenance --access public --tag "${{ inputs.tag }}"
+
+      # npm answers an unauthorized publish with a 404, so the default failure
+      # says the package does not exist rather than that the credentials are
+      # wrong. Say the real thing.
+      - name: Explain a publish failure
+        if: ${{ failure() && !inputs.dry_run }}
+        run: |
+          echo "::error::If the publish failed with a 404 on PUT /@rootnative%2fimpulse, it is almost certainly authentication, not a missing package."
+          echo "Check, in order:"
+          echo "  1. Is '.github/workflows/release.yml' registered as a trusted publisher for @rootnative/impulse on npmjs.com? npm binds to the exact filename, and registering release-manual.yml does not cover this file."
+          echo "  2. Is this the first publish of the package? Trusted publishing cannot be configured before a package exists — publish that one from a laptop, per RELEASING.md."
+          echo "  3. Does the job still have 'id-token: write'?"
+
+      - name: Create the GitHub Release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: core@${{ inputs.version }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" --title "$VERSION" --generate-notes $prerelease
+
+      - name: Summary
+        env:
+          VERSION: ${{ inputs.version }}
+          DIST_TAG: ${{ inputs.tag }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          {
+            if [ "$DRY" = "true" ]; then
+              echo "### Dry run — nothing was published"
+              echo ""
+              echo "Every gate passed and the tarball packed. \`$VERSION\` was **not** published and no tag was pushed."
+            else
+              echo "### Released \`$VERSION\`"
+              echo ""
+              echo "- npm: \`@rootnative/impulse@$VERSION\` on dist-tag \`$DIST_TAG\`"
+              echo "- Tag: \`core@$VERSION\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
