@@ -6,10 +6,10 @@
  * RNGH models and Impulse does not, and the `alongside` / `blocks` /
  * `deferTo` options both accept.
  *
- * `useTap` is the first intent hook and the pattern the rest follow: an
- * intent-shaped payload, a JS-thread callback named for what happened, worklet
- * phase callbacks named for when, and documented activation criteria. The
- * remaining intents — `useDrag`, `useSwipe`, `usePinch`, and the rest — are
+ * `useTap` and `useDrag` are the two intent hooks, and the pattern the rest
+ * follow: an intent-shaped payload, JS-thread callbacks named for what
+ * happened, worklet phase callbacks named for when, and documented activation
+ * criteria. The remaining intents — `useSwipe`, `usePinch`, and the rest — are
  * designed but not implemented; see the repository README for the roadmap.
  */
 
@@ -31,6 +31,15 @@ export type { RawGestureResult, UseRawGestureOptions } from './raw'
 
 export { useTap } from './intents/tap'
 export type { TapEvent, UseTapOptions, UseTapResult } from './intents/tap'
+
+export { useDrag } from './intents/drag'
+export type {
+  DragAxis,
+  DragBounds,
+  DragEvent,
+  UseDragOptions,
+  UseDragResult,
+} from './intents/drag'
 
 export type {
   AttachableGesture,

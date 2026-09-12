@@ -9,6 +9,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TapScreen } from './screens/TapScreen'
+import { DragScreen } from './screens/DragScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
@@ -20,7 +21,7 @@ import { version as impulseVersion } from '@rootnative/impulse/package.json'
  * pass its graduation gate, because a test runner cannot tell you whether a
  * gesture feels right on a device.
  */
-type Route = 'home' | 'tap'
+type Route = 'home' | 'tap' | 'drag'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -45,7 +46,10 @@ type ScreenEntry = readonly [route: IntentRoute, Screen: ScreenComponent]
  * not the other is a crash on navigate, and neither TypeScript nor the
  * navigator will tell you first.
  */
-const SCREENS: readonly ScreenEntry[] = [['tap', TapScreen]]
+const SCREENS: readonly ScreenEntry[] = [
+  ['tap', TapScreen],
+  ['drag', DragScreen],
+]
 
 /**
  * Bind a screen to the navigator's back action. Built once at module scope so
@@ -88,6 +92,18 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
       },
     ],
   },
+  {
+    title: 'Continuous',
+    blurb:
+      'The finger stays down and the hook streams a value. These are the ones that have to coexist with a scroll view.',
+    links: [
+      {
+        route: 'drag',
+        label: 'useDrag',
+        description: 'x and y that follow the finger, with bounds and elastic',
+      },
+    ],
+  },
 ]
 
 /** The roadmap, shown while the gallery is empty. Drop a milestone's row when its screens land. */
@@ -96,7 +112,7 @@ const MILESTONES = [
     key: 'core',
     label: 'Milestone 1 — composition and coexistence',
     detail:
-      'useGestures, alongside / blocks / deferTo, useRawGesture, useTap — done. useDrag remains.',
+      'useGestures, alongside / blocks / deferTo, useRawGesture, useTap, useDrag — done. The gate is a device pass.',
   },
   {
     key: 'intents',
