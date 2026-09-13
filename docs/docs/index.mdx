@@ -75,7 +75,7 @@ const drag = useDrag({
 })
 ```
 
-:::info One sharp edge Impulse does not absorb yet
+:::info Two sharp edges Impulse does not absorb yet
 
 `scrollRef` needs an `as unknown as GestureReference` cast in both snippets.
 RNGH types a relation target as a ref to a component *type*, which is not what
@@ -83,6 +83,10 @@ RNGH types a relation target as a ref to a component *type*, which is not what
 mirrors RNGH's type exactly, so the mismatch stays visible instead of being
 absorbed into a wider type that would stop catching upstream drift. This is a
 known gap, not a decision.
+
+`scrollRef` must also come from gesture-handler's `ScrollView`, not React
+Native's. RNGH resolves a relation through `ref.current?.handlerTag` and
+silently drops a ref that has none. See [Coexistence](/coexistence).
 
 :::
 

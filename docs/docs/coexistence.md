@@ -97,6 +97,50 @@ const drag = useDrag({ axis: 'y', deferTo: [scrollRef, pagerRef] })
 Write the array inline. Impulse compares its contents rather than its
 identity, so a new array with the same members does not rebuild the gesture.
 
+## The ref must belong to a gesture
+
+This is the trap that costs the most time, because it fails **silently**.
+
+A relation target has to carry a `handlerTag`. RNGH resolves every relation ref
+through `ref.current?.handlerTag`, and drops anything that returns nothing. No
+warning, no error — the relation simply is not installed.
+
+**React Native's `ScrollView` has no `handlerTag`.**
+
+```tsx
+// Silently does nothing. The drag and the scroll both fight for the touch.
+import { ScrollView } from 'react-native'
+
+const scrollRef = useRef<ScrollView>(null)
+const drag = useDrag({ axis: 'x', deferTo: scrollRef })
+```
+
+Use gesture-handler's `ScrollView` instead. It is the same component wrapped so
+its ref carries the tag:
+
+```tsx
+// Works. The ref carries a handlerTag.
+import { ScrollView } from '@rootnative/impulse/gesture-handler'
+
+const scrollRef = useRef<ScrollView>(null)
+const drag = useDrag({ axis: 'x', deferTo: scrollRef })
+```
+
+The same holds for `FlatList`. Both come from
+[`@rootnative/impulse/gesture-handler`](/gesture-handler), so this does not add
+an import of gesture-handler to your app.
+
+:::warning This is not a web-only problem
+
+The resolution happens in RNGH's shared code, so it behaves the same on iOS,
+Android, and web. A relation against a plain React Native scroll view is a
+no-op on every platform.
+
+:::
+
+Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
+none of this.
+
 ## A component ref needs a cast
 
 ```tsx

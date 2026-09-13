@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
         'threads',
         'raw-gestures',
         'gesture-handler',
+        'web',
       ],
     },
   ],

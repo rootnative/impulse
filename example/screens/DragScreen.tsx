@@ -1,5 +1,14 @@
 import { useRef, useState, type RefObject } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+// Gesture-handler's `ScrollView`, not React Native's, and the difference is
+// load-bearing. RNGH resolves every relation ref through
+// `ref.current?.handlerTag` and drops anything that returns nothing — no
+// warning, no error, the relation simply is not installed. React Native's
+// `ScrollView` carries no `handlerTag`; this one is the same component wrapped
+// by `createNativeWrapper`, which assigns the tag onto the forwarded ref for
+// exactly this purpose. With the plain one, `blocks` below is a no-op and this
+// screen silently stops testing the thing it exists to test.
+import { ScrollView } from '@rootnative/impulse/gesture-handler'
 import {
   GestureDetector,
   useDrag,
@@ -155,6 +164,10 @@ function BoundedBox({
     // mirrors RNGH's type exactly and on purpose, so the mismatch shows up
     // here rather than being absorbed into a wider type that stops catching
     // upstream drift. Recorded in Known gaps.
+    //
+    // Note the cast hides the *other* requirement too: that the ref carries a
+    // `handlerTag`. See the import above — this is why the scroll view has to
+    // be gesture-handler's.
     blocks: scrollRef as unknown as GestureReference,
     onDragEnd: (event) => {
       setReadout(
