@@ -41,15 +41,40 @@ const repoRoot = resolve(here, '..')
 const packageDir = join(repoRoot, 'packages', 'core')
 const distDir = join(packageDir, 'dist')
 
+const manifest = JSON.parse(
+  readFileSync(join(packageDir, 'package.json'), 'utf8'),
+)
+
+/**
+ * Every file path `exports` names, wherever it sits in the conditions tree.
+ *
+ * Read out of the manifest rather than written down beside it. The list was a
+ * literal until the fourth and fifth subpaths landed, and a literal is a copy
+ * of `exports` that nobody updates in the same commit — which turns the guard
+ * against publishing an `exports` entry with no file behind it into a guard
+ * against publishing the entries somebody remembered.
+ */
+function exportedPaths(node, out = new Set()) {
+  if (typeof node === 'string') {
+    if (node.startsWith('./')) {
+      out.add(node.slice(2))
+    }
+    return out
+  }
+  if (node && typeof node === 'object') {
+    for (const value of Object.values(node)) {
+      exportedPaths(value, out)
+    }
+  }
+  return out
+}
+
 /** Everything `exports` in package.json promises, plus the metadata files. */
 const REQUIRED_IN_TARBALL = [
-  'dist/index.js',
-  'dist/index.d.ts',
-  'dist/compose/index.js',
-  'dist/raw/index.js',
-  'dist/tap/index.js',
-  'dist/drag/index.js',
-  'dist/gesture-handler/index.js',
+  ...exportedPaths(manifest.exports),
+  // Not in `exports`, and shipped on purpose: `src` is what lets an agent
+  // read the real source of the exact installed version, and the three
+  // metadata files are what npm renders on the package page.
   'src/index.ts',
   'README.md',
   'LICENSE',

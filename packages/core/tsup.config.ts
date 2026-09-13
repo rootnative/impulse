@@ -6,6 +6,8 @@ export default defineConfig({
     'compose/index': 'src/compose/index.ts',
     'raw/index': 'src/raw/index.ts',
     'tap/index': 'src/intents/tap/index.ts',
+    'double-tap/index': 'src/intents/double-tap/index.ts',
+    'long-press/index': 'src/intents/long-press/index.ts',
     'drag/index': 'src/intents/drag/index.ts',
     'gesture-handler/index': 'src/gesture-handler/index.ts',
   },

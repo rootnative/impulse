@@ -9,6 +9,8 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TapScreen } from './screens/TapScreen'
+import { DoubleTapScreen } from './screens/DoubleTapScreen'
+import { LongPressScreen } from './screens/LongPressScreen'
 import { DragScreen } from './screens/DragScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
@@ -21,7 +23,7 @@ import { version as impulseVersion } from '@rootnative/impulse/package.json'
  * pass its graduation gate, because a test runner cannot tell you whether a
  * gesture feels right on a device.
  */
-type Route = 'home' | 'tap' | 'drag'
+type Route = 'home' | 'tap' | 'double-tap' | 'long-press' | 'drag'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -48,6 +50,8 @@ type ScreenEntry = readonly [route: IntentRoute, Screen: ScreenComponent]
  */
 const SCREENS: readonly ScreenEntry[] = [
   ['tap', TapScreen],
+  ['double-tap', DoubleTapScreen],
+  ['long-press', LongPressScreen],
   ['drag', DragScreen],
 ]
 
@@ -90,6 +94,17 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
         label: 'useTap',
         description: 'a single tap, with a pressed state driven by isActive',
       },
+      {
+        route: 'double-tap',
+        label: 'useDoubleTap',
+        description:
+          'two taps, paired with a single tap — and what that pairing costs',
+      },
+      {
+        route: 'long-press',
+        label: 'useLongPress',
+        description: 'a held press that reports while the finger is down',
+      },
     ],
   },
   {
@@ -118,7 +133,7 @@ const MILESTONES = [
     key: 'intents',
     label: 'Milestone 2 — the intent set',
     detail:
-      'useDoubleTap, useLongPress, usePan, useSwipe, usePinch, useRotate, useHover, useEdgeSwipe',
+      'useDoubleTap and useLongPress are done. usePan, useSwipe, usePinch, useRotate, useHover, useEdgeSwipe remain.',
   },
   {
     key: 'inertia',

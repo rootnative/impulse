@@ -6,11 +6,12 @@
  * RNGH models and Impulse does not, and the `alongside` / `blocks` /
  * `deferTo` options both accept.
  *
- * `useTap` and `useDrag` are the two intent hooks, and the pattern the rest
- * follow: an intent-shaped payload, JS-thread callbacks named for what
- * happened, worklet phase callbacks named for when, and documented activation
- * criteria. The remaining intents — `useSwipe`, `usePinch`, and the rest — are
- * designed but not implemented; see the repository README for the roadmap.
+ * `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` are the intent
+ * hooks, and they share one pattern: an intent-shaped payload, JS-thread
+ * callbacks named for what happened, worklet phase callbacks named for when,
+ * and documented activation criteria. The remaining intents — `usePan`,
+ * `useSwipe`, `usePinch`, and the rest — are designed but not implemented;
+ * see the repository README for the roadmap.
  */
 
 // Re-exported because every hook's result has to be handed to it, and
@@ -31,6 +32,19 @@ export type { RawGestureResult, UseRawGestureOptions } from './raw'
 
 export { useTap } from './intents/tap'
 export type { TapEvent, UseTapOptions, UseTapResult } from './intents/tap'
+
+export { useDoubleTap } from './intents/double-tap'
+export type {
+  UseDoubleTapOptions,
+  UseDoubleTapResult,
+} from './intents/double-tap'
+
+export { useLongPress } from './intents/long-press'
+export type {
+  LongPressEvent,
+  UseLongPressOptions,
+  UseLongPressResult,
+} from './intents/long-press'
 
 export { useDrag } from './intents/drag'
 export type {

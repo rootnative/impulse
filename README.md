@@ -11,7 +11,7 @@
 
 **Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
 
-> **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap` and `useDrag` are the intent hooks so far.** `useSwipe`, `usePinch`, and the rest are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened.
+> **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` are the intent hooks so far.** `usePan`, `useSwipe`, `usePinch`, and the rest are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened, so no activation-criteria default has been measured.
 
 ## What it is for
 
@@ -103,7 +103,7 @@ Both build on gesture-handler and both ship a `useDrag`, a `usePan`, and a `useS
 ## Roadmap
 
 1. **Composition and coexistence core** — `useGestures` with all three modes, `alongside` / `blocks` / `deferTo` resolution, `useRawGesture`, the memoisation helper, `useTap`, and `useDrag` are **done**. The device pass that closes this milestone is not.
-2. **The intent set** — `useDoubleTap`, `useLongPress`, `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`.
+2. **The intent set** — `useDoubleTap` and `useLongPress` are **done**. `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` remain.
 3. **The Inertia bridge** — `@rootnative/impulse/inertia`, adapting a release payload into Inertia's release transitions.
 
 Each milestone has a graduation gate, and every gate needs a pass on real hardware — a test runner cannot tell you whether a horizontal drag inside a vertical `ScrollView` feels right.

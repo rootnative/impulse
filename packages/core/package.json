@@ -21,6 +21,8 @@
     "drag",
     "pinch",
     "tap",
+    "double-tap",
+    "long-press",
     "expo",
     "declarative"
   ],
@@ -52,6 +54,16 @@
       "types": "./dist/tap/index.d.ts",
       "react-native": "./dist/tap/index.js",
       "default": "./dist/tap/index.js"
+    },
+    "./double-tap": {
+      "types": "./dist/double-tap/index.d.ts",
+      "react-native": "./dist/double-tap/index.js",
+      "default": "./dist/double-tap/index.js"
+    },
+    "./long-press": {
+      "types": "./dist/long-press/index.d.ts",
+      "react-native": "./dist/long-press/index.js",
+      "default": "./dist/long-press/index.js"
     },
     "./drag": {
       "types": "./dist/drag/index.d.ts",

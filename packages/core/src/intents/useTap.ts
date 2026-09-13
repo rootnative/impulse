@@ -1,10 +1,5 @@
 import { useMemo } from 'react'
-import {
-  Gesture,
-  type GestureStateChangeEvent,
-  type TapGesture,
-  type TapGestureHandlerEventPayload,
-} from 'react-native-gesture-handler'
+import { Gesture, type TapGesture } from 'react-native-gesture-handler'
 import { runOnJS, useSharedValue } from 'react-native-reanimated'
 import {
   useGestureMemo,
@@ -12,7 +7,10 @@ import {
 } from '../internal/useGestureMemo'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
-import { type HitSlop, type IntentResult, type Point } from '../types'
+import { toTapEvent, type TapEvent } from './tapEvent'
+import { type HitSlop, type IntentResult } from '../types'
+
+export type { TapEvent } from './tapEvent'
 
 /**
  * Maximum time the finger may stay down and still count as a tap, in
@@ -36,23 +34,6 @@ const DEFAULT_MAX_DURATION = 500
  * has happened. See Known gaps in CLAUDE.md.
  */
 const DEFAULT_MAX_DISTANCE = 10
-
-/** The intent-shaped payload a {@link useTap} callback receives. */
-export interface TapEvent {
-  /** X of the tap, in points, relative to the view the gesture is attached to. */
-  readonly x: number
-  /** Y of the tap, in points, relative to the view the gesture is attached to. */
-  readonly y: number
-  /**
-   * The same point relative to the window.
-   *
-   * Prefer it over `x` / `y` when the view itself is being transformed by the
-   * gesture — a tap on a view that is mid-animation reports a moving `x`.
-   */
-  readonly absolute: Point
-  /** How many fingers were down when the tap was recognized. */
-  readonly pointers: number
-}
 
 /** Options for {@link useTap}. */
 export interface UseTapOptions extends GestureMemoOptions {
@@ -133,26 +114,6 @@ export interface UseTapOptions extends GestureMemoOptions {
 export type UseTapResult = IntentResult<TapGesture>
 
 /**
- * Shape RNGH's flat state-change event into the tap payload.
- *
- * A worklet, because every caller is one. Keeping the normalizer out of the
- * gesture callbacks means the four call sites cannot disagree about which
- * RNGH field means what — which is the defect the intent payload exists to
- * remove.
- */
-function toTapEvent(
-  event: GestureStateChangeEvent<TapGestureHandlerEventPayload>,
-): TapEvent {
-  'worklet'
-  return {
-    x: event.x,
-    y: event.y,
-    absolute: { x: event.absoluteX, y: event.absoluteY },
-    pointers: event.numberOfPointers,
-  }
-}
-
-/**
  * Recognize a single tap.
  *
  * ```tsx
@@ -182,9 +143,20 @@ function toTapEvent(
  * the platform there, so the same tap is accepted on one operating system and
  * rejected on the other. Neither default has been measured on hardware yet.
  *
- * **Racing a double tap.** A single tap and a double tap on one view is a
- * composition, not an option — `useGestures([tap, double], { mode: 'race' })`.
- * Do not reach for `maxDelay` to build it by hand.
+ * **Pairing with a double tap.** A single tap and a double tap on one view is
+ * a composition, not an option — and the mode is `exclusive`, with the double
+ * tap named first:
+ *
+ * ```tsx
+ * useGestures([double, tap], { mode: 'exclusive' })
+ * ```
+ *
+ * `race` is the wrong mode here and fails quietly. A single tap recognizes on
+ * the first release, so it wins the race every time and the double tap never
+ * fires. `exclusive` is what makes the single tap wait to learn whether a
+ * second tap is coming — at the cost of `useDoubleTap`'s `maxDelay` in
+ * latency on every single tap. Do not reach for `maxDelay` to build the pair
+ * by hand.
  *
  * **Web.** RNGH's web implementation recognizes tap from pointer events, and
  * `pointers` above 1 is unreliable there because a mouse reports one pointer
