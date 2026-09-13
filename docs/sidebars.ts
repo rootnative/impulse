@@ -11,6 +11,12 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'installation', label: 'Installation' },
     {
       type: 'category',
+      label: 'Intents',
+      collapsed: false,
+      items: ['use-tap', 'use-double-tap'],
+    },
+    {
+      type: 'category',
       label: 'Core concepts',
       collapsed: false,
       items: [
