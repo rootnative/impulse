@@ -28,8 +28,8 @@ import { useCallback, useInsertionEffect, useRef } from 'react'
  * dependency of the gesture's `useMemo`, because a worklet is captured as
  * written: swapping its body through a ref would leave the UI thread running
  * the version it was serialized with, silently. That asymmetry is why
- * Impulse splits callbacks by name — `onBegin` / `onUpdate` / `onEnd` are
- * worklets, `onTap` / `onSwipe` / `onLongPress` are not.
+ * Impulse splits callbacks by name — `onBegin` / `onUpdate` / `onFinalize`
+ * are worklets, `onTap` / `onDragEnd` / `onLongPress` are not.
  *
  * The returned function is stable, so it is never a useful dependency. A
  * caller that needs the gesture to change when the callback *appears or

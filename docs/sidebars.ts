@@ -9,6 +9,18 @@ const sidebars: SidebarsConfig = {
   docs: [
     { type: 'doc', id: 'index', label: 'Introduction' },
     { type: 'doc', id: 'installation', label: 'Installation' },
+    {
+      type: 'category',
+      label: 'Core concepts',
+      collapsed: false,
+      items: [
+        'composition',
+        'coexistence',
+        'threads',
+        'raw-gestures',
+        'gesture-handler',
+      ],
+    },
   ],
 }
 

@@ -87,9 +87,9 @@ known gap, not a decision.
 :::
 
 `drag.x` is a shared value that accumulates across gestures, so the
-`start.value` dance is gone. `deferTo` is the relation, named for what happens
-rather than for the method it calls. The `runOnJS` boundary is Impulse's job,
-not yours.
+`start.value` dance is gone. [`deferTo`](/coexistence) is the relation, named
+for what happens rather than for the method it calls. The
+[`runOnJS` boundary](/threads) is Impulse's job, not yours.
 
 ## What Impulse does differently
 
@@ -120,6 +120,9 @@ has no business making them.
 ```bash
 npm install @rootnative/impulse
 ```
+
+Full setup, including the peers and the root view, is on the
+[Installation](/installation) page.
 
 Impulse needs `react-native-gesture-handler` and `react-native-reanimated` as
 peers. Your app must render a `<GestureHandlerRootView>` above any component
@@ -155,12 +158,12 @@ any consumer, including `@rootnative/ui` and `@rootnative/inertia`. The
 half of the pair: Impulse detects, Inertia animates. A bridge subpath is
 planned and not built, and Impulse will never require an animation library.
 
-`@rootnative/inertia-gestures` ships a `useDrag`, a `usePan`, and a `useSwipe`
-too, so the names collide. The products do not. That package **requires**
-`@rootnative/inertia` and hands back an `animatedStyle` that already knows
-about bounds and spring-back. Impulse requires no animation library and hands
-back the gesture and its values. Reach for `-gestures` to make a Motion
-primitive follow a finger. Reach for Impulse for the gesture itself.
+`@rootnative/inertia-gestures` ships a `useDrag` too, so that one name
+collides. The products do not. That package **requires** `@rootnative/inertia`
+and hands back an `animatedStyle` that already knows about bounds and
+spring-back. Impulse requires no animation library and hands back the gesture
+and its values. Reach for `-gestures` to make a Motion primitive follow a
+finger. Reach for Impulse for the gesture itself.
 
 ## Licence
 
