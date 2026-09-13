@@ -13,7 +13,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Intents',
       collapsed: false,
-      items: ['use-tap', 'use-double-tap'],
+      items: ['use-tap', 'use-double-tap', 'use-long-press', 'use-drag'],
     },
     {
       type: 'category',

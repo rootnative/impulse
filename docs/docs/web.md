@@ -23,7 +23,7 @@ marked **unverified** have not been checked and are not claims.
 | --- | --- | --- |
 | `useTap` | Yes — verified in RNGH's source | **Works** |
 | `useDoubleTap` | Yes — verified in RNGH's source | **Works** |
-| `useLongPress` | Yes — verified in RNGH's source | **Works**, with one caveat below |
+| `useLongPress` | Yes — verified in RNGH's source | **Works**, with two caveats below |
 | `useDrag` | Yes — verified in RNGH's source | **Works** |
 
 All four intents recognize correctly under a mouse on web.
@@ -122,6 +122,24 @@ So no option Impulse sets is ignored on web. **That is a statement about
 configuration, not about feel.** Whether a drag tracks a mouse correctly, or
 whether a long press survives a browser's own press-and-hold behaviour, is what
 the unverified column covers.
+
+## `useLongPress` cancels on travel, against RNGH's own contract
+
+RNGH documents `maxDist` as bounding the wait only — *"if the finger travels
+further than the defined distance **and the handler hasn't yet activated**, it
+will fail"*. A recognized press should tolerate travel.
+
+Its web implementation does not do that. `checkDistanceFail()` runs on every
+pointer move, and when the gesture is already active it calls `cancel()`.
+
+So on web, moving past `maxDistance` while holding ends the press. **Native is
+unverified**, and RNGH's documentation says travel is allowed there, so this may
+be a genuine platform split.
+
+The practical cost: **hold-then-drag does not work on web at the default
+`maxDistance`.** The drag's own movement cancels the press it is gated on. Raise
+`maxDistance` explicitly for that pattern rather than relying on the documented
+behaviour.
 
 ## Coexistence on web
 

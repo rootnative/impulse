@@ -72,11 +72,18 @@ export interface UseLongPressOptions extends GestureMemoOptions {
    */
   minDuration?: number
   /**
-   * How far the finger may travel while waiting, in points. Default `10`.
+   * How far the finger may travel, in points. Default `10`.
    *
-   * The finger may move further than this **after** the press is recognized —
-   * this bounds the wait, not the hold. That is what makes hold-then-drag
-   * possible at all.
+   * **What this bounds is platform-dependent, and the split is verified.**
+   * RNGH documents it as bounding the wait only: "if the finger travels
+   * further than the defined distance and the handler hasn't yet activated,
+   * it will fail". Its web implementation does not match that — it checks the
+   * distance on every pointer move and *cancels* a press that is already
+   * active.
+   *
+   * So on web the finger may not travel past this once the press is
+   * recognized, and hold-then-drag needs this raised explicitly rather than
+   * relying on the documented behaviour. Native is unverified.
    */
   maxDistance?: number
   /**
@@ -229,12 +236,15 @@ function toLongPressEvent(
  * `hold.isActive` is the flag, and it is a shared value precisely so the
  * drag's worklets can read it without a round trip to the JS thread. Raise
  * the drag's `threshold` as well, or the drag activates before the press ever
- * does.
+ * does — and raise this hook's `maxDistance`, or the press is cancelled by
+ * the drag's own movement on web.
  *
  * **Activation criteria.** `minDuration` defaults to 500ms and `maxDistance`
- * to 10 points, and both are RNGH's own numbers restated. `maxDistance`
- * bounds the wait, not the hold — the finger may travel freely once the press
- * is recognized.
+ * to 10 points, and both are RNGH's own numbers restated. What `maxDistance`
+ * bounds differs by platform: RNGH documents it as bounding the wait only,
+ * but its web implementation cancels a press that is already active once the
+ * finger travels past it. Raise it explicitly rather than relying on travel
+ * being free after recognition.
  *
  * **Web.** RNGH recognizes long press from pointer events, so a held mouse
  * button works. The browser's own context menu is not suppressed by this
