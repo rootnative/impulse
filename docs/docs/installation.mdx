@@ -1,0 +1,230 @@
+---
+id: installation
+title: Installation
+description: Install @rootnative/impulse, its peers, and the GestureHandlerRootView every gesture needs.
+---
+
+# Installation
+
+## Install the package
+
+```bash
+npm install @rootnative/impulse
+```
+
+The current release is `0.0.0-alpha.0`, and it is published on both the
+`latest` and the `alpha` dist-tag. A plain install resolves it. You do not need
+`@alpha`.
+
+## Install the peers
+
+Impulse declares five peer dependencies and bundles none of them.
+
+In an Expo app, let Expo pick the versions that match your SDK:
+
+```bash
+npx expo install react-native-gesture-handler react-native-reanimated react-native-worklets
+```
+
+In a bare React Native app, install them directly and then run
+`npx pod-install` for iOS.
+
+| Peer | Range |
+| --- | --- |
+| `react` | `>=19.2.3 <20.0.0` |
+| `react-native` | `>=0.83.0 <0.87.0` |
+| `react-native-gesture-handler` | `>=2.28.0 <3.0.0` |
+| `react-native-reanimated` | `>=4.5.0 <4.6.0` |
+| `react-native-worklets` | `>=0.10.0 <0.11.0` |
+
+:::note Why the Reanimated range is so narrow
+
+Reanimated 4 and `react-native-worklets` are version-locked to each other. An
+open upper bound lets a package manager pair a new Reanimated with an old
+worklets build, and that pair does not install. The two tight ranges are
+load-bearing. Do not widen them.
+
+:::
+
+Impulse is developed against **Expo SDK 57** — React 19.2.3, React Native
+0.86.3, Gesture Handler 2.32.0, Reanimated 4.5.1, and Worklets 0.10.1.
+
+## Add the root view
+
+Render `<GestureHandlerRootView>` above every component that uses a gesture.
+Wrap your app at its entry point.
+
+```tsx
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={styles.root}>
+      <Navigation />
+    </GestureHandlerRootView>
+  )
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+})
+```
+
+:::danger A missing root view fails silently
+
+Without it, your gestures never fire. Nothing throws, nothing warns, and the
+console stays empty. "Nothing happens" is the whole diagnostic.
+
+Impulse cannot warn you about this yet. RNGH does not export the context that
+would let a hook detect the root view, so there is no signal to read. This is a
+known gap. **If a gesture does nothing at all, check this first.**
+
+:::
+
+Give the root view `flex: 1`, or the area below it receives no touches.
+
+## Babel
+
+**An Expo app needs no Babel change.** `babel-preset-expo` adds
+`react-native-worklets/plugin` on its own as soon as the package is installed.
+
+A **bare React Native** app has to add the plugin by hand, and it must be the
+last entry in the list:
+
+```js
+// babel.config.js
+module.exports = {
+  presets: ['module:@react-native/babel-preset'],
+  plugins: ['react-native-worklets/plugin'],
+}
+```
+
+Restart Metro with a cleared cache after you change this file:
+`npx expo start --clear`, or `npx react-native start --reset-cache`.
+
+## Import what you use
+
+The package entry carries every hook, plus `GestureDetector`:
+
+```tsx
+import { GestureDetector, useDrag, useTap } from '@rootnative/impulse'
+```
+
+Each hook also has its own subpath, so an app that uses one gesture does not
+ship the set:
+
+```tsx
+import { useDrag } from '@rootnative/impulse/drag'
+```
+
+| Subpath | What it carries |
+| --- | --- |
+| `@rootnative/impulse` | Every hook, the types, and `GestureDetector`. |
+| `@rootnative/impulse/tap` | `useTap` |
+| `@rootnative/impulse/double-tap` | `useDoubleTap` |
+| `@rootnative/impulse/long-press` | `useLongPress` |
+| `@rootnative/impulse/drag` | `useDrag` |
+| `@rootnative/impulse/compose` | `useGestures` |
+| `@rootnative/impulse/raw` | `useRawGesture` |
+| `@rootnative/impulse/gesture-handler` | RNGH's own primitives, re-exported under their original names. |
+
+`GestureDetector` is re-exported from the entry because every hook's result
+needs it. Reaching for it is not a reason to add a second gesture import to
+your app.
+
+:::info The package ships ESM only
+
+There is no CommonJS build, and that is deliberate. CommonJS with code
+splitting defeats the Reanimated Babel plugin and ships worklets that crash on
+a device. Metro handles ESM. A Node-side tool that requires CommonJS does not.
+
+:::
+
+## Set up Jest
+
+Impulse ships its own Jest wiring, so a consumer needs one line:
+
+```js
+// jest.config.js
+module.exports = {
+  preset: require.resolve('@rootnative/impulse/jest-preset'),
+}
+```
+
+The preset layers on `@react-native/jest-preset`. It adds RNGH's native-module
+mocks and widens `transformIgnorePatterns`, so Jest transforms Impulse's ESM
+bundle and gesture-handler. Neither passes the default React Native pattern.
+
+You also need `@react-native/jest-preset` as a devDependency:
+
+```bash
+npm install --save-dev @react-native/jest-preset
+```
+
+React Native 0.86 moved its Jest preset into that package and declares it as an
+**optional** peer. No package manager installs an optional peer, so you install
+it yourself, at the version that matches your `react-native`.
+
+Drive gestures in a test with RNGH's own helpers, and tag the gesture so the
+helper can find it:
+
+```tsx
+const tap = useTap({ testId: 'card', onTap: select })
+```
+
+```tsx
+import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils'
+
+fireGestureHandler(getByGestureTestId('card'))
+```
+
+## In a monorepo
+
+Metro needs exactly one copy of five packages. Two copies of Reanimated or
+gesture-handler load two native modules, and the second one's gestures never
+fire.
+
+Point Metro at one copy of each:
+
+```js
+// metro.config.js
+const singletons = [
+  'react',
+  'react-native',
+  'react-native-gesture-handler',
+  'react-native-reanimated',
+  'react-native-worklets',
+]
+
+config.resolver.extraNodeModules = singletons.reduce((acc, name) => {
+  acc[name] = path.resolve(workspaceRoot, 'node_modules', name)
+  return acc
+}, {})
+```
+
+If you use pnpm, also set a hoisted layout. Metro runs with
+`disableHierarchicalLookup`, so an isolated `node_modules` tree breaks its
+resolver with `Unable to resolve "invariant" from react-native/index.js`.
+
+```yaml
+# pnpm-workspace.yaml
+nodeLinker: hoisted
+```
+
+## Check that it works
+
+```tsx
+import { GestureDetector, useTap } from '@rootnative/impulse'
+
+function Card() {
+  const tap = useTap({ onTap: () => console.log('tapped') })
+
+  return (
+    <GestureDetector gesture={tap.gesture}>
+      <View style={styles.card} />
+    </GestureDetector>
+  )
+}
+```
+
+Tap the card. If the log does not appear, check the root view first.

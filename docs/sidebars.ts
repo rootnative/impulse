@@ -6,7 +6,10 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs'
  * file cannot drift. Keep every entry a plain string id.
  */
 const sidebars: SidebarsConfig = {
-  docs: [{ type: 'doc', id: 'index', label: 'Introduction' }],
+  docs: [
+    { type: 'doc', id: 'index', label: 'Introduction' },
+    { type: 'doc', id: 'installation', label: 'Installation' },
+  ],
 }
 
 export default sidebars
