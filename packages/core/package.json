@@ -83,6 +83,7 @@
     "src",
     "jest-preset.cjs",
     "jest-setup.cjs",
+    "llms.txt",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",

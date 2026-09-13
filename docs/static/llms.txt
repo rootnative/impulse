@@ -1,0 +1,106 @@
+# @rootnative/impulse
+
+> Declarative gesture primitives for React Native, built on
+> react-native-gesture-handler. One hook per intent. Hooks return shared values
+> and a gesture; Impulse starts no animation and ships no components.
+
+Status: 0.0.0-alpha.0. Four intents ship. No activation default has been
+measured on hardware — every default below is a design intention.
+
+Docs: https://rootnative.github.io/impulse/
+Full: https://rootnative.github.io/impulse/llms-full.txt
+Source: https://github.com/rootnative/impulse
+
+## Install
+
+npm install @rootnative/impulse
+
+Peers: react, react-native, react-native-gesture-handler,
+react-native-reanimated, react-native-worklets. Render a
+<GestureHandlerRootView> above any component using a gesture — if it is
+missing, gestures never fire and nothing warns.
+
+## What ships
+
+useTap, useDoubleTap, useLongPress, useDrag — intent hooks.
+useGestures — composition. useRawGesture — the escape hatch.
+GestureDetector is re-exported from the package entry.
+
+NOT IMPLEMENTED, do not import: usePan, useSwipe, usePinch, useRotate,
+useHover, useEdgeSwipe. They are designed only.
+
+Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,compose,raw,gesture-handler}
+
+## The shape of every hook
+
+const tap = useTap({ onTap: select })
+tap.gesture    // hand to <GestureDetector>
+tap.ref        // name it in another hook's alongside / blocks / deferTo
+tap.isActive   // SharedValue<boolean>
+
+useDrag adds x and y, both SharedValue<number>, both writable, both
+accumulating across gestures.
+
+## Threads — the callback name states the thread
+
+JS thread: onTap, onDoubleTap, onLongPress, onLongPressEnd, onDragStart,
+onDragEnd. Ordinary functions; Impulse owns the runOnJS boundary.
+
+Worklets: onBegin, onUpdate, onFinalize. Mark with 'worklet'. They are direct
+gesture dependencies, so keep their identity stable — an inline worklet
+rebuilds the gesture every render. An inline JS-thread callback does not.
+
+## Composition
+
+useGestures(members, { mode }) where mode is race | simultaneous | exclusive.
+A composed result is itself a member. Precedence reads left to right.
+
+A tap and a double tap are exclusive with the double tap FIRST, never race — a
+single tap recognizes on first release and would win every race. The composed
+single tap then pays maxDelay in latency.
+
+useGestures does not accept coexistence options. Put them on the members.
+
+## Coexistence
+
+alongside -> both recognize          (simultaneousWithExternalGesture)
+blocks    -> this gesture wins       (blocksExternalGesture)
+deferTo   -> the named gesture wins  (requireExternalGestureToFail)
+
+Name another hook's .ref, not its .gesture.
+
+TRAP: a relation target must carry a handlerTag. React Native's ScrollView has
+none, so the relation is SILENTLY dropped on every platform. Use
+gesture-handler's ScrollView / FlatList, from @rootnative/impulse/gesture-handler.
+
+TRAP: a component ref needs `as unknown as GestureReference`. RNGH types the
+target as a ref to a component type, which is not what ref={} produces.
+
+## Defaults
+
+useTap: pointers 1, maxDuration 500ms, maxDistance 10pt
+useDoubleTap: same, plus maxDelay 500ms (probably too generous; 250-300 is
+  closer to what platforms use)
+useLongPress: minDuration 500ms, maxDistance 10pt
+useDrag: axis both, threshold 10pt, elastic 0, unbounded
+
+## isActive does not mean the same thing in every hook
+
+useTap sets it at touch-down — a real pressed state.
+useLongPress and useDrag set it at recognition.
+
+## Known gaps a consumer can hit
+
+- No JS-thread callback for a cancelled gesture. Every intent callback is
+  guarded on success; onFinalize is the only cancel-aware one and it is a
+  worklet.
+- useLongPress maxDistance cancels an ACTIVE press on web, against RNGH's own
+  documented contract. Hold-then-drag does not work there at the default.
+- A missing <GestureHandlerRootView> fails silently and Impulse cannot warn.
+- Web is surveyed by hand; no jsdom test pins any of it.
+
+## Out of scope, by decision
+
+No components. No animation vocabulary, springs or easing. No haptics policy.
+useDrag returns values and no style — @rootnative/inertia-gestures has a
+useDrag that returns an animatedStyle and requires @rootnative/inertia.

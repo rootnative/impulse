@@ -96,6 +96,8 @@ The ceremony above is what Impulse exists to remove. `onLongPressEnd` and
 gesture was cancelled, and to fire on both paths. This section describes the
 current release.
 
+:::
+
 ## What is verified, and how
 
 RNGH ships a web implementation for every recognizer Impulse uses:

@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
       ],
     },
     { type: 'doc', id: 'testing', label: 'Testing' },
+    { type: 'doc', id: 'ai', label: 'AI agents & llms.txt' },
     { type: 'doc', id: 'roadmap', label: 'Roadmap' },
   ],
 }

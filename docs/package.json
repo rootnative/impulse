@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "docusaurus start",
+    "dev": "pnpm build:llms && docusaurus start",
     "build": "docusaurus build",
     "build:check": "docusaurus build --out-dir .docusaurus/check-build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "serve": "docusaurus serve",
-    "clean": "rm -rf build .docusaurus"
+    "clean": "rm -rf build .docusaurus",
+    "build:llms": "node ../scripts/build-llms.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.10.0",
