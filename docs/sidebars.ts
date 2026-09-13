@@ -28,6 +28,8 @@ const sidebars: SidebarsConfig = {
         'web',
       ],
     },
+    { type: 'doc', id: 'testing', label: 'Testing' },
+    { type: 'doc', id: 'roadmap', label: 'Roadmap' },
   ],
 }
 
