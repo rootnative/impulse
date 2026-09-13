@@ -66,8 +66,9 @@
 // gradient, same tone gradient, with circles swapped for rounded squares. A
 // good idea in the wrong org.
 //
-// This script is the single source of truth. `assets/brand/*` is generated; edit
-// the constants here, re-run, and commit the output.
+// This script is the single source of truth. `assets/brand/*` and
+// `docs/static/img/*` are both generated; edit the constants here, re-run, and
+// commit the output.
 //
 //   pnpm run build:brand
 //
@@ -95,6 +96,7 @@ import { deflateSync } from 'node:zlib'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 const BRAND_DIR = path.join(ROOT, 'assets', 'brand')
+const DOCS_IMG_DIR = path.join(ROOT, 'docs', 'static', 'img')
 
 // --- palette -----------------------------------------------------------------
 // Two flat, fully opaque roles rather than a ramp: `trail` is the shaft, `lead`
@@ -635,6 +637,24 @@ function main() {
   write(
     path.join(BRAND_DIR, 'impulse-mark-compact.png'),
     renderMark({ ...COMPACT, size: 64, scale: 0.94 }),
+  )
+
+  // 4. Docs site. Generated here rather than copied by hand, because the mark
+  //    is generated: a hand-copied logo is one that stops matching the day the
+  //    geometry changes.
+  //
+  //    There is no `favicon.ico` and no `social-card.png`. This script carries
+  //    a PNG encoder and neither an ICO writer nor an SVG rasterizer, and
+  //    `inertia`'s rasterizer shells out to `qlmanage` and `sips`, which are
+  //    macOS-only. A PNG favicon covers every browser in the support band.
+  //    Add the social card when a rasterizer that runs in CI exists.
+  write(path.join(DOCS_IMG_DIR, 'logo.svg'), markSvg(MARK))
+  write(path.join(DOCS_IMG_DIR, 'logo-dark.svg'), markSvg(MARK_DARK))
+  // A favicon fills almost the whole frame: a browser tab is ~16 px of usable
+  // space, and padding there is space thrown away.
+  write(
+    path.join(DOCS_IMG_DIR, 'favicon.png'),
+    renderMark({ ...COMPACT, size: 180, scale: 0.94 }),
   )
 
   console.log(`Wrote ${written.length} brand assets:`)

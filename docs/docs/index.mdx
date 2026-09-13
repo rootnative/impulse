@@ -1,0 +1,35 @@
+---
+id: index
+title: Impulse
+slug: /
+---
+
+# Impulse
+
+Declarative gesture primitives for React Native, built on
+[react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/).
+
+A gesture is an intent, not a state machine. Impulse gives you one hook per
+intent, and keeps RNGH's activation criteria, gesture relations, and worklet
+boundaries out of your component.
+
+```tsx
+import { GestureDetector, useDrag } from '@rootnative/impulse'
+
+const drag = useDrag({ axis: 'x', deferTo: scrollRef })
+
+return (
+  <GestureDetector gesture={drag.gesture}>
+    <Animated.View style={style} />
+  </GestureDetector>
+)
+```
+
+:::note This site is being written
+
+Four intent hooks ship today: `useTap`, `useDoubleTap`, `useLongPress`, and
+`useDrag`. The pages for them are in progress. `usePan`, `useSwipe`,
+`usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are designed and not
+implemented — do not import them yet.
+
+:::

@@ -1,0 +1,93 @@
+/**
+ * Impulse docs theme.
+ *
+ * The two accent tokens are the mark's own tones. `scripts/build-brand.mjs`
+ * holds the same pair as `LIGHT_TONES` / `DARK_TONES` and draws the logo from
+ * them, so change them in both places or the navbar logo stops matching the
+ * links beside it.
+ */
+
+:root {
+  --impulse-accent: #6b4fbb;
+  --impulse-accent-2: #9a83d8;
+  --impulse-canvas-dark: #0b0912;
+
+  --ifm-color-primary: #5a3fa6;
+  --ifm-color-primary-dark: #513993;
+  --ifm-color-primary-darker: #4c368b;
+  --ifm-color-primary-darkest: #3f2c73;
+  --ifm-color-primary-light: #6a4dbd;
+  --ifm-color-primary-lighter: #7355c3;
+  --ifm-color-primary-lightest: #8b73cd;
+
+  --ifm-font-family-base:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --ifm-font-family-monospace:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+
+  --ifm-heading-font-weight: 700;
+  --ifm-heading-line-height: 1.2;
+  --ifm-h1-font-size: 2.4rem;
+  --ifm-h2-font-size: 1.7rem;
+  --ifm-h3-font-size: 1.25rem;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+  --ifm-global-radius: 10px;
+
+  --ifm-link-decoration: none;
+  --ifm-link-hover-decoration: underline;
+
+  --ifm-code-font-size: 90%;
+  --ifm-code-padding-horizontal: 0.4rem;
+  --ifm-code-padding-vertical: 0.15rem;
+  --ifm-pre-padding: 1.1rem;
+
+  --ifm-navbar-height: 60px;
+  --ifm-toc-border-color: transparent;
+
+  --impulse-border: rgba(0, 0, 0, 0.09);
+  --impulse-surface-muted: #faf9fc;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #b6a3e4;
+  --ifm-color-primary-dark: #a08add;
+  --ifm-color-primary-darker: #9581d9;
+  --ifm-color-primary-darkest: #7a63cd;
+  --ifm-color-primary-light: #ccbcec;
+  --ifm-color-primary-lighter: #d7c9f0;
+  --ifm-color-primary-lightest: #f0e9fa;
+
+  --ifm-background-color: var(--impulse-canvas-dark);
+  --ifm-background-surface-color: #13101d;
+
+  --impulse-border: rgba(255, 255, 255, 0.12);
+  --impulse-surface-muted: #13101d;
+}
+
+.navbar {
+  border-bottom: 1px solid var(--impulse-border);
+}
+
+.footer {
+  background-color: var(--impulse-surface-muted);
+  border-top: 1px solid var(--impulse-border);
+}
+
+/* The navbar GitHub link is an icon, not a word. */
+.navbar-github-link::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 22px;
+  background-color: var(--ifm-navbar-link-color);
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.4-.5-1.6.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.6.2 2.8.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3Z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.navbar-github-link:hover::before {
+  background-color: var(--ifm-navbar-link-hover-color);
+}

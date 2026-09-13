@@ -1,0 +1,148 @@
+import type * as Preset from '@docusaurus/preset-classic'
+import type { Config } from '@docusaurus/types'
+
+// Docusaurus resolves `baseUrl` for `favicon` and `themeConfig.image`, but not
+// for `headTags` hrefs — those are emitted verbatim, so they have to be built
+// from the same constant rather than hard-coded.
+const baseUrl = '/impulse/'
+
+const config: Config = {
+  title: 'Impulse',
+  tagline: 'Declarative gesture primitives for React Native',
+  url: 'https://rootnative.github.io',
+  baseUrl,
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
+
+  // A PNG, not an `.ico`. `scripts/build-brand.mjs` carries a hand-written PNG
+  // encoder and no ICO writer, and every browser in the support band reads a
+  // PNG favicon. Adding an `.ico` means porting `inertia`'s `buildIco`.
+  favicon: 'img/favicon.png',
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: `${baseUrl}img/favicon.png`,
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
+      },
+    },
+  ],
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          routeBasePath: '/',
+          editUrl: 'https://github.com/rootnative/impulse/edit/main/docs/',
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        docsRouteBasePath: '/',
+        indexBlog: false,
+      },
+    ],
+  ],
+
+  themeConfig: {
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      title: 'Impulse',
+      logo: {
+        alt: 'Impulse',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'docs',
+          label: 'Docs',
+          position: 'left',
+        },
+        {
+          href: 'https://github.com/rootnative/impulse',
+          position: 'right',
+          className: 'navbar-github-link',
+          'aria-label': 'GitHub repository',
+        },
+      ],
+    },
+    footer: {
+      links: [
+        {
+          title: 'Docs',
+          items: [{ label: 'Introduction', to: '/' }],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/rootnative/impulse',
+            },
+            {
+              label: 'npm',
+              href: 'https://www.npmjs.com/package/@rootnative/impulse',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} RootNative — MIT Licensed`,
+    },
+    prism: {
+      additionalLanguages: ['bash'],
+    },
+  } satisfies Preset.ThemeConfig,
+}
+
+export default config

@@ -15,6 +15,7 @@ export default [
       '**/.expo/**',
       '**/node_modules/**',
       '**/build/**',
+      '**/.docusaurus/**',
       '**/coverage/**',
     ],
   },

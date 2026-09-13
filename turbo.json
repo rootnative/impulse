@@ -5,8 +5,21 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"],
+      "outputs": ["dist/**", "build/**"],
       "inputs": ["src/**", "tsconfig.json", "tsup.config.ts", "package.json"]
+    },
+    "@rootnative/impulse-docs#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**"],
+      "inputs": [
+        "docs/**",
+        "src/**",
+        "static/**",
+        "docusaurus.config.ts",
+        "sidebars.ts",
+        "tsconfig.json",
+        "package.json"
+      ]
     },
     "dev": {
       "cache": false,
