@@ -56,9 +56,13 @@ round trip.
 
 :::danger Never close over JS-thread state in a worklet
 
-Read a shared value, or cross back with `runOnJS`. A captured plain variable
-goes stale or crashes, and it does so on the UI thread where the message tells
-you almost nothing.
+Read a shared value, or cross back with `scheduleOnRN` from
+`react-native-worklets`. A captured plain variable goes stale or crashes, and it
+does so on the UI thread where the message tells you almost nothing.
+
+Do not reach for `runOnJS` from `react-native-reanimated`. Reanimated 4
+re-exports that name from `react-native-worklets` and marks the re-export
+deprecated.
 
 :::
 

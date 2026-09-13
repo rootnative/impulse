@@ -1,7 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { GestureDetector, useLongPress } from '@rootnative/impulse'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+// `scheduleOnRN`, not Reanimated's `runOnJS`. Reanimated 4 re-exports that
+// name from `react-native-worklets` and marks the re-export deprecated, so
+// importing it from here is the form that does not warn. Worklets is already
+// a required peer of `@rootnative/impulse`, so this adds no dependency.
+import { scheduleOnRN } from 'react-native-worklets'
 import { ScreenShell } from './ScreenShell'
 
 /** The three `minDuration` values worth comparing by feel. */
@@ -28,18 +33,57 @@ export function LongPressScreen({ onBack }: { onBack: () => void }) {
   const [lastHold, setLastHold] = useState('—')
   const [phase, setPhase] = useState('waiting')
 
+  // Was the press ever recognized? `onFinalize` fires for every touch that
+  // reaches this card, including a quick tap that never became a long press,
+  // and it cannot tell the two apart: the hook clears `isActive` before
+  // calling it. So the screen records recognition itself.
+  const heldRef = useRef(false)
+
+  // The cancel path, and the reason it takes three pieces instead of one.
+  //
+  // `onLongPressEnd` is guarded on success, deliberately — a press that had
+  // its touch taken away was never released, so reporting a release would be
+  // a lie. But that leaves no JS-thread callback for the cancel, and
+  // `onFinalize` is a worklet. So a screen that keeps its phase in React
+  // state has to cross the thread boundary by hand, which is the ceremony
+  // Impulse exists to remove everywhere else.
+  //
+  // Recorded as an API gap: `onLongPressEnd` should take a second argument
+  // saying whether the press was cancelled, and fire on both paths.
+  const reportCancelled = useCallback(() => {
+    if (!heldRef.current) {
+      return
+    }
+    heldRef.current = false
+    setPhase('cancelled — moved past maxDistance')
+  }, [])
+
   const hold = useLongPress({
     minDuration,
     onLongPress: () => {
       // Runs on the JS thread while the finger is still down. On a real
       // screen this is where the haptic fires and the menu opens.
+      heldRef.current = true
       setPresses((count) => count + 1)
       setPhase('held — the finger is still down')
     },
     onLongPressEnd: (event) => {
+      heldRef.current = false
       setLastHold(`${Math.round(event.duration)}ms`)
       setPhase('released')
     },
+    // A worklet, and a direct gesture dependency because a worklet is
+    // captured as written. `useCallback` with no dependencies keeps its
+    // identity stable, so the gesture is not rebuilt every render.
+    onFinalize: useCallback(
+      (_event: unknown, success: boolean) => {
+        'worklet'
+        if (!success) {
+          scheduleOnRN(reportCancelled)
+        }
+      },
+      [reportCancelled],
+    ),
   })
 
   // `isActive` is the held state, not a pressed state: it turns true at
@@ -97,6 +141,14 @@ export function LongPressScreen({ onBack }: { onBack: () => void }) {
         Tap the card quickly instead of holding. Nothing should happen, and the
         colour should not flicker — isActive tracks the held state, not the
         touch.
+      </Text>
+
+      <Text style={styles.note}>
+        Hold until the card turns green, then move the pointer away without
+        letting go. The press is cancelled past maxDistance, so the card turns
+        purple again and the phase reads cancelled. Before this screen crossed
+        the thread boundary by hand, the phase stayed on held — there is no
+        JS-thread callback for the cancel path yet.
       </Text>
 
       <Text style={styles.note}>
