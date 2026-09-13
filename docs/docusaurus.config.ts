@@ -110,6 +110,11 @@ const config: Config = {
           position: 'left',
         },
         {
+          href: 'https://rootnative.github.io/impulse/example/',
+          label: 'Example',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/rootnative/impulse',
           position: 'right',
           className: 'navbar-github-link',
@@ -126,6 +131,10 @@ const config: Config = {
         {
           title: 'More',
           items: [
+            {
+              label: 'Example app',
+              href: 'https://rootnative.github.io/impulse/example/',
+            },
             {
               label: 'GitHub',
               href: 'https://github.com/rootnative/impulse',

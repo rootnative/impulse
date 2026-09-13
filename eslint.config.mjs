@@ -16,6 +16,10 @@ export default [
       '**/node_modules/**',
       '**/build/**',
       '**/.docusaurus/**',
+      // The example app exported for web by docs/scripts/prepare-demo.mjs.
+      // A Metro bundle, not source — linting it reports ~2000 errors about
+      // Metro's own `__d` / `__r` runtime globals.
+      'docs/static/example/**',
       '**/coverage/**',
     ],
   },

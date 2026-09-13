@@ -18,7 +18,12 @@
  * there is no per-adapter slice. Add one here if that ever changes.
  *
  * Run with `pnpm run build:llms`, and re-run after editing any page or
- * changing the public API. CI fails on a dirty diff over the generated files.
+ * changing the public API.
+ *
+ * `--check` writes nothing and exits non-zero when a generated file is not
+ * what this script would produce. That is the CI guard, and it lives here
+ * rather than in a second script so the check and the build cannot disagree
+ * about what "correct" means.
  */
 
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -143,6 +148,8 @@ const llmsTxtPath = join(staticDir, 'llms.txt')
 const llmsFullPath = join(staticDir, 'llms-full.txt')
 const corePackageLlmsPath = join(corePkgDir, 'llms.txt')
 
+const checkOnly = process.argv.includes('--check')
+
 if (!existsSync(llmsTxtPath)) {
   throw new Error(
     `[build-llms] ${llmsTxtPath} is missing. It is written by hand, not ` +
@@ -150,14 +157,54 @@ if (!existsSync(llmsTxtPath)) {
   )
 }
 
-console.log(`[build-llms] ${PAGES.length} pages: ${PAGES.join(', ')}`)
+const label = checkOnly ? 'check-llms' : 'build-llms'
+console.log(`[${label}] ${PAGES.length} pages: ${PAGES.join(', ')}`)
 
-console.log('[build-llms] writing docs/static/llms-full.txt …')
-writeFileSync(llmsFullPath, buildLlmsFull())
+const outputs = [
+  {
+    rel: 'docs/static/llms-full.txt',
+    path: llmsFullPath,
+    build: buildLlmsFull,
+  },
+  {
+    rel: 'packages/core/llms.txt',
+    path: corePackageLlmsPath,
+    build: () => readFileSync(llmsTxtPath, 'utf8'),
+  },
+]
 
-console.log(
-  '[build-llms] copying docs/static/llms.txt → packages/core/llms.txt',
-)
-copyFileSync(llmsTxtPath, corePackageLlmsPath)
+if (checkOnly) {
+  const problems = []
+  for (const output of outputs) {
+    if (!existsSync(output.path)) {
+      problems.push(`${output.rel} is missing`)
+    } else if (readFileSync(output.path, 'utf8') !== output.build()) {
+      problems.push(`${output.rel} is out of date`)
+    }
+  }
 
-console.log('[build-llms] done.')
+  if (problems.length > 0) {
+    console.error(`\n[check-llms] ${problems.length} problem(s):`)
+    for (const problem of problems) {
+      console.error(`  ERROR  ${problem}`)
+    }
+    console.error(
+      '\nRun `pnpm run build:llms` and commit the result. These files are ' +
+        'generated from docs/docs and docs/static/llms.txt, so a page edit ' +
+        'without a regenerate leaves them describing the previous version.\n',
+    )
+    process.exit(1)
+  }
+
+  console.log('[check-llms] ok — the generated files match the pages.')
+} else {
+  console.log('[build-llms] writing docs/static/llms-full.txt …')
+  writeFileSync(llmsFullPath, buildLlmsFull())
+
+  console.log(
+    '[build-llms] copying docs/static/llms.txt → packages/core/llms.txt',
+  )
+  copyFileSync(llmsTxtPath, corePackageLlmsPath)
+
+  console.log('[build-llms] done.')
+}

@@ -1,0 +1,89 @@
+name: Deploy Web
+
+# Publishes two things to GitHub Pages from one build:
+#   - the Docusaurus site, at /impulse/
+#   - the example app exported for web, at /impulse/example/
+#
+# The example export is part of the docs build rather than a separate job.
+# `docs/scripts/prepare-demo.mjs` runs `expo export` and copies the output
+# into `docs/static/example`, so Docusaurus treats it as a static asset and
+# one artifact carries both.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "packages/**"
+      - "example/**"
+      - "scripts/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+# `pages` and `id-token` are what deploy-pages needs. Nothing here writes to
+# the repository.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. A superseded run has nothing worth finishing.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      # `cache: pnpm` is correct here: pnpm is installed by the step above, so
+      # setup-node's package-manager-cache has the manager it needs on PATH.
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The docs import nothing from the package, but the example app does,
+      # and the example export is part of the docs build below.
+      - name: Build packages
+        run: pnpm run build
+
+      # Fails when a page was edited without regenerating llms-full.txt. The
+      # deploy is the last place that can still catch it, because these files
+      # are served from the site being published.
+      - name: llms.txt check
+        run: pnpm run check:llms
+
+      # Runs prepare:demo:force, so the exported example is rebuilt from this
+      # commit rather than reused from a cache.
+      - name: Build docs, including the example export
+        run: pnpm run docs:build
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r docs/build/. _site/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

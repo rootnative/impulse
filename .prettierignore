@@ -6,6 +6,10 @@ build
 coverage
 pnpm-lock.yaml
 
+# The example app exported for web by docs/scripts/prepare-demo.mjs. A Metro
+# bundle, not source.
+docs/static/example
+
 # Markdown is written by hand, not formatted.
 #
 # Prettier pads every cell of a table to the width of its widest row. Several

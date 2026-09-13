@@ -17,6 +17,7 @@ on:
       - "packages/**"
       - "example/**"
       - "scripts/**"
+      - "docs/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -32,6 +33,7 @@ on:
       - "packages/**"
       - "example/**"
       - "scripts/**"
+      - "docs/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -87,6 +89,22 @@ jobs:
 
       - name: Build package
         run: pnpm run build
+
+      # A page edited without `pnpm run build:llms` leaves llms-full.txt and
+      # the package's shipped llms.txt describing the previous version. The
+      # check is `--check` on the generator itself rather than a second
+      # script, so the guard and the build cannot disagree about what correct
+      # means.
+      - name: llms.txt check
+        run: pnpm run check:llms
+
+      # Proves the docs site still compiles. `onBrokenLinks` is `throw`, so
+      # this also fails on a cross-link that points at a page that is not
+      # there — which is the failure a docs change is most likely to cause.
+      # It skips the example export on purpose: that runs a full Metro bundle
+      # and only the deploy needs it.
+      - name: Docs build
+        run: pnpm run docs:check
 
       # Reads the built output and the tarball `files` would produce. Shared
       # with both release workflows through `scripts/check-artifact.mjs`, so
