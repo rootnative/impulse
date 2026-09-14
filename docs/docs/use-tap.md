@@ -29,7 +29,7 @@ return (
 | `maxDistance` | `number` | `10` | How far the finger may travel, in points. Raising it makes the tap forgiving and makes it harder for a drag in the same view to win. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. An inline object is fine; the gesture is not rebuilt when the contents are unchanged. |
 | `enabled` | `boolean` | `true` | Prefer this over unmounting the detector — a disabled gesture keeps its identity and its relations. |
-| `onTap` | `(event) => void` | — | **JS thread.** The tap happened. |
+| `onTap` | `(event, { cancelled }) => void` | — | **JS thread.** The tap ended. `cancelled` says how — see below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** The finger went down and the gesture is a candidate. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
@@ -53,9 +53,40 @@ undo it in `onFinalize`, which runs on both paths.
 
 :::
 
-`onTap` fires only for a successful tap. A touch that moved too far or stayed
-down too long reaches `onFinalize` with `success: false` and nothing else. There
-is no JS-thread callback for that path — see [Web behaviour](/web).
+## The cancel path
+
+Every end callback fires on **both** endings, and the second argument says
+which:
+
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
+
+`cancelled` is `true` when the system took the gesture away instead of the user
+completing it — a competing gesture in a relation won, or the app went to the
+background. It is `false` for the ordinary ending.
+
+Read it before you act. A handler that navigates, submits, or counts should do
+nothing when it is `true`.
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there, so `cancelled` never announces the end of
+something that never started.
+
+A touch that moved past `maxDistance` or stayed down past `maxDuration` was
+never a tap at all. It does not reach `onTap` on either path — it reaches
+`onFinalize` with `success: false` and stops there.
+
+```tsx
+const tap = useTap({
+  onTap: (event, { cancelled }) => {
+    if (cancelled) return
+    select(item.id)
+  },
+})
+```
 
 ## Payload
 

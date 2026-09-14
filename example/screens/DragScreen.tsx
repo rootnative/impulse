@@ -110,11 +110,17 @@ function SwipeRow({ label }: { label: string }) {
   const drag = useDrag({
     axis: 'x',
     bounds: { left: ROW_OPEN, right: 0 },
-    onDragEnd: (event) => {
+    onDragEnd: (event, { cancelled }) => {
       // Impulse reports where the finger left the row. Deciding that a
       // half-open row should finish opening, and animating it there, is this
       // screen's call — the library has no opinion and no spring.
-      const open = event.position.x < ROW_OPEN / 2 || event.velocity.x < -600
+      //
+      // On the cancelled path the finger never lifted, so the velocity
+      // describes the last movement rather than a throw. Snapping on it would
+      // fling a row the user never released. Decide on position alone.
+      const open = cancelled
+        ? event.position.x < ROW_OPEN / 2
+        : event.position.x < ROW_OPEN / 2 || event.velocity.x < -600
       drag.x.value = withSpring(open ? ROW_OPEN : 0, SPRING)
     },
   })
@@ -169,10 +175,14 @@ function BoundedBox({
     // `handlerTag`. See the import above — this is why the scroll view has to
     // be gesture-handler's.
     blocks: scrollRef as unknown as GestureReference,
-    onDragEnd: (event) => {
+    // `settled` is where an elastic overshoot belongs, and it is right on
+    // both endings — which is why this one needs no branch. The readout says
+    // which ending it was, so the cancel is visible on a device.
+    onDragEnd: (event, { cancelled }) => {
       setReadout(
         `${Math.round(event.position.x)}, ${Math.round(event.position.y)}` +
-          ` → ${Math.round(event.settled.x)}, ${Math.round(event.settled.y)}`,
+          ` → ${Math.round(event.settled.x)}, ${Math.round(event.settled.y)}` +
+          (cancelled ? ' (cancelled)' : ''),
       )
       drag.x.value = withSpring(event.settled.x, SPRING)
       drag.y.value = withSpring(event.settled.y, SPRING)

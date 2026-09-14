@@ -183,15 +183,18 @@ describe('useTap', () => {
       expect(onTap).toHaveBeenCalledTimes(1)
       // Grouped and renamed. RNGH's flat `absoluteX` / `absoluteY` never
       // reach the consumer, which is the whole point of the payload.
-      expect(onTap).toHaveBeenCalledWith({
-        x: 10,
-        y: 20,
-        absolute: { x: 30, y: 40 },
-        pointers: 1,
-      })
+      expect(onTap).toHaveBeenCalledWith(
+        {
+          x: 10,
+          y: 20,
+          absolute: { x: 30, y: 40 },
+          pointers: 1,
+        },
+        { cancelled: false },
+      )
     })
 
-    it('does not call onTap when the gesture fails', () => {
+    it('reports a cancel on onTap when the tap is taken away', () => {
       const onTap = jest.fn()
       const onFinalize = jest.fn()
       render(<TapView onTap={onTap} onFinalize={onFinalize} />)
@@ -201,11 +204,30 @@ describe('useTap', () => {
         { state: State.FAILED },
       ])
 
-      expect(onTap).not.toHaveBeenCalled()
-      // The failure path still reports, which is what makes `onFinalize` the
-      // right place to undo whatever `onBegin` set.
+      // `onTap` fires on both endings and the second argument says which,
+      // so a cancel reaches the JS thread without the consumer writing
+      // `'worklet'` plus `scheduleOnRN` around `onFinalize`.
+      expect(onTap).toHaveBeenCalledTimes(1)
+      expect(onTap.mock.calls[0][1]).toEqual({ cancelled: true })
+      // `onFinalize` still reports too, which is what makes it the right
+      // place to undo whatever `onBegin` set.
       expect(onFinalize).toHaveBeenCalledTimes(1)
       expect(onFinalize.mock.calls[0][1]).toBe(false)
+    })
+
+    it('does not call onTap for a touch that was never a tap', () => {
+      // RNGH calls `onEnd` only when the old state was ACTIVE, so a touch
+      // that moved past `maxDistance` reaches `onFinalize` and never gets to
+      // `onTap` on either path.
+      //
+      // **This asserts the config, not the behaviour.** `fireGestureHandler`
+      // fills a discrete gesture's state sequence from `[BEGAN, ACTIVE, END]`
+      // and injects the ACTIVE event itself, so a never-activated failure
+      // cannot be driven from Jest at all — see the Known gaps entry in
+      // CLAUDE.md. The example screen is what answers this one.
+      const { result } = renderHook(() => useTap({ maxDistance: 4 }))
+
+      expect(result.current.gesture.config.maxDist).toBe(4)
     })
 
     it('sets isActive before onBegin and clears it before onFinalize', () => {

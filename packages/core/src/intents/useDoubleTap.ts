@@ -9,7 +9,7 @@ import {
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
 import { toTapEvent, type TapEvent } from './tapEvent'
-import { type HitSlop, type IntentResult } from '../types'
+import { type HitSlop, type IntentEndInfo, type IntentResult } from '../types'
 
 export type { TapEvent } from './tapEvent'
 
@@ -97,17 +97,24 @@ export interface UseDoubleTapOptions extends GestureMemoOptions {
    */
   enabled?: boolean
   /**
-   * Both taps happened. **Runs on the JS thread** — Impulse owns the
+   * The double tap ended. **Runs on the JS thread** — Impulse owns the
    * `scheduleOnRN` boundary, so this is an ordinary function and may touch React
    * state.
    *
    * The payload describes the second tap, which is the one the consumer means
    * when they ask where the double tap was.
    *
-   * It fires only for a recognized double tap. A single tap that was never
-   * followed by a second reaches `onFinalize` with `success: false` instead.
+   * It fires only for a double tap the recognizer accepted, and `cancelled`
+   * says what happened after that. `false` is the ordinary double tap. `true`
+   * means the system took the recognized double tap away — a competing
+   * gesture in a relation won it, or the app went to the background.
+   *
+   * **Check `cancelled` before you act on it.** A handler that zooms or
+   * navigates should do nothing when it is `true`. The path is rare: a single
+   * tap that was never followed by a second reaches `onFinalize` with
+   * `success: false` and never gets here.
    */
-  onDoubleTap?: (event: TapEvent) => void
+  onDoubleTap?: (event: TapEvent, info: IntentEndInfo) => void
   /**
    * The first finger went down and the gesture is now a candidate. **This is
    * a worklet** — mark it with the `'worklet'` directive, and do not touch
@@ -254,8 +261,15 @@ export function useDoubleTap(
         })
         .onEnd((event, success) => {
           'worklet'
-          if (success && hasDoubleTapHandler) {
-            scheduleOnRN(handleDoubleTap, toTapEvent(event))
+          // Not guarded on `success`: RNGH calls `onEnd` only when the old
+          // state was ACTIVE, so reaching here at all means the double tap
+          // was recognized. `cancelled` then separates the one the user
+          // completed from the one the system took away. Without it the
+          // cancel is reportable only from `onFinalize`, which is a worklet.
+          if (hasDoubleTapHandler) {
+            scheduleOnRN(handleDoubleTap, toTapEvent(event), {
+              cancelled: !success,
+            })
           }
         })
         .onFinalize((event, success) => {

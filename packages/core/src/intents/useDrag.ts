@@ -14,7 +14,12 @@ import {
 } from '../internal/useGestureMemo'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
-import { type HitSlop, type IntentResult, type Point } from '../types'
+import {
+  type HitSlop,
+  type IntentEndInfo,
+  type IntentResult,
+  type Point,
+} from '../types'
 
 /**
  * How far the finger must travel before the drag takes the touch, in points.
@@ -184,17 +189,21 @@ export interface UseDragOptions extends GestureMemoOptions {
    */
   onDragStart?: (event: DragEvent) => void
   /**
-   * The finger lifted and the drag is over. **Runs on the JS thread.**
+   * The drag is over. **Runs on the JS thread.**
    *
-   * Fires only for a drag that activated and then released. A drag the system
-   * took away — a competing gesture won, or the app went to the background —
-   * reaches `onFinalize` with `success: false` and never gets here, because
-   * there was no release and so no velocity worth seeding a spring with.
+   * Fires only for a drag that activated, so a touch that never passed the
+   * threshold never reaches here on either path.
    *
-   * Read `velocity` to seed that release animation, and `settled` for where
-   * an elastic overshoot should return to.
+   * It fires for both endings, and `cancelled` says which. `false` is the
+   * finger lifting, and `velocity` then seeds the release animation. `true`
+   * is the system taking the drag away — a competing gesture won, or the app
+   * went to the background. **There was no release on that path, so the
+   * velocity describes the last movement rather than a throw.** Return the
+   * view to `settled` instead of springing it.
+   *
+   * Read `settled` on both paths for where an elastic overshoot belongs.
    */
-  onDragEnd?: (event: DragEvent) => void
+  onDragEnd?: (event: DragEvent, info: IntentEndInfo) => void
   /**
    * The finger went down and the gesture is now a candidate. **This is a
    * worklet** — mark it with the `'worklet'` directive, and do not touch
@@ -474,13 +483,21 @@ export function useDrag(options: UseDragOptions = {}): UseDragResult {
         })
         .onEnd((event, success) => {
           'worklet'
-          // Guarded on `success`, because RNGH calls this for a cancelled
-          // drag too. A cancelled drag had its touch taken away — by a
-          // competing gesture winning, or the app going to the background —
-          // and there was no release, so there is no velocity worth seeding a
-          // spring with. That path reaches `onFinalize` instead.
-          if (success && hasDragEnd) {
-            scheduleOnRN(handleDragEnd, toDragEvent(event))
+          // Not guarded on `success`: RNGH calls this for a cancelled drag
+          // too, and `cancelled` is what separates the two. The guard used to
+          // be here, which left the cancel reportable only from `onFinalize`
+          // — a worklet — so a consumer holding phase in React state had to
+          // cross the thread boundary by hand. A drag that is taken away
+          // still has to put its view somewhere, and that decision belongs on
+          // the JS thread as much as the release does.
+          //
+          // Reporting the cancel is safe because RNGH calls `onEnd` only when
+          // the old state was ACTIVE. A touch that never passed the threshold
+          // reaches `onFinalize` and never gets here.
+          if (hasDragEnd) {
+            scheduleOnRN(handleDragEnd, toDragEvent(event), {
+              cancelled: !success,
+            })
           }
         })
         .onFinalize((event, success) => {

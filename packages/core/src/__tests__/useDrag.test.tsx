@@ -467,11 +467,16 @@ describe('useDrag', () => {
       expect(seen[seen.length - 1]).toEqual(['finalize', false])
     })
 
-    it('does not call onDragEnd when the drag is cancelled', () => {
+    it('reports a cancel on onDragEnd when the drag is taken away', () => {
       // RNGH calls `onEnd` for a cancelled gesture as well, with `success` at
-      // `false`. A cancelled drag had its touch taken away and never
-      // released, so it carries no velocity worth seeding a spring with —
-      // handing it to `onDragEnd` would start a fling nobody asked for.
+      // `false`, and `cancelled` is what carries that to the JS thread. The
+      // callback used to be guarded on `success`, so a drag the system took
+      // away reported nothing a consumer holding phase in React state could
+      // read — only `onFinalize`, which is a worklet.
+      //
+      // The velocity is still in the payload on this path, and it is not a
+      // throw: the doc comment tells the consumer to return the view to
+      // `settled` rather than spring it.
       const onDragEnd = jest.fn()
       const onFinalize = jest.fn()
       const drag = renderDrag({ onDragEnd, onFinalize })
@@ -483,9 +488,10 @@ describe('useDrag', () => {
         move(20, 0, State.CANCELLED),
       ])
 
-      expect(onDragEnd).not.toHaveBeenCalled()
-      // The cancelled path still reports, which is what makes `onFinalize`
-      // the right place to undo whatever `onBegin` set.
+      expect(onDragEnd).toHaveBeenCalledTimes(1)
+      expect(onDragEnd.mock.calls[0][1]).toEqual({ cancelled: true })
+      // `onFinalize` still reports too, which is what makes it the right
+      // place to undo whatever `onBegin` set.
       expect(onFinalize).toHaveBeenCalledTimes(1)
       expect(onFinalize.mock.calls[0][1]).toBe(false)
       expect(drag().isActive.value).toBe(false)

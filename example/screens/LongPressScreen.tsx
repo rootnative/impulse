@@ -1,12 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { GestureDetector, useLongPress } from '@rootnative/impulse'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
-// `scheduleOnRN`, not Reanimated's `runOnJS`. Reanimated 4 re-exports that
-// name from `react-native-worklets` and marks the re-export deprecated, so
-// importing it from here is the form that does not warn. Worklets is already
-// a required peer of `@rootnative/impulse`, so this adds no dependency.
-import { scheduleOnRN } from 'react-native-worklets'
 import { ScreenShell } from './ScreenShell'
 
 /** The three `minDuration` values worth comparing by feel. */
@@ -23,6 +18,10 @@ const DURATIONS = [500, 300, 800] as const
  * 2. **Which `minDuration` is right?** 500ms is RNGH's number. 300 feels
  *    quick and starts firing on presses the user meant as taps; 800 feels
  *    like the app is ignoring them. Switch and hold.
+ * 3. **Does the cancel path report?** Hold past `minDuration`, then slide the
+ *    finger off the card without letting go. The phase must read `cancelled`,
+ *    not stay at `held`. That is the state a real menu would be stuck open
+ *    in.
  *
  * The release readout carries the whole hold from the payload's `duration`,
  * which is what a hold-to-record affordance stops on.
@@ -33,57 +32,27 @@ export function LongPressScreen({ onBack }: { onBack: () => void }) {
   const [lastHold, setLastHold] = useState('—')
   const [phase, setPhase] = useState('waiting')
 
-  // Was the press ever recognized? `onFinalize` fires for every touch that
-  // reaches this card, including a quick tap that never became a long press,
-  // and it cannot tell the two apart: the hook clears `isActive` before
-  // calling it. So the screen records recognition itself.
-  const heldRef = useRef(false)
-
-  // The cancel path, and the reason it takes three pieces instead of one.
-  //
-  // `onLongPressEnd` is guarded on success, deliberately — a press that had
-  // its touch taken away was never released, so reporting a release would be
-  // a lie. But that leaves no JS-thread callback for the cancel, and
-  // `onFinalize` is a worklet. So a screen that keeps its phase in React
-  // state has to cross the thread boundary by hand, which is the ceremony
-  // Impulse exists to remove everywhere else.
-  //
-  // Recorded as an API gap: `onLongPressEnd` should take a second argument
-  // saying whether the press was cancelled, and fire on both paths.
-  const reportCancelled = useCallback(() => {
-    if (!heldRef.current) {
-      return
-    }
-    heldRef.current = false
-    setPhase('cancelled — moved past maxDistance')
-  }, [])
-
   const hold = useLongPress({
     minDuration,
     onLongPress: () => {
       // Runs on the JS thread while the finger is still down. On a real
       // screen this is where the haptic fires and the menu opens.
-      heldRef.current = true
       setPresses((count) => count + 1)
       setPhase('held — the finger is still down')
     },
-    onLongPressEnd: (event) => {
-      heldRef.current = false
+    // Both endings arrive here, and `cancelled` says which. This screen used
+    // to carry the cancel by hand — a `useRef` for "was it recognized", a
+    // worklet `onFinalize`, and a `scheduleOnRN` back to the JS thread —
+    // because the callback fired only on release. Third bullet below is what
+    // that ceremony was hiding.
+    onLongPressEnd: (event, { cancelled }) => {
+      if (cancelled) {
+        setPhase('cancelled — moved past maxDistance')
+        return
+      }
       setLastHold(`${Math.round(event.duration)}ms`)
       setPhase('released')
     },
-    // A worklet, and a direct gesture dependency because a worklet is
-    // captured as written. `useCallback` with no dependencies keeps its
-    // identity stable, so the gesture is not rebuilt every render.
-    onFinalize: useCallback(
-      (_event: unknown, success: boolean) => {
-        'worklet'
-        if (!success) {
-          scheduleOnRN(reportCancelled)
-        }
-      },
-      [reportCancelled],
-    ),
   })
 
   // `isActive` is the held state, not a pressed state: it turns true at

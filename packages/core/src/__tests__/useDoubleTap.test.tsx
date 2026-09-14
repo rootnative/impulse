@@ -200,18 +200,27 @@ describe('useDoubleTap', () => {
       expect(onDoubleTap).toHaveBeenCalledTimes(1)
       // The same shape `useTap` reports, from the same normalizer. RNGH's
       // flat `absoluteX` / `absoluteY` never reach the consumer.
-      expect(onDoubleTap).toHaveBeenCalledWith({
-        x: 12,
-        y: 22,
-        absolute: { x: 32, y: 42 },
-        pointers: 1,
-      })
+      expect(onDoubleTap).toHaveBeenCalledWith(
+        {
+          x: 12,
+          y: 22,
+          absolute: { x: 32, y: 42 },
+          pointers: 1,
+        },
+        { cancelled: false },
+      )
     })
 
-    it('does not call onDoubleTap when the gesture fails', () => {
-      // The common case on a real device: one tap, no second one, the delay
-      // window closes. A consumer whose zoom fires on every single tap is the
-      // defect this pins.
+    it('reports a cancel on onDoubleTap when it is taken away', () => {
+      // Not the common single-tap case: that one never activates, so it
+      // reaches `onFinalize` and never gets to `onDoubleTap` at all. This is
+      // the rarer path — a double tap the recognizer accepted and the system
+      // then took back — and `cancelled` is what lets a consumer's zoom tell
+      // the two apart on the JS thread.
+      //
+      // **The mock cannot tell them apart.** `fireGestureHandler` injects an
+      // ACTIVE event before any FAILED it is given, so the single-tap case is
+      // not reachable from Jest — see the Known gaps entry in CLAUDE.md.
       const onDoubleTap = jest.fn()
       const onFinalize = jest.fn()
       render(
@@ -223,7 +232,8 @@ describe('useDoubleTap', () => {
         { state: State.FAILED },
       ])
 
-      expect(onDoubleTap).not.toHaveBeenCalled()
+      expect(onDoubleTap).toHaveBeenCalledTimes(1)
+      expect(onDoubleTap.mock.calls[0][1]).toEqual({ cancelled: true })
       expect(onFinalize).toHaveBeenCalledTimes(1)
       expect(onFinalize.mock.calls[0][1]).toBe(false)
     })

@@ -28,102 +28,36 @@ marked **unverified** have not been checked and are not claims.
 
 All four intents recognize correctly under a mouse on web.
 
-## The cancel path has no JS-thread callback
+## The cancel path reports on the JS thread
 
 Found during the web pass, and **not a web-specific problem**. It behaves the
 same on a device.
 
 Hold a `useLongPress` past `minDuration`, then move the pointer more than
 `maxDistance` — 10 points by default — without releasing. The press is
-cancelled. What happens next:
-
-| Callback | Fires? |
-| --- | --- |
-| `onLongPressEnd` | **No.** It is guarded on success, because a cancelled press was never released. |
-| `onFinalize` | Yes — but it is a worklet. |
-
-So `isActive` clears correctly and any UI driven from it recovers, while
-anything held in React state does not. There is no JS-thread callback that
-reports the cancel.
-
-The same shape applies to `useTap`'s `onTap` and `useDrag`'s `onDragEnd`. Every
-intent callback is guarded on success, and `onFinalize` is the only
-cancel-aware one.
-
-**Until this changes, cross the boundary yourself:**
+cancelled, and `onLongPressEnd` reports it:
 
 ```tsx
-import { scheduleOnRN } from 'react-native-worklets'
-
-const reportCancelled = useCallback(() => setPhase('cancelled'), [])
-
 const hold = useLongPress({
   onLongPress: () => setPhase('held'),
-  onLongPressEnd: () => setPhase('released'),
-  // A worklet, so it is a direct gesture dependency. `useCallback` keeps its
-  // identity stable; an inline one would rebuild the gesture every render.
-  onFinalize: useCallback(
-    (_event, success) => {
-      'worklet'
-      if (!success) {
-        scheduleOnRN(reportCancelled)
-      }
-    },
-    [reportCancelled],
-  ),
+  onLongPressEnd: (event, { cancelled }) => {
+    setPhase(cancelled ? 'cancelled' : 'released')
+  },
 })
 ```
 
-:::note `scheduleOnRN`, not `runOnJS`
+Every end callback works this way — `onTap`, `onDoubleTap`, `onLongPressEnd`,
+and `onDragEnd`. Each fires on both endings, and `cancelled` says which. See
+[the cancel path](/use-long-press#the-cancel-path) for the full contract.
 
-Reanimated 4 re-exports `runOnJS` from `react-native-worklets` and marks that
-re-export **deprecated**. Use `scheduleOnRN` from `react-native-worklets`,
-which is already a required peer of Impulse.
+Before this argument existed, a cancel was reported only by `onFinalize`, which
+is a worklet — so a screen holding its phase in React state had to write
+`'worklet'` plus `scheduleOnRN` by hand. That was the ceremony Impulse exists to
+remove, and it is gone.
 
-The two also differ in shape: `runOnJS(fn)(args)` returns a function you then
-call, while `scheduleOnRN(fn, args)` takes the arguments directly.
-
-:::
-
-`onFinalize` also fires for a touch that never became a long press, and it
-cannot tell the two apart — the hook clears `isActive` before calling it. So
-track recognition yourself if you need the difference.
-
-:::warning This is an API gap, not a pattern to copy
-
-The ceremony above is what Impulse exists to remove. `onLongPressEnd` and
-`onDragEnd` are being changed to take a second argument saying whether the
-gesture was cancelled, and to fire on both paths. This section describes the
-current release.
-
-:::
-
-## What is verified, and how
-
-RNGH ships a web implementation for every recognizer Impulse uses:
-`TapGestureHandler`, `LongPressGestureHandler`, and `PanGestureHandler`.
-
-Each one reads the activation criteria Impulse sets. This was checked by
-reading `react-native-gesture-handler/lib/module/web/handlers`, not by trusting
-documentation:
-
-| Impulse option | Web handler reads |
-| --- | --- |
-| `useTap` / `useDoubleTap` — `maxDuration` | `maxDurationMs` |
-| `useTap` / `useDoubleTap` — `maxDistance` | `maxDist` |
-| `useDoubleTap` — `maxDelay` | `maxDelayMs` |
-| `useTap` / `useDoubleTap` — `pointers` | `minPointers` |
-| `useLongPress` — `minDuration` | `minDurationMs` |
-| `useLongPress` — `maxDistance` | `maxDist` |
-| `useDrag` — `threshold` (single axis) | `activeOffsetX` / `activeOffsetY` |
-| `useDrag` — `threshold` (both axes) | `minDist` |
-| `useDrag` — `failOffset` | `failOffsetX` / `failOffsetY` |
-| `useDrag` — `pointers` | `minPointers` / `maxPointers` |
-
-So no option Impulse sets is ignored on web. **That is a statement about
-configuration, not about feel.** Whether a drag tracks a mouse correctly, or
-whether a long press survives a browser's own press-and-hold behaviour, is what
-the unverified column covers.
+`onFinalize` is unchanged. It fires for every touch that reached the view,
+recognized or not, which is what makes it the right place to undo whatever
+`onBegin` set.
 
 ## `useLongPress` cancels on travel, against RNGH's own contract
 

@@ -56,7 +56,7 @@ The names collide. The products do not.
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onDragStart` | `(event) => void` | — | **JS thread.** Passed `threshold`; the drag now owns the touch. |
-| `onDragEnd` | `(event) => void` | — | **JS thread.** The finger lifted. |
+| `onDragEnd` | `(event, { cancelled }) => void` | — | **JS thread.** The drag ended. `cancelled` says how — see below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
 | `onUpdate` | `(event) => void` | — | **Worklet.** Every frame the finger moves. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** Over, activated or not. |
@@ -141,6 +141,7 @@ const drag = useDrag({
   bounds: { left: -110, right: 110, top: -60, bottom: 60 },
   elastic: 0.35,
   onDragEnd: (event) => {
+    // `settled` is right on both endings, so this one needs no branch.
     drag.x.value = withSpring(event.settled.x, SPRING)
     drag.y.value = withSpring(event.settled.y, SPRING)
   },
@@ -170,15 +171,47 @@ Like [`useLongPress`](/use-long-press) and unlike [`useTap`](/use-tap). Use
 `onBegin` if you want a grabbed state at touch-down, and clear it in
 `onFinalize`, which runs on both paths.
 
-## The cancel path has no JS-thread callback
+## The cancel path
 
-`onDragEnd` fires only for a drag that activated **and then released**. A drag
-the system took away reaches `onFinalize` with `success: false` and never gets
-there, because there was no release and so no velocity worth seeding a spring
-with.
+Every end callback fires on **both** endings, and the second argument says
+which:
 
-That guard is right. The gap is that `onFinalize` is a worklet, so there is no
-JS-thread callback for the cancel. See [Web behaviour](/web).
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
+
+`cancelled` is `true` when the system took the gesture away instead of the user
+completing it — a competing gesture in a relation won, or the app went to the
+background. It is `false` for the ordinary ending.
+
+Read it before you act. A handler that navigates, submits, or counts should do
+nothing when it is `true`.
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there, so `cancelled` never announces the end of
+something that never started.
+
+A touch that never passed `threshold` reaches neither path. `onDragEnd` still
+means the drag activated.
+
+:::caution The velocity is not a throw on the cancelled path
+
+The finger never lifted, so `velocity` describes the last movement rather than a
+release. Springing on it flings a view the user never let go of. Return to
+`settled` instead.
+
+:::
+
+```tsx
+const drag = useDrag({
+  onDragEnd: (event, { cancelled }) => {
+    const target = cancelled ? event.settled.x : snapFrom(event.velocity.x)
+    drag.x.value = withSpring(target, SPRING)
+  },
+})
+```
 
 ## Web
 

@@ -19,9 +19,17 @@ export function TapScreen({ onBack }: { onBack: () => void }) {
   const [last, setLast] = useState<string>('—')
 
   const tap = useTap({
-    onTap: (event) => {
+    onTap: (event, { cancelled }) => {
       // Runs on the JS thread, so setting React state here needs no
       // `scheduleOnRN` and no ceremony. That is the whole point of the name.
+      //
+      // `cancelled` is `true` when the system took a recognized tap away. A
+      // counter must not move on that path, and neither should anything that
+      // navigates or submits.
+      if (cancelled) {
+        setLast('cancelled')
+        return
+      }
       setTaps((count) => count + 1)
       setLast(`${Math.round(event.x)}, ${Math.round(event.y)}`)
     },

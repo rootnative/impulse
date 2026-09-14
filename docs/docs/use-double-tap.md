@@ -33,12 +33,47 @@ half**, and it has its own section below.
 | `maxDistance` | `number` | `10` | How far the finger may travel **within** a tap. It does not limit how far the second tap lands from the first. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
-| `onDoubleTap` | `(event) => void` | — | **JS thread.** Both taps happened. |
+| `onDoubleTap` | `(event, { cancelled }) => void` | — | **JS thread.** The double tap ended. `cancelled` says how — see below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Fires once for the pair, on the first touch. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
 Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 [Coexistence](/coexistence).
+
+## The cancel path
+
+Every end callback fires on **both** endings, and the second argument says
+which:
+
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
+
+`cancelled` is `true` when the system took the gesture away instead of the user
+completing it — a competing gesture in a relation won, or the app went to the
+background. It is `false` for the ordinary ending.
+
+Read it before you act. A handler that navigates, submits, or counts should do
+nothing when it is `true`.
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there, so `cancelled` never announces the end of
+something that never started.
+
+A single tap that was never followed by a second is **not** this path. It never
+activates, so it reaches `onFinalize` with `success: false` and never gets to
+`onDoubleTap` at all.
+
+```tsx
+const double = useDoubleTap({
+  onDoubleTap: (event, { cancelled }) => {
+    if (cancelled) return
+    zoomIn(event)
+  },
+})
+```
 
 ## Payload
 

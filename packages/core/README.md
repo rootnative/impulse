@@ -121,12 +121,17 @@ import { GestureDetector, useLongPress } from '@rootnative/impulse'
 
 const hold = useLongPress({
   minDuration: 400,
-  onLongPress: openMenu,                                  // finger still down
-  onLongPressEnd: (event) => stopRecording(event.duration), // finger lifted
+  onLongPress: openMenu,                       // finger still down
+  onLongPressEnd: (event, { cancelled }) => {  // and how it ended
+    if (cancelled) return closeMenu()          // the system took it away
+    stopRecording(event.duration)              // the finger lifted
+  },
 })
 ```
 
 `isActive` is the **held** state, not a pressed state: it turns true at recognition, not at touch-down, so an ordinary tap on the view never changes it. The payload carries `duration` — roughly `minDuration` at `onLongPress`, and the whole hold at `onLongPressEnd`, which is what a hold-to-record affordance stops on.
+
+**Every end callback takes a second argument.** `onTap`, `onDoubleTap`, `onLongPressEnd`, and `onDragEnd` each fire on both endings, and `cancelled` says which — `true` when the system took the gesture away rather than the user completing it. Check it before you navigate, submit, or count. Without it a cancel is reportable only from `onFinalize`, which is a worklet, so a consumer holding phase in React state has to cross the thread boundary by hand.
 
 | Option | Default | Note |
 | --- | --- | --- |
@@ -157,7 +162,7 @@ const style = useAnimatedStyle(() => ({
 | `elastic` | `0` | `0` clamps hard at a bound; `0.3` gives the rubber-band pull an over-scroll has. |
 | `failOffset` | unset | Cross-axis movement that makes the drag give up. |
 
-`onDragEnd` carries `velocity` and `settled` — the nearest in-bounds point — so an elastic overshoot can be sprung home without re-deriving the clamp. Impulse does not move it back itself; that is an animation.
+`onDragEnd` carries `velocity` and `settled` — the nearest in-bounds point — so an elastic overshoot can be sprung home without re-deriving the clamp. Impulse does not move it back itself; that is an animation. On the cancelled path the finger never lifted, so `velocity` describes the last movement rather than a throw: return to `settled` instead of springing on it.
 
 **Coexistence.** A threshold decides who moves first, not who wins a contested touch. Say that too: `deferTo: scrollRef` for a drag that is the fallback, `blocks: listRef` for one that is the foreground affordance.
 

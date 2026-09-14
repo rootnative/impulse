@@ -34,7 +34,7 @@ finger that has not lifted, and the haptic fires then too.
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onLongPress` | `(event) => void` | — | **JS thread.** Recognized, finger still down. |
-| `onLongPressEnd` | `(event) => void` | — | **JS thread.** The finger lifted. |
+| `onLongPressEnd` | `(event, { cancelled }) => void` | — | **JS thread.** A recognized press ended. `cancelled` says how — see below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** Over, recognized or not. |
 
@@ -99,23 +99,54 @@ If your affordance needs the finger to move after the press is recognized — a
 hold-then-drag — do not rely on `maxDistance` being generous. Raise it
 explicitly.
 
-## The cancel path has no JS-thread callback
+## The cancel path
 
-When a recognized press is cancelled — by travel on web, by a competing gesture
-winning, or by the app backgrounding:
+Every end callback fires on **both** endings, and the second argument says
+which:
 
-| Callback | Fires? |
-| --- | --- |
-| `onLongPressEnd` | **No.** It is guarded on success: the press was never released. |
-| `onFinalize` | Yes, with `success: false` — but it is a **worklet**. |
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
 
-`isActive` clears correctly, so anything driven from it recovers. Anything held
-in React state does not.
+`cancelled` is `true` when the system took the gesture away instead of the user
+completing it — a competing gesture in a relation won, or the app went to the
+background. It is `false` for the ordinary ending.
 
-Until this changes, cross the boundary yourself — the pattern is on the
-[Web behaviour](/web) page. `onFinalize` also fires for a touch that never
-became a long press and cannot tell the two apart, so track recognition yourself
-if you need the difference.
+Read it before you act. A handler that navigates, submits, or counts should do
+nothing when it is `true`.
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there, so `cancelled` never announces the end of
+something that never started.
+
+For a long press, `cancelled` is also `true` when the finger moves past
+`maxDistance` while it is still down. That is the common one: `isActive` clears,
+so anything driven from it recovers, and before this argument existed anything
+held in React state did not.
+
+```tsx
+const hold = useLongPress({
+  onLongPress: () => setPhase('held'),
+  onLongPressEnd: (event, { cancelled }) => {
+    if (cancelled) {
+      setPhase('cancelled')
+      return
+    }
+    setPhase('released')
+    stopRecording(event.duration)
+  },
+})
+```
+
+A touch that never passed `minDuration` reaches neither path, so
+`onLongPressEnd` is still always preceded by `onLongPress`.
+
+`onFinalize` is unchanged, and it is still the place to undo whatever `onBegin`
+set. It fires for every touch that reached the view, so its `success: false`
+covers both a touch that never became a long press and one that was cancelled.
+Use `cancelled` when you need to tell those apart.
 
 ## Activation criteria
 

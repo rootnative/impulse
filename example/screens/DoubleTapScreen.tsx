@@ -39,14 +39,25 @@ export function DoubleTapScreen({ onBack }: { onBack: () => void }) {
 
   const double = useDoubleTap({
     maxDelay,
-    onDoubleTap: (event) => {
+    // `cancelled` is `true` when the system took a recognized double tap
+    // away. It is not the single-tap case — that one never activates and
+    // never reaches here — so a counter must not move on this path.
+    onDoubleTap: (event, { cancelled }) => {
+      if (cancelled) {
+        setLast('double cancelled')
+        return
+      }
       setDoubles((count) => count + 1)
       setLast(`double at ${Math.round(event.x)}, ${Math.round(event.y)}`)
     },
   })
 
   const tap = useTap({
-    onTap: (event) => {
+    onTap: (event, { cancelled }) => {
+      if (cancelled) {
+        setLast('single cancelled')
+        return
+      }
       setTaps((count) => count + 1)
       setLast(`single at ${Math.round(event.x)}, ${Math.round(event.y)}`)
     },

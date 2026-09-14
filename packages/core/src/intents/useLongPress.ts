@@ -13,7 +13,12 @@ import {
 } from '../internal/useGestureMemo'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
-import { type HitSlop, type IntentResult, type Point } from '../types'
+import {
+  type HitSlop,
+  type IntentEndInfo,
+  type IntentResult,
+  type Point,
+} from '../types'
 
 /**
  * How long the finger must stay down before the press is recognized, in
@@ -121,17 +126,22 @@ export interface UseLongPressOptions extends GestureMemoOptions {
    */
   onLongPress?: (event: LongPressEvent) => void
   /**
-   * The finger lifted after a recognized press. **Runs on the JS thread.**
+   * A recognized press ended. **Runs on the JS thread.**
    *
-   * Fires only for a press that was recognized and then released, so it is
-   * always preceded by `onLongPress`. A press the system took away — a
-   * competing gesture won, or the app went to the background — reaches
-   * `onFinalize` with `success: false` and never gets here.
+   * Always preceded by `onLongPress`, because a touch that never became a
+   * long press never reaches here on either path.
    *
-   * `duration` carries the whole hold, which is what a hold-to-record
-   * affordance stops on.
+   * It fires for both endings, and `cancelled` says which. `false` is the
+   * finger lifting. `true` is the system taking the press away — a competing
+   * gesture won, the app went to the background, or the finger moved past
+   * `maxDistance` while still down. Read it before you treat the press as
+   * completed: a hold-to-record affordance stops the recording on both paths
+   * but keeps the take only on the first.
+   *
+   * `duration` carries the whole hold, which is what that affordance stops
+   * on.
    */
-  onLongPressEnd?: (event: LongPressEvent) => void
+  onLongPressEnd?: (event: LongPressEvent, info: IntentEndInfo) => void
   /**
    * The finger went down and the gesture is now a candidate. **This is a
    * worklet** — mark it with the `'worklet'` directive, and do not touch
@@ -316,13 +326,20 @@ export function useLongPress(
         })
         .onEnd((event, success) => {
           'worklet'
-          // Guarded on `success`, because RNGH calls this for a cancelled
-          // press too. A cancelled press had its touch taken away — by a
-          // competing gesture winning, or the app going to the background —
-          // and it was never released, so reporting a release would be a
-          // lie. That path reaches `onFinalize` instead.
-          if (success && hasLongPressEnd) {
-            scheduleOnRN(handleLongPressEnd, toLongPressEvent(event))
+          // Not guarded on `success`: RNGH calls this for a cancelled press
+          // too, and `cancelled` is what separates the two. The guard used to
+          // be here, which left the cancel reportable only from `onFinalize`
+          // — a worklet — so a consumer holding phase in React state had to
+          // cross the thread boundary by hand.
+          //
+          // Reporting the cancel is safe because RNGH calls `onEnd` only when
+          // the old state was ACTIVE. A touch that never became a long press
+          // reaches `onFinalize` and never gets here, so this never announces
+          // the end of a press that never started.
+          if (hasLongPressEnd) {
+            scheduleOnRN(handleLongPressEnd, toLongPressEvent(event), {
+              cancelled: !success,
+            })
           }
         })
         .onFinalize((event, success) => {

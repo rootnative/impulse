@@ -185,3 +185,30 @@ export interface IntentResult<G extends GestureType> {
    */
   readonly isActive: SharedValue<boolean>
 }
+
+/**
+ * How a gesture ended, handed to every intent's end callback as its second
+ * argument.
+ *
+ * The end callbacks — `onTap`, `onDoubleTap`, `onLongPressEnd`, `onDragEnd` —
+ * fire on both paths: a gesture the user completed, and one the system took
+ * away. This says which. Without it, a cancel is reported only by
+ * `onFinalize`, which is a worklet, so a consumer holding phase in React
+ * state has to write `'worklet'` plus `scheduleOnRN` by hand.
+ *
+ * It is an object rather than a bare boolean so a later field — a reason for
+ * the cancel, say — does not break the signature a second time.
+ */
+export interface IntentEndInfo {
+  /**
+   * `true` when the system took the gesture away instead of the user
+   * completing it: a competing gesture won, the app went to the background,
+   * or a relation handed the touch to another recognizer.
+   *
+   * A gesture that never activated at all does not reach an end callback on
+   * either path, so this is never `true` for a touch that was never the
+   * intent. It separates "this ended, but not by the user" from "the user
+   * did it".
+   */
+  readonly cancelled: boolean
+}

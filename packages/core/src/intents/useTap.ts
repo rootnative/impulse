@@ -9,7 +9,7 @@ import {
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
 import { toTapEvent, type TapEvent } from './tapEvent'
-import { type HitSlop, type IntentResult } from '../types'
+import { type HitSlop, type IntentEndInfo, type IntentResult } from '../types'
 
 export type { TapEvent } from './tapEvent'
 
@@ -76,14 +76,23 @@ export interface UseTapOptions extends GestureMemoOptions {
    */
   enabled?: boolean
   /**
-   * The tap happened. **Runs on the JS thread** — Impulse owns the
+   * The tap ended. **Runs on the JS thread** — Impulse owns the
    * `scheduleOnRN` boundary, so this is an ordinary function and may touch React
    * state.
    *
-   * It fires only for a successful tap. A touch that moved too far or stayed
-   * down too long reaches `onFinalize` with `success: false` instead.
+   * It fires only for a tap the recognizer accepted, and `cancelled` says
+   * what happened after that. `false` is the ordinary tap. `true` means the
+   * system took the recognized tap away before it could be acted on — a
+   * competing gesture in a relation won it, or the app went to the
+   * background.
+   *
+   * **Check `cancelled` before you act on the tap.** A handler that navigates
+   * or submits should do nothing when it is `true`. The path is rare: a touch
+   * that moved past `maxDistance` or stayed down past `maxDuration` was never
+   * a tap at all, so it reaches `onFinalize` with `success: false` and never
+   * gets here.
    */
-  onTap?: (event: TapEvent) => void
+  onTap?: (event: TapEvent, info: IntentEndInfo) => void
   /**
    * The finger went down and the gesture is now a candidate. **This is a
    * worklet** — mark it with the `'worklet'` directive, and do not touch
@@ -214,8 +223,13 @@ export function useTap(options: UseTapOptions = {}): UseTapResult {
         })
         .onEnd((event, success) => {
           'worklet'
-          if (success && hasTapHandler) {
-            scheduleOnRN(handleTap, toTapEvent(event))
+          // Not guarded on `success`: RNGH calls `onEnd` only when the old
+          // state was ACTIVE, so reaching here at all means the tap was
+          // recognized. `cancelled` then separates the tap the user completed
+          // from the one the system took away. Without it the cancel is
+          // reportable only from `onFinalize`, which is a worklet.
+          if (hasTapHandler) {
+            scheduleOnRN(handleTap, toTapEvent(event), { cancelled: !success })
           }
         })
         .onFinalize((event, success) => {

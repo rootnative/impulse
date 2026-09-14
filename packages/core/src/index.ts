@@ -62,6 +62,7 @@ export type {
   GestureReference,
   GestureReferences,
   HitSlop,
+  IntentEndInfo,
   IntentResult,
   Point,
 } from './types'

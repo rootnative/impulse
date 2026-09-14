@@ -239,39 +239,38 @@ describe('useLongPress', () => {
       expect(onLongPressEnd.mock.calls[0][0].duration).toBe(2400)
     })
 
-    it('reports no release for a press that never activated', () => {
+    it('reports the failure through onFinalize as well', () => {
       // `onLongPress` is deliberately not asserted here, and the reason is
       // the mock rather than the hook. `fireGestureHandler` completes a
       // gesture's state sequence and injects an ACTIVE event before any
       // FAILED it is given, so `onStart` runs on this path and the JS
       // callback fires — which on a device it would not, because the press
       // was released before `minDuration`. `useDrag`'s threshold hits the
-      // same wall. What is observable from here is that the release callback
-      // stays quiet and `onFinalize` reports the failure; the example screen
-      // covers the part Jest cannot see.
-      const onLongPressEnd = jest.fn()
+      // same wall. A press that genuinely never activated is therefore not
+      // reachable from Jest, and the example screen covers it instead.
+      //
+      // What is observable from here is that `onFinalize` reports the
+      // failure, which is what makes it the right place to undo whatever
+      // `onBegin` set.
       const onFinalize = jest.fn()
-      render(
-        <LongPressView
-          onLongPressEnd={onLongPressEnd}
-          onFinalize={onFinalize}
-        />,
-      )
+      render(<LongPressView onFinalize={onFinalize} />)
 
       fireGestureHandler(getByGestureTestId('hold'), [
         { state: State.BEGAN },
         { state: State.FAILED },
       ])
 
-      expect(onLongPressEnd).not.toHaveBeenCalled()
       expect(onFinalize).toHaveBeenCalledTimes(1)
       expect(onFinalize.mock.calls[0][1]).toBe(false)
     })
 
-    it('does not call onLongPressEnd for a press the system took away', () => {
-      // A competing gesture won, or the app went to the background. The press
-      // was recognized, so `onLongPress` already fired — but the finger never
-      // lifted, and reporting a release would be a lie.
+    it('reports a cancel on onLongPressEnd for a press taken away', () => {
+      // A competing gesture won, the app went to the background, or the
+      // finger moved past `maxDistance` while still down. The press was
+      // recognized, so `onLongPress` already fired, and the consumer is now
+      // holding a "pressed" phase in React state that nothing else on the JS
+      // thread would ever clear. That is the gap `cancelled` closes: the
+      // callback fires on both endings and says which one this was.
       const onLongPress = jest.fn()
       const onLongPressEnd = jest.fn()
       render(
@@ -288,7 +287,8 @@ describe('useLongPress', () => {
       ])
 
       expect(onLongPress).toHaveBeenCalledTimes(1)
-      expect(onLongPressEnd).not.toHaveBeenCalled()
+      expect(onLongPressEnd).toHaveBeenCalledTimes(1)
+      expect(onLongPressEnd.mock.calls[0][1]).toEqual({ cancelled: true })
     })
 
     it('sets isActive at recognition, not when the finger goes down', () => {
