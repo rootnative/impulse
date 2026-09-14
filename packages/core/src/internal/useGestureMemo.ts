@@ -1,6 +1,12 @@
-import { useMemo, useRef, type DependencyList, type RefObject } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type DependencyList,
+  type RefObject,
+} from 'react'
 import { type GestureType } from 'react-native-gesture-handler'
-import { applyRelations } from '../relations'
+import { applyRelations, warnOnUnresolvableReferences } from '../relations'
 import { type CoexistenceOptions } from '../types'
 import { useStableList } from './useStableList'
 
@@ -102,6 +108,16 @@ export function useGestureMemo<G extends GestureType>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [...deps, alongside, blocks, deferTo, testId, hookName],
   )
+
+  // A relation to a component that owns no gesture is dropped by RNGH without
+  // a word, and this is the only place with both the references and a moment
+  // late enough to read them. It has to be an effect: refs are empty while
+  // the memo above runs, so the same check there would fire for every correct
+  // relation. Dev-only, and `warnOnce` keyed, so a hook that re-renders at
+  // frame rate does not print at frame rate.
+  useEffect(() => {
+    warnOnUnresolvableReferences({ alongside, blocks, deferTo }, hookName)
+  }, [alongside, blocks, deferTo, hookName])
 
   // The result object is memoised too, so a consumer can put the whole hook
   // result in a dependency list — `useGestures` does exactly that with its

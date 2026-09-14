@@ -88,7 +88,8 @@ known gap, not a decision.
 
 `scrollRef` must also come from gesture-handler's `ScrollView`, not React
 Native's. RNGH resolves a relation through `ref.current?.handlerTag` and
-silently drops a ref that has none. See [Coexistence](/coexistence).
+silently drops a ref that has none; Impulse warns in development when it
+catches it. See [Coexistence](/coexistence).
 
 :::
 

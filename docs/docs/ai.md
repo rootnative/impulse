@@ -38,8 +38,10 @@ agent cannot discover by reading its own output:
 - `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe`
   are **designed and not written**. They appear in the design documents. They
   are not importable.
-- A relation against React Native's `ScrollView` is dropped with no warning,
-  because the ref carries no `handlerTag`.
+- A relation against React Native's `ScrollView` is dropped by gesture-handler,
+  because the ref carries no `handlerTag`. Impulse warns once in development
+  when the ref is filled by the time the gesture mounts, and cannot see the
+  case where it is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire, with an empty
   console.
 - A tap and a double tap compose `exclusive` with the double tap first. `race`

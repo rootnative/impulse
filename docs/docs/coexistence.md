@@ -99,11 +99,18 @@ identity, so a new array with the same members does not rebuild the gesture.
 
 ## The ref must belong to a gesture
 
-This is the trap that costs the most time, because it fails **silently**.
+This is the trap that costs the most time, because gesture-handler fails
+**silently** on it.
 
 A relation target has to carry a `handlerTag`. RNGH resolves every relation ref
-through `ref.current?.handlerTag`, and drops anything that returns nothing. No
-warning, no error — the relation simply is not installed.
+through `ref.current?.handlerTag`, and drops anything that returns nothing. It
+reports neither a warning nor an error — the relation simply is not installed,
+and nothing at runtime tells the two apart.
+
+**Impulse warns once, in development, when it catches this.** The warning names
+the hook, the option, and the fix. It fires after mount, because a ref is empty
+until then, and it stays quiet for a ref that has not been filled — see
+[the limit below](#what-the-warning-cannot-catch).
 
 **React Native's `ScrollView` has no `handlerTag`.**
 
@@ -140,6 +147,26 @@ no-op on every platform.
 
 Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
 none of this.
+
+### What the warning cannot catch
+
+The check reads the ref after the gesture mounts. Three outcomes:
+
+| What the ref holds then | What happens |
+| --- | --- |
+| A gesture, or a component that owns one | Silent. The relation is installed. |
+| A mounted component with no handler tag | **Warns.** This is the `ScrollView` case above. |
+| Nothing yet | Silent, on purpose. |
+
+The third row is the limit. A target that mounts in a **later** commit than the
+gesture — behind a loading flag, say — has an empty ref when the check runs, and
+nothing re-checks it. That case stays quiet even when the ref is wrong.
+
+Silence is the right answer there rather than a guess: gesture-handler
+re-resolves relations when a handler mounts late, so a correct late-mounting
+relation does get installed, and a warning would be reporting a defect that is
+not there. A warning that fires on correct code is worse than no warning, because
+it is the one consumers learn to ignore.
 
 ## A component ref needs a cast
 

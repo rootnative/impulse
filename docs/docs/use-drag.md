@@ -104,8 +104,9 @@ It decides who moves **first**. For a drag inside a scroll view, say which one
 the touch belongs to as well — `deferTo` for a drag that is the fallback,
 `blocks` for one that is the foreground affordance.
 
-And the scroll view must be gesture-handler's, or the relation is silently
-dropped. See [Coexistence](/coexistence).
+And the scroll view must be gesture-handler's, or gesture-handler drops the
+relation. Impulse warns in development when it catches it. See
+[Coexistence](/coexistence).
 
 :::
 

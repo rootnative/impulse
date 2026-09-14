@@ -71,6 +71,100 @@ export function applyRelations(
 }
 
 /**
+ * RNGH's test for a usable handler tag, mirrored rather than inferred.
+ * `extractValidHandlerTags` keeps `tag > 0` and drops everything else, so a
+ * reference this returns `false` for is a reference RNGH silently discards.
+ */
+function hasHandlerTag(candidate: object): boolean {
+  const tag = (candidate as { handlerTag?: unknown }).handlerTag
+  return typeof tag === 'number' && tag > 0
+}
+
+/**
+ * Whether this reference names something RNGH will drop.
+ *
+ * Three states, and only the third is a defect:
+ *
+ * 1. **A gesture object.** It carries its own `handlerTag`. Nothing to check.
+ * 2. **A ref with no `.current`.** The target has not mounted yet, or never
+ *    will. Say nothing — see the timing note on `warnOnUnresolvableReferences`.
+ * 3. **A ref whose `.current` carries no handler tag.** The component is
+ *    mounted and owns no gesture. RNGH resolves it to `-1` and filters it out.
+ */
+function isUnresolvable(reference: GestureReference): boolean {
+  if (typeof reference !== 'object' || reference === null) {
+    return false
+  }
+  if (!('current' in reference)) {
+    return false
+  }
+  const current = reference.current
+  if (current === null || current === undefined) {
+    return false
+  }
+  return !hasHandlerTag(current)
+}
+
+/**
+ * Warn when a relation names a mounted component that owns no gesture.
+ *
+ * This is the silent failure the library exists to remove. RNGH resolves
+ * every relation reference through `convertToHandlerTag`, which reads
+ * `ref.current?.handlerTag ?? -1` and then keeps only tags above zero. A ref
+ * to React Native's own `ScrollView` has no tag, so the relation is dropped —
+ * with no warning, no error, and no way to tell the result apart from a
+ * relation that was never written. The gesture keeps working; it just never
+ * coexists with the scroll view, which is the whole reason the option was
+ * passed.
+ *
+ * **Call this from an effect, never during render.** A ref is empty while the
+ * component that owns it renders and is filled during the commit, so a check
+ * at `applyRelations` time reads `undefined` for a correct relation and a
+ * wrong one alike.
+ *
+ * **A populated ref is a finished ref, which is what makes state 3 above safe
+ * to report.** Both places RNGH fills one do it together with the tag:
+ * `BaseGesture.initialize` assigns `handlerTag` and sets `config.ref.current`
+ * in the same function, and `createNativeWrapper`'s `useImperativeHandle`
+ * copies the tag onto the instance before returning it, and returns `null`
+ * when it cannot. Neither leaves a window where `.current` is set and the tag
+ * is still coming, so a populated ref with no tag is never a timing artifact.
+ *
+ * What this deliberately does not catch: a target that mounts in a *later*
+ * commit than the gesture. Its ref is empty when this runs and nothing
+ * re-checks, so the case stays silent. That is the right trade — RNGH itself
+ * re-resolves relations when a handler mounts late, through `MountRegistry`,
+ * so the relation is installed anyway and a warning here would be wrong.
+ *
+ * The key names the hook and the option rather than the reference, because a
+ * ref has no stable string form and the fix is the same for every instance.
+ */
+export function warnOnUnresolvableReferences(
+  relations: ResolvedCoexistence,
+  hookName: string,
+): void {
+  if (!isDevBuild()) {
+    return
+  }
+
+  for (const [option] of RELATIONS) {
+    if (!relations[option].some(isUnresolvable)) {
+      continue
+    }
+    warnOnce(
+      `relations:untagged:${hookName}:${option}`,
+      `${hookName} received a \`${option}\` reference to a component that ` +
+        'owns no gesture, so gesture-handler dropped the relation. The ' +
+        'gesture still works and the two still conflict — nothing reports ' +
+        "it at runtime. React Native's own `ScrollView` and `FlatList` are " +
+        'the usual cause: they carry no handler tag. Import `ScrollView` or ' +
+        '`FlatList` from `@rootnative/impulse/gesture-handler` and put the ' +
+        'ref on that component instead.',
+    )
+  }
+}
+
+/**
  * Warn when one gesture is named by more than one coexistence option.
  *
  * RNGH applies all three relations independently and never complains, so

@@ -67,9 +67,11 @@ library, which is the whole reason it is a separate package.
 
 Honest rather than empty. The ones a consumer can hit:
 
-- **A relation against a plain React Native `ScrollView` is silently dropped.**
-  The ref carries no `handlerTag`, and nothing warns. Use gesture-handler's.
-  See [Coexistence](/coexistence).
+- **A relation against a plain React Native `ScrollView` is dropped.** The ref
+  carries no `handlerTag`, so gesture-handler installs nothing. Impulse warns
+  once in development when it can see it, which is when the ref is filled by
+  the time the gesture mounts. A target that mounts later stays silent. Use
+  gesture-handler's `ScrollView`. See [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently.** Impulse cannot warn,
   because RNGH does not export the context that would let it detect one.
 - **There is no JS-thread callback for a cancelled gesture.** Every intent
