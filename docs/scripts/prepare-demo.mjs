@@ -12,6 +12,12 @@
  * The export is skipped when `static/example` already exists, because it runs
  * a full Metro bundle and nothing about the docs prose needs it. Pass
  * `--force` to rebuild, which is what the production build does.
+ *
+ * `example/app.json` sets `experiments.baseUrl` to `/impulse/example`, and the
+ * export is wrong without it: Metro writes the bundle `<script src>` from that
+ * value, so the default emits `/_expo/…` and the page 404s its own bundle and
+ * renders white. JSON takes no comment, so the reason lives here. It must stay
+ * `docusaurus.config.ts`'s `baseUrl` plus `example`.
  */
 
 import { execSync } from 'node:child_process'

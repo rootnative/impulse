@@ -126,7 +126,7 @@ const config: Config = {
       links: [
         {
           title: 'Docs',
-          items: [{ label: 'Introduction', to: '/' }],
+          items: [{ label: 'Introduction', to: '/introduction' }],
         },
         {
           title: 'More',

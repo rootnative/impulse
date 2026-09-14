@@ -48,7 +48,12 @@
   --ifm-toc-border-color: transparent;
 
   --impulse-border: rgba(0, 0, 0, 0.09);
+  --impulse-border-strong: rgba(0, 0, 0, 0.16);
+  --impulse-surface: #fff;
   --impulse-surface-muted: #faf9fc;
+  --impulse-fg: #0a0a0a;
+  --impulse-fg-muted: #52525b;
+  --impulse-fg-subtle: #71717a;
 }
 
 [data-theme='dark'] {
@@ -64,7 +69,12 @@
   --ifm-background-surface-color: #13101d;
 
   --impulse-border: rgba(255, 255, 255, 0.12);
-  --impulse-surface-muted: #13101d;
+  --impulse-border-strong: rgba(255, 255, 255, 0.22);
+  --impulse-surface: #13101d;
+  --impulse-surface-muted: #100d18;
+  --impulse-fg: #fafafa;
+  --impulse-fg-muted: #a9a2bd;
+  --impulse-fg-subtle: #8d86a3;
 }
 
 .navbar {
