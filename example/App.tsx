@@ -12,6 +12,8 @@ import { TapScreen } from './screens/TapScreen'
 import { DoubleTapScreen } from './screens/DoubleTapScreen'
 import { LongPressScreen } from './screens/LongPressScreen'
 import { DragScreen } from './screens/DragScreen'
+import { PanScreen } from './screens/PanScreen'
+import { SwipeScreen } from './screens/SwipeScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
@@ -23,7 +25,8 @@ import { version as impulseVersion } from '@rootnative/impulse/package.json'
  * pass its graduation gate, because a test runner cannot tell you whether a
  * gesture feels right on a device.
  */
-type Route = 'home' | 'tap' | 'double-tap' | 'long-press' | 'drag'
+type Route =
+  'home' | 'tap' | 'double-tap' | 'long-press' | 'drag' | 'pan' | 'swipe'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -53,6 +56,8 @@ const SCREENS: readonly ScreenEntry[] = [
   ['double-tap', DoubleTapScreen],
   ['long-press', LongPressScreen],
   ['drag', DragScreen],
+  ['pan', PanScreen],
+  ['swipe', SwipeScreen],
 ]
 
 /**
@@ -117,6 +122,18 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
         label: 'useDrag',
         description: 'x and y that follow the finger, with bounds and elastic',
       },
+      {
+        route: 'pan',
+        label: 'usePan',
+        description:
+          'movement rather than position — a per-frame change the screen adds up',
+      },
+      {
+        route: 'swipe',
+        label: 'useSwipe',
+        description:
+          'a pan judged at release, with the direction that decides it',
+      },
     ],
   },
 ]
@@ -133,7 +150,7 @@ const MILESTONES = [
     key: 'intents',
     label: 'Milestone 2 — the intent set',
     detail:
-      'useDoubleTap and useLongPress are done. usePan, useSwipe, usePinch, useRotate, useHover, useEdgeSwipe remain.',
+      'useDoubleTap, useLongPress, usePan and useSwipe are done. usePinch, useRotate, useHover, useEdgeSwipe remain.',
   },
   {
     key: 'inertia',

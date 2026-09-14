@@ -22,14 +22,23 @@ missing, gestures never fire and nothing warns.
 
 ## What ships
 
-useTap, useDoubleTap, useLongPress, useDrag — intent hooks.
+useTap, useDoubleTap, useLongPress, useDrag, usePan, useSwipe — intent hooks.
 useGestures — composition. useRawGesture — the escape hatch.
 GestureDetector is re-exported from the package entry.
 
-NOT IMPLEMENTED, do not import: usePan, useSwipe, usePinch, useRotate,
-useHover, useEdgeSwipe. They are designed only.
+NOT IMPLEMENTED, do not import: usePinch, useRotate, useHover, useEdgeSwipe.
+They are designed only.
 
-Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,compose,raw,gesture-handler}
+usePan and useDrag are not synonyms. useDrag owns a position: x and y
+accumulate across gestures and bounds clamps them. usePan owns nothing: it
+reports translation, velocity, and a per-frame change the consumer adds up,
+and it zeroes at every gesture.
+
+useSwipe is a pan judged at release. directions is also the activation
+criterion — an all-horizontal list gives a directional threshold, so the
+swipe shares a view with a vertical scroller with no relation declared.
+
+Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,pan,swipe,compose,raw,gesture-handler}
 
 ## The shape of every hook
 

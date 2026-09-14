@@ -6,12 +6,13 @@
  * RNGH models and Impulse does not, and the `alongside` / `blocks` /
  * `deferTo` options both accept.
  *
- * `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` are the intent
- * hooks, and they share one pattern: an intent-shaped payload, JS-thread
- * callbacks named for what happened, worklet phase callbacks named for when,
- * and documented activation criteria. The remaining intents — `usePan`,
- * `useSwipe`, `usePinch`, and the rest — are designed but not implemented;
- * see the repository README for the roadmap.
+ * `useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, and
+ * `useSwipe` are the intent hooks, and they share one pattern: an
+ * intent-shaped payload, JS-thread callbacks named for what happened, worklet
+ * phase callbacks named for when, and documented activation criteria. The
+ * remaining intents — `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe` —
+ * are designed but not implemented; see the repository README for the
+ * roadmap.
  */
 
 // Re-exported because every hook's result has to be handed to it, and
@@ -54,6 +55,23 @@ export type {
   UseDragOptions,
   UseDragResult,
 } from './intents/drag'
+
+export { usePan } from './intents/pan'
+export type {
+  PanAxis,
+  PanEvent,
+  UsePanOptions,
+  UsePanResult,
+} from './intents/pan'
+
+export { useSwipe } from './intents/swipe'
+export type {
+  CommittedSwipeEvent,
+  SwipeDirection,
+  SwipeEvent,
+  UseSwipeOptions,
+  UseSwipeResult,
+} from './intents/swipe'
 
 export type {
   AttachableGesture,

@@ -17,6 +17,8 @@ site reads as a promise.
 | ✅ | [`useDoubleTap`](/use-double-tap) | Two taps in quick succession |
 | ✅ | [`useLongPress`](/use-long-press) | A press held past a duration |
 | ✅ | [`useDrag`](/use-drag) | A drag, streaming where it is |
+| ✅ | [`usePan`](/use-pan) | A pan, streaming how the finger moved |
+| ✅ | [`useSwipe`](/use-swipe) | A pan judged at release, with a direction |
 | ✅ | [`useGestures`](/composition) | Composition under one relation |
 | ✅ | [`useRawGesture`](/raw-gestures) | The mechanism-level escape hatch |
 | ✅ | [`alongside` / `blocks` / `deferTo`](/coexistence) | Coexistence, on every hook |
@@ -26,7 +28,7 @@ site reads as a promise.
 **Do not import these.** They are decisions that have been made, not features
 that exist.
 
-`usePan` · `useSwipe` · `usePinch` · `useRotate` · `useHover` · `useEdgeSwipe`
+`usePinch` · `useRotate` · `useHover` · `useEdgeSwipe`
 
 ## Milestones
 
@@ -48,7 +50,12 @@ recognizer resolves it.
 
 ### 2 — The intent set
 
-Four of ten intents exist. Each needs a screen, a docs page, and a device pass.
+Six of ten intents exist. Each one needs a screen, a docs page, and a device
+pass, and the device pass is the part none of them has.
+
+- **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
+  `useLongPress`, `useDrag`, `usePan`, `useSwipe`.
+- **Designed only** — `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`.
 
 ### 3 — The Inertia bridge
 
@@ -74,15 +81,18 @@ Honest rather than empty. The ones a consumer can hit:
   gesture-handler's `ScrollView`. See [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently.** Impulse cannot warn,
   because RNGH does not export the context that would let it detect one.
-- **There is no JS-thread callback for a cancelled gesture.** Every intent
-  callback is guarded on success, and `onFinalize` is a worklet.
-  See [Web behaviour](/web).
+- **A cancel is reported, but the velocity that comes with it is not a
+  throw.** Every end callback fires on both paths and carries `cancelled`. The
+  finger never lifted on the cancelled one, so springing on `velocity` flings a
+  view the user never released. See [Web behaviour](/web).
 - **A relation target needs a cast.** RNGH types it as a ref to a component
   *type*, which is not what `ref={}` produces.
 - **`useLongPress`'s `maxDistance` cancels an active press on web**, against
   RNGH's own documented contract. Hold-then-drag does not work there at the
   default.
-- **No activation default has been measured.** Not one.
+- **No activation default has been measured.** Not one. `useSwipe`'s
+  `commitDistance` of 80 points and `commitSpeed` of 800 points per second are
+  the newest guesses on the list.
 - **Web is surveyed by hand, not by tests.** No jsdom test exists for any
   intent.
 

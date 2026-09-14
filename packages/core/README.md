@@ -12,7 +12,7 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
 
-> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus four intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, and `useDrag`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are **not implemented**. No activation-criteria default has been measured on hardware yet. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus six intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, and `useSwipe`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are **not implemented**. No activation-criteria default has been measured on hardware yet. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 
@@ -44,9 +44,9 @@ Neither is a replacement for the other, and `-gestures` is not deprecated.
 
 ### The intent hooks
 
-Four so far. Every one returns `{ gesture, ref, isActive }` plus whatever values its own intent produces, and every one takes the same `alongside` / `blocks` / `deferTo` options.
+Six so far. Every one returns `{ gesture, ref, isActive }` plus whatever values its own intent produces, and every one takes the same `alongside` / `blocks` / `deferTo` options.
 
-**The callback name states its thread.** A callback named for what happened — `onTap`, `onDoubleTap`, `onLongPress`, `onDragEnd` — runs on the JS thread and may set React state directly, because Impulse owns the `scheduleOnRN` boundary. A callback named for a phase — `onBegin`, `onUpdate`, `onFinalize` — is a worklet and runs on the UI thread. There is no flag to set and no `scheduleOnRN` to write.
+**The callback name states its thread.** A callback named for what happened — `onTap`, `onDoubleTap`, `onLongPress`, `onDragEnd`, `onSwipe` — runs on the JS thread and may set React state directly, because Impulse owns the `scheduleOnRN` boundary. A callback named for a phase — `onBegin`, `onUpdate`, `onFinalize` — is a worklet and runs on the UI thread. There is no flag to set and no `scheduleOnRN` to write.
 
 #### `useTap`
 
@@ -166,6 +166,60 @@ const style = useAnimatedStyle(() => ({
 
 **Coexistence.** A threshold decides who moves first, not who wins a contested touch. Say that too: `deferTo: scrollRef` for a drag that is the fallback, `blocks: listRef` for one that is the foreground affordance.
 
+#### `usePan`
+
+The same recognizer as `useDrag`, and the opposite contract. **`usePan` reports movement; `useDrag` owns a position.** `usePan` holds no value at all: it zeroes at the start of every gesture, it has no `bounds` and no `elastic`, and it reports a per-frame `change` the consumer adds up.
+
+```tsx
+import { GestureDetector, usePan } from '@rootnative/impulse'
+
+const pan = usePan({
+  onUpdate: (event) => {
+    'worklet'
+    camera.x.value += event.change.x
+    camera.y.value += event.change.y
+  },
+})
+```
+
+| Option | Default | Note |
+| --- | --- | --- |
+| `threshold` | `10` points | Same form as `useDrag`: directional on a single axis, radial on `'both'`. |
+| `axis` | `'both'` | The locked axis reports zero. |
+| `failOffset` | unset | Cross-axis movement that makes the pan give up. |
+| `pointers` | unset | Setting it fixes the count exactly. |
+
+RNGH's own `changeX` reports the whole translation on the first update, threshold included, so a consumer accumulating it jumps ten points before anything moves. `usePan` computes the delta itself, so `change` and `translation` are both measured from the activation point.
+
+Reach for `useDrag` to move a view. Reach for `usePan` to pan a camera, scrub a value, or feed a number Impulse has no business clamping.
+
+#### `useSwipe`
+
+A pan judged at release. The finger moves and `x` and `y` report it so a view can follow; on release the travel and the speed along the dominant axis decide whether it counted.
+
+```tsx
+import { GestureDetector, useSwipe } from '@rootnative/impulse'
+
+const swipe = useSwipe({
+  directions: ['left', 'right'],
+  onSwipe: (event) => remove(item.id, event.direction),
+  onSwipeEnd: (event) => {
+    swipe.x.value = withSpring(event.direction === null ? 0 : EXIT)
+  },
+})
+```
+
+| Option | Default | Note |
+| --- | --- | --- |
+| `directions` | all four | Which directions may commit — **and the activation criterion**. |
+| `threshold` | `10` points | When the swipe takes the touch and starts reporting. Not the commit test. |
+| `commitDistance` | `80` points | How far a release must have travelled to count. |
+| `commitSpeed` | `800` pt/s | How fast a release must be moving to count. The flick. Either test is enough on its own. |
+
+**`directions` is the coexistence setting, not only a filter.** An all-horizontal list gives the gesture a directional threshold on x, so a swipeable row lives inside a vertical list with no relation declared. An all-vertical list does the same on y. A mixed list has no axis to lock, so the threshold is radial and the swipe competes for every touch — declare `deferTo` or `blocks` there.
+
+`onSwipe` fires only for a release that counted, and its payload's `direction` is never `null`. `onSwipeEnd` fires for every release of a swipe that activated, which is how a view that followed the finger learns to go back. A cancelled gesture never commits.
+
 ### `useGestures` — composition
 
 Composition is **data, not nesting**. One flat list plus the relation that holds over it, and the result is itself a member, so precedence reads left to right instead of inside out.
@@ -222,8 +276,8 @@ const fling = useRawGesture(
 
 - **`GestureDetector`**, re-exported from the root entry. Every hook's result is handed to it, so reaching for it is not a reason to add a second gesture import to an app.
 - **`@rootnative/impulse/gesture-handler`** — RNGH's own primitives, re-exported under their original names by reference. It keeps `@rootnative/impulse` the only gesture import in an app.
-- **Subpaths** — `@rootnative/impulse/tap`, `/double-tap`, `/long-press`, `/drag`, `/compose`, and `/raw`, so an app that uses one hook does not ship the set.
-- **Types** — `AttachableGesture`, `CoexistenceOptions`, `ComposeMode`, `GestureReference`, `GestureReferences`, `HitSlop`, `IntentResult`, `Point`, and per-intent `TapEvent`, `LongPressEvent`, `DragAxis` / `DragBounds` / `DragEvent`, plus the `Use*Options` and `Use*Result` pair for each hook. `useTap` and `useDoubleTap` share one `TapEvent`.
+- **Subpaths** — `@rootnative/impulse/tap`, `/double-tap`, `/long-press`, `/drag`, `/pan`, `/swipe`, `/compose`, and `/raw`, so an app that uses one hook does not ship the set.
+- **Types** — `AttachableGesture`, `CoexistenceOptions`, `ComposeMode`, `GestureReference`, `GestureReferences`, `HitSlop`, `IntentResult`, `Point`, and per-intent `TapEvent`, `LongPressEvent`, `DragAxis` / `DragBounds` / `DragEvent`, `PanAxis` / `PanEvent`, `SwipeDirection` / `SwipeEvent` / `CommittedSwipeEvent`, plus the `Use*Options` and `Use*Result` pair for each hook. `useTap` and `useDoubleTap` share one `TapEvent`.
 - **`@rootnative/impulse/jest-preset`** — one-line Jest wiring, layered on `@react-native/jest-preset`.
 
 ## Gesture identity is stable by construction
@@ -234,11 +288,11 @@ Worklet callbacks are the deliberate exception: a worklet is captured as written
 
 ## What does not ship yet
 
-Six intent hooks — `usePan`, `useSwipe`, `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe`. They are designed and the design is locked; none of them is written.
+Four intent hooks — `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe`. They are designed and the design is locked; none of them is written.
 
 Three further limits today:
 
-- **No activation-criteria default has been measured on a device.** Every number in the tables above is a design intention. `useTap`'s and `useDoubleTap`'s `maxDistance`, `useDoubleTap`'s `maxDelay`, and `useDrag`'s `threshold` are the four that will move if any do.
+- **No activation-criteria default has been measured on a device.** Every number in the tables above is a design intention. `useTap`'s and `useDoubleTap`'s `maxDistance`, `useDoubleTap`'s `maxDelay`, the shared 10-point `threshold`, and `useSwipe`'s `commitDistance` and `commitSpeed` are the ones that will move if any do.
 
 - **`useGestures` does not take coexistence options.** RNGH's three relations are methods on a single gesture, and a composed gesture does not have them. Set them on the member hooks instead.
 - **No warning when `<GestureHandlerRootView>` is missing.** Its absence is silent — the gesture simply never fires — and RNGH does not export the context that would let Impulse detect it.
