@@ -7,11 +7,25 @@
 [![Expo SDK 57](https://img.shields.io/badge/expo-57-000020?logo=expo&logoColor=white)](https://expo.dev/)
 [![Gesture Handler 2](https://img.shields.io/badge/gesture--handler-2.x-6B4FBB)](https://docs.swmansion.com/react-native-gesture-handler/)
 [![Turborepo](https://img.shields.io/badge/monorepo-turbo-EF4444)](https://turbo.build/)
+[![Docs](https://img.shields.io/badge/docs-rootnative.github.io-6B4FBB)](https://rootnative.github.io/impulse/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
 
 > **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` are the intent hooks so far.** `usePan`, `useSwipe`, `usePinch`, and the rest are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened, so no activation-criteria default has been measured.
+
+## Documentation
+
+**[rootnative.github.io/impulse](https://rootnative.github.io/impulse/)** — installation, the four intent hooks, composition, coexistence, and the web behaviour of each intent.
+
+- [Installation](https://rootnative.github.io/impulse/installation)
+- [`useTap`](https://rootnative.github.io/impulse/use-tap), [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap), [`useLongPress`](https://rootnative.github.io/impulse/use-long-press), [`useDrag`](https://rootnative.github.io/impulse/use-drag)
+- [Composition](https://rootnative.github.io/impulse/composition) and [Coexistence](https://rootnative.github.io/impulse/coexistence)
+- [Web behaviour](https://rootnative.github.io/impulse/web) — what was measured in a browser, and what nobody has checked
+- [Roadmap](https://rootnative.github.io/impulse/roadmap)
+- The example app runs in a browser at [/impulse/example/](https://rootnative.github.io/impulse/example/).
+
+For an AI agent: [AI agents and llms.txt](https://rootnative.github.io/impulse/ai) explains the two files, [`llms.txt`](https://rootnative.github.io/impulse/llms.txt) and [`llms-full.txt`](https://rootnative.github.io/impulse/llms-full.txt). After you install the package, `node_modules/@rootnative/impulse/llms.txt` is the exact API of that version.
 
 ## What it is for
 
@@ -57,8 +71,9 @@ That independence is why this is a separate repository rather than a package ins
 | Path | What it is |
 | --- | --- |
 | [packages/core/](packages/core/) | `@rootnative/impulse` — the whole public surface. |
+| [docs/](docs/) | Docusaurus site, private. Deployed to [rootnative.github.io/impulse](https://rootnative.github.io/impulse/), and it carries the web build of the example app. |
 | [example/](example/) | Expo app for manual validation, one screen per intent. A device pass is a release requirement, not a nicety. |
-| [scripts/](scripts/) | `check-versions.mjs`, the release-consistency guard. |
+| [scripts/](scripts/) | `build-llms.mjs`, `check-versions.mjs`, and `build-brand.mjs`. |
 
 Inside `packages/core/src`:
 
@@ -83,6 +98,8 @@ pnpm run test             # Jest
 pnpm run lint             # ESLint
 pnpm run format           # Prettier
 pnpm run example          # Expo dev server
+pnpm run docs:dev         # Docusaurus dev server
+pnpm run build:llms       # regenerate llms.txt and llms-full.txt after a docs change
 pnpm run check:versions   # verify every version reference agrees with core's
 ```
 

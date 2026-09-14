@@ -4,7 +4,7 @@
   "description": "Declarative gesture primitives for React Native, built on react-native-gesture-handler.",
   "license": "MIT",
   "author": "RootNative",
-  "homepage": "https://github.com/rootnative/impulse",
+  "homepage": "https://rootnative.github.io/impulse/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rootnative/impulse.git",

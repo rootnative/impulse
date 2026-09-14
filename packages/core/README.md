@@ -249,7 +249,11 @@ The preset also needs `@react-native/jest-preset` as a devDependency at the vers
 
 ## Documentation
 
-The docs site is not built yet. Until it is, the [repository README](https://github.com/rootnative/impulse) carries the design principles, the boundary with `@rootnative/inertia`, and the roadmap.
+**[rootnative.github.io/impulse](https://rootnative.github.io/impulse/)** — installation, a page per intent hook, composition, coexistence, threads and callbacks, and the [web behaviour](https://rootnative.github.io/impulse/web) of each intent. The example app runs in a browser at [/impulse/example/](https://rootnative.github.io/impulse/example/).
+
+The [repository README](https://github.com/rootnative/impulse) carries the design principles, the boundary with `@rootnative/inertia`, and the roadmap.
+
+An agent reads `node_modules/@rootnative/impulse/llms.txt` for the exact API of the installed version, or [`llms-full.txt`](https://rootnative.github.io/impulse/llms-full.txt) for the full reference.
 
 ## Licence
 
