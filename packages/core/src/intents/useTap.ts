@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Gesture, type TapGesture } from 'react-native-gesture-handler'
-import { runOnJS, useSharedValue } from 'react-native-reanimated'
+import { useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import {
   useGestureMemo,
   type GestureMemoOptions,
@@ -76,7 +77,7 @@ export interface UseTapOptions extends GestureMemoOptions {
   enabled?: boolean
   /**
    * The tap happened. **Runs on the JS thread** — Impulse owns the
-   * `runOnJS` boundary, so this is an ordinary function and may touch React
+   * `scheduleOnRN` boundary, so this is an ordinary function and may touch React
    * state.
    *
    * It fires only for a successful tap. A touch that moved too far or stayed
@@ -128,7 +129,7 @@ export type UseTapResult = IntentResult<TapGesture>
  *
  * `onTap` runs on the JS thread and may set React state directly. `onBegin`
  * and `onFinalize` are worklets and run on the UI thread — the name states
- * the thread, so there is nothing to configure and no `runOnJS` to write.
+ * the thread, so there is nothing to configure and no `scheduleOnRN` to write.
  *
  * `isActive` is a shared value that is `true` while the finger is down. Drive
  * a pressed state from it without a re-render:
@@ -214,7 +215,7 @@ export function useTap(options: UseTapOptions = {}): UseTapResult {
         .onEnd((event, success) => {
           'worklet'
           if (success && hasTapHandler) {
-            runOnJS(handleTap)(toTapEvent(event))
+            scheduleOnRN(handleTap, toTapEvent(event))
           }
         })
         .onFinalize((event, success) => {

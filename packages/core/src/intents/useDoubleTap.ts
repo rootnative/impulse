@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Gesture, type TapGesture } from 'react-native-gesture-handler'
-import { runOnJS, useSharedValue } from 'react-native-reanimated'
+import { useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import {
   useGestureMemo,
   type GestureMemoOptions,
@@ -97,7 +98,7 @@ export interface UseDoubleTapOptions extends GestureMemoOptions {
   enabled?: boolean
   /**
    * Both taps happened. **Runs on the JS thread** — Impulse owns the
-   * `runOnJS` boundary, so this is an ordinary function and may touch React
+   * `scheduleOnRN` boundary, so this is an ordinary function and may touch React
    * state.
    *
    * The payload describes the second tap, which is the one the consumer means
@@ -152,7 +153,7 @@ export type UseDoubleTapResult = IntentResult<TapGesture>
  *
  * `onDoubleTap` runs on the JS thread and may set React state directly.
  * `onBegin` and `onFinalize` are worklets and run on the UI thread — the name
- * states the thread, so there is nothing to configure and no `runOnJS` to
+ * states the thread, so there is nothing to configure and no `scheduleOnRN` to
  * write.
  *
  * `isActive` is a shared value that is `true` from the first finger down
@@ -254,7 +255,7 @@ export function useDoubleTap(
         .onEnd((event, success) => {
           'worklet'
           if (success && hasDoubleTapHandler) {
-            runOnJS(handleDoubleTap)(toTapEvent(event))
+            scheduleOnRN(handleDoubleTap, toTapEvent(event))
           }
         })
         .onFinalize((event, success) => {

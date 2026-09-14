@@ -5,7 +5,8 @@ import {
   type LongPressGesture,
   type LongPressGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
-import { runOnJS, useSharedValue } from 'react-native-reanimated'
+import { useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import {
   useGestureMemo,
   type GestureMemoOptions,
@@ -110,7 +111,7 @@ export interface UseLongPressOptions extends GestureMemoOptions {
   enabled?: boolean
   /**
    * The press was held long enough and is now recognized. **Runs on the JS
-   * thread** — Impulse owns the `runOnJS` boundary, so this is an ordinary
+   * thread** — Impulse owns the `scheduleOnRN` boundary, so this is an ordinary
    * function and may touch React state.
    *
    * **The finger is still down when this fires.** That is the point: a
@@ -201,7 +202,7 @@ function toLongPressEvent(
  * menu should open and a haptic should fire. `onLongPressEnd` runs on the JS
  * thread too, when the finger lifts. `onBegin` and `onFinalize` are worklets
  * and run on the UI thread — the name states the thread, so there is nothing
- * to configure and no `runOnJS` to write.
+ * to configure and no `scheduleOnRN` to write.
  *
  * `isActive` is a shared value that is `true` from the moment the press is
  * recognized until the finger lifts — **not** from the moment the finger goes
@@ -310,7 +311,7 @@ export function useLongPress(
           // what makes it worth reading at all.
           isActive.value = true
           if (hasLongPress) {
-            runOnJS(handleLongPress)(toLongPressEvent(event))
+            scheduleOnRN(handleLongPress, toLongPressEvent(event))
           }
         })
         .onEnd((event, success) => {
@@ -321,7 +322,7 @@ export function useLongPress(
           // and it was never released, so reporting a release would be a
           // lie. That path reaches `onFinalize` instead.
           if (success && hasLongPressEnd) {
-            runOnJS(handleLongPressEnd)(toLongPressEvent(event))
+            scheduleOnRN(handleLongPressEnd, toLongPressEvent(event))
           }
         })
         .onFinalize((event, success) => {

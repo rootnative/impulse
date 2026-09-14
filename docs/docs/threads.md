@@ -31,12 +31,12 @@ thread invisible at the call site and pushes the question into the docs.
 ```tsx
 const tap = useTap({
   onTap: (event) => {
-    setSelected(event.x)   // plain React state. No runOnJS.
+    setSelected(event.x)   // plain React state. No scheduleOnRN.
   },
 })
 ```
 
-You write an ordinary function. Impulse inserts the `runOnJS` boundary.
+You write an ordinary function. Impulse inserts the `scheduleOnRN` boundary.
 
 ## Phase callbacks: you own the worklet
 
@@ -133,6 +133,6 @@ hook's own page before you drive UI from it.
 
 ## Escape hatch
 
-[`useRawGesture`](/raw-gestures) does **not** insert a `runOnJS` boundary for
+[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary for
 you. There you build the gesture, so RNGH decides per callback by whether it
 carries the `'worklet'` directive.

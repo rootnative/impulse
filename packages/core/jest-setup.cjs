@@ -32,7 +32,8 @@ require('react-native-gesture-handler/jestSetup')
 //
 // What this means for tests:
 //   ✅ assert a shared value's `.value` after driving a gesture
-//   ✅ assert that a JS-thread callback fired, because `runOnJS` is identity
+//   ✅ assert that a JS-thread callback fired, because `scheduleOnRN` calls
+//      it synchronously
 //   ❌ frame-level timing is not observable — nothing schedules or animates
 jest.mock('react-native-reanimated', () => {
   const React = require('react')
@@ -54,3 +55,26 @@ jest.mock('react-native-reanimated', () => {
     setGestureState: () => {},
   }
 })
+
+// Worklets mock. Impulse crosses to the JS thread with `scheduleOnRN` from
+// `react-native-worklets`, not with Reanimated's deprecated `runOnJS`, so the
+// mock above no longer covers that call — source importing from this package
+// would load the real module, which needs its native module and cannot run
+// under Jest.
+//
+// `scheduleOnRN` calls the function synchronously here. The real one schedules
+// it on the JS thread, so a test asserts that a callback ran, never when it
+// ran relative to a frame. That limit is the same one the Reanimated mock
+// already carried.
+//
+// Only what Impulse imports is mocked. `runOnJS` is included because the
+// undeprecated curried form lives in this package too, and a consumer's own
+// code may use it under this setup file.
+jest.mock('react-native-worklets', () => ({
+  __esModule: true,
+  scheduleOnRN: (fn, ...args) => fn(...args),
+  runOnJS:
+    (fn) =>
+    (...args) =>
+      fn(...args),
+}))

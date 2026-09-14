@@ -93,7 +93,7 @@ const drag = useDrag({
 `drag.x` is a shared value that accumulates across gestures, so the
 `start.value` dance is gone. [`deferTo`](/coexistence) is the relation, named
 for what happens rather than for the method it calls. The
-[`runOnJS` boundary](/threads) is Impulse's job, not yours.
+[`scheduleOnRN` boundary](/threads) is Impulse's job, not yours.
 
 ## What Impulse does differently
 
@@ -968,7 +968,7 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 > **NOTE — There is no JS-thread `onUpdate`, on purpose**
 >
-> A per-frame `runOnJS` is a scheduling cost paid sixty times a second for a value
+> A per-frame `scheduleOnRN` is a scheduling cost paid sixty times a second for a value
 > that is already on the thread that needs it. Read `x` and `y` from a
 > `useAnimatedStyle` instead.
 
@@ -1417,12 +1417,12 @@ thread invisible at the call site and pushes the question into the docs.
 ```tsx
 const tap = useTap({
   onTap: (event) => {
-    setSelected(event.x)   // plain React state. No runOnJS.
+    setSelected(event.x)   // plain React state. No scheduleOnRN.
   },
 })
 ```
 
-You write an ordinary function. Impulse inserts the `runOnJS` boundary.
+You write an ordinary function. Impulse inserts the `scheduleOnRN` boundary.
 
 ## Phase callbacks: you own the worklet
 
@@ -1513,7 +1513,7 @@ true at the last commit.
 
 ## Escape hatch
 
-[`useRawGesture`](/raw-gestures) does **not** insert a `runOnJS` boundary for
+[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary for
 you. There you build the gesture, so RNGH decides per callback by whether it
 carries the `'worklet'` directive.
 
@@ -1558,7 +1558,7 @@ accepts.
 capture is a stale gesture. A worklet callback belongs in `deps`. A JS-thread
 callback does not — give it a stable identity first and depend on that.
 
-**The thread.** Impulse does **not** insert a `runOnJS` boundary here. RNGH
+**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here. RNGH
 decides per callback, by whether it carries the `'worklet'` directive, and
 warns in development when a gesture mixes the two. The intent hooks can own
 that boundary because they know what each callback means. This one does not.
@@ -1879,13 +1879,18 @@ mock did with it.
 
 ## What the mock can and cannot do
 
-The preset mocks Reanimated deliberately thinly. The real one cannot run under
-Jest at all: it loads `react-native-worklets`, which needs its native module.
+The preset mocks Reanimated and `react-native-worklets` deliberately thinly.
+Neither real module runs under Jest: Reanimated loads
+`react-native-worklets`, and worklets needs its native module.
+
+Impulse crosses to the JS thread with `scheduleOnRN` from
+`react-native-worklets`, so both mocks are load-bearing. Remove either one and
+every intent test fails at import.
 
 | | |
 | --- | --- |
 | ✅ | Assert a shared value's `.value` after driving a gesture |
-| ✅ | Assert that a JS-thread callback fired — `runOnJS` is identity under the mock |
+| ✅ | Assert that a JS-thread callback fired — the mock's `scheduleOnRN` calls it synchronously |
 | ✅ | Assert a gesture's configuration |
 | ❌ | Frame-level timing — nothing schedules or animates |
 

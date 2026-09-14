@@ -6,11 +6,8 @@ import {
   type PanGesture,
   type PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
-import {
-  runOnJS,
-  useSharedValue,
-  type SharedValue,
-} from 'react-native-reanimated'
+import { useSharedValue, type SharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import {
   useGestureMemo,
   type GestureMemoOptions,
@@ -179,7 +176,7 @@ export interface UseDragOptions extends GestureMemoOptions {
   enabled?: boolean
   /**
    * The drag passed `threshold` and now owns the touch. **Runs on the JS
-   * thread** — Impulse owns the `runOnJS` boundary, so this is an ordinary
+   * thread** — Impulse owns the `scheduleOnRN` boundary, so this is an ordinary
    * function and may touch React state.
    *
    * This is the first moment the drag has definitely won. `onBegin` fires
@@ -212,7 +209,7 @@ export interface UseDragOptions extends GestureMemoOptions {
    * The drag moved. **This is a worklet**, and it runs on every frame the
    * finger moves.
    *
-   * There is no JS-thread counterpart on purpose. A per-frame `runOnJS` is a
+   * There is no JS-thread counterpart on purpose. A per-frame `scheduleOnRN` is a
    * scheduling cost paid sixty times a second for a value that is already on
    * the thread that needs it — read `x` and `y` from a `useAnimatedStyle`
    * instead, and let this callback handle what the style cannot.
@@ -452,7 +449,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragResult {
           startY.value = y.value - event.translationY
           isActive.value = true
           if (hasDragStart) {
-            runOnJS(handleDragStart)(toDragEvent(event))
+            scheduleOnRN(handleDragStart, toDragEvent(event))
           }
         })
         .onUpdate((event) => {
@@ -483,7 +480,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragResult {
           // and there was no release, so there is no velocity worth seeding a
           // spring with. That path reaches `onFinalize` instead.
           if (success && hasDragEnd) {
-            runOnJS(handleDragEnd)(toDragEvent(event))
+            scheduleOnRN(handleDragEnd, toDragEvent(event))
           }
         })
         .onFinalize((event, success) => {

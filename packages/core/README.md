@@ -46,7 +46,7 @@ Neither is a replacement for the other, and `-gestures` is not deprecated.
 
 Four so far. Every one returns `{ gesture, ref, isActive }` plus whatever values its own intent produces, and every one takes the same `alongside` / `blocks` / `deferTo` options.
 
-**The callback name states its thread.** A callback named for what happened — `onTap`, `onDoubleTap`, `onLongPress`, `onDragEnd` — runs on the JS thread and may set React state directly, because Impulse owns the `runOnJS` boundary. A callback named for a phase — `onBegin`, `onUpdate`, `onFinalize` — is a worklet and runs on the UI thread. There is no flag to set and no `runOnJS` to write.
+**The callback name states its thread.** A callback named for what happened — `onTap`, `onDoubleTap`, `onLongPress`, `onDragEnd` — runs on the JS thread and may set React state directly, because Impulse owns the `scheduleOnRN` boundary. A callback named for a phase — `onBegin`, `onUpdate`, `onFinalize` — is a worklet and runs on the UI thread. There is no flag to set and no `scheduleOnRN` to write.
 
 #### `useTap`
 

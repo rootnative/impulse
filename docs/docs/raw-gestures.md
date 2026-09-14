@@ -43,7 +43,7 @@ accepts.
 capture is a stale gesture. A worklet callback belongs in `deps`. A JS-thread
 callback does not — give it a stable identity first and depend on that.
 
-**The thread.** Impulse does **not** insert a `runOnJS` boundary here. RNGH
+**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here. RNGH
 decides per callback, by whether it carries the `'worklet'` directive, and
 warns in development when a gesture mixes the two. The intent hooks can own
 that boundary because they know what each callback means. This one does not.

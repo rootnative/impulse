@@ -58,13 +58,18 @@ mock did with it.
 
 ## What the mock can and cannot do
 
-The preset mocks Reanimated deliberately thinly. The real one cannot run under
-Jest at all: it loads `react-native-worklets`, which needs its native module.
+The preset mocks Reanimated and `react-native-worklets` deliberately thinly.
+Neither real module runs under Jest: Reanimated loads
+`react-native-worklets`, and worklets needs its native module.
+
+Impulse crosses to the JS thread with `scheduleOnRN` from
+`react-native-worklets`, so both mocks are load-bearing. Remove either one and
+every intent test fails at import.
 
 | | |
 | --- | --- |
 | ✅ | Assert a shared value's `.value` after driving a gesture |
-| ✅ | Assert that a JS-thread callback fired — `runOnJS` is identity under the mock |
+| ✅ | Assert that a JS-thread callback fired — the mock's `scheduleOnRN` calls it synchronously |
 | ✅ | Assert a gesture's configuration |
 | ❌ | Frame-level timing — nothing schedules or animates |
 

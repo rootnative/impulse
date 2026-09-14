@@ -39,7 +39,7 @@ export type RawGestureResult<G extends GestureType> = BuiltGesture<G>
  *   put it through `useLatestCallback` and depend on the stable result.
  * - **The thread.** RNGH decides per callback, by whether it carries the
  *   `'worklet'` directive, and warns in development when a gesture mixes the
- *   two. Impulse does not insert a `runOnJS` boundary for you here; that is
+ *   two. Impulse does not insert a `scheduleOnRN` boundary for you here; that is
  *   something the intent hooks do because they know what each callback means.
  * - **The payload.** You get RNGH's flat event, not an intent-shaped one.
  *

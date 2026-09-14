@@ -66,7 +66,7 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 :::note There is no JS-thread `onUpdate`, on purpose
 
-A per-frame `runOnJS` is a scheduling cost paid sixty times a second for a value
+A per-frame `scheduleOnRN` is a scheduling cost paid sixty times a second for a value
 that is already on the thread that needs it. Read `x` and `y` from a
 `useAnimatedStyle` instead.
 

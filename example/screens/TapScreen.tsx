@@ -21,7 +21,7 @@ export function TapScreen({ onBack }: { onBack: () => void }) {
   const tap = useTap({
     onTap: (event) => {
       // Runs on the JS thread, so setting React state here needs no
-      // `runOnJS` and no ceremony. That is the whole point of the name.
+      // `scheduleOnRN` and no ceremony. That is the whole point of the name.
       setTaps((count) => count + 1)
       setLast(`${Math.round(event.x)}, ${Math.round(event.y)}`)
     },
