@@ -4,7 +4,7 @@
 > react-native-gesture-handler. One hook per intent. Hooks return shared values
 > and a gesture; Impulse starts no animation and ships no components.
 
-Status: 0.0.0-alpha.0. Four intents ship. No activation default has been
+Status: 0.0.0-alpha.0. Seven intents ship. No activation default has been
 measured on hardware — every default below is a design intention.
 
 Docs: https://rootnative.github.io/impulse/
@@ -22,11 +22,11 @@ missing, gestures never fire and nothing warns.
 
 ## What ships
 
-useTap, useDoubleTap, useLongPress, useDrag, usePan, useSwipe — intent hooks.
-useGestures — composition. useRawGesture — the escape hatch.
+useTap, useDoubleTap, useLongPress, useDrag, usePan, useSwipe, usePinch —
+intent hooks. useGestures — composition. useRawGesture — the escape hatch.
 GestureDetector is re-exported from the package entry.
 
-NOT IMPLEMENTED, do not import: usePinch, useRotate, useHover, useEdgeSwipe.
+NOT IMPLEMENTED, do not import: useRotate, useHover, useEdgeSwipe.
 They are designed only.
 
 usePan and useDrag are not synonyms. useDrag owns a position: x and y
@@ -38,7 +38,14 @@ useSwipe is a pan judged at release. directions is also the activation
 criterion — an all-horizontal list gives a directional threshold, so the
 swipe shares a view with a vertical scroller with no relation declared.
 
-Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,pan,swipe,compose,raw,gesture-handler}
+usePinch owns a scale that accumulates across gestures, so min and max are
+the viewer's zoom range, not one gesture's. focal is the midpoint between the
+fingers and the point the zoom must happen about — scaling about the view's
+centre slides the content out from under them. It has NO activation criteria:
+RNGH's pinch exposes no threshold, so a pinch and a pan are separated by a
+relation alone — useGestures([pinch, pan], { mode: 'simultaneous' }).
+
+Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,pan,swipe,pinch,compose,raw,gesture-handler}
 
 ## The shape of every hook
 

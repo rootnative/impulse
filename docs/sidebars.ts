@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
         'use-drag',
         'use-pan',
         'use-swipe',
+        'use-pinch',
       ],
     },
     {

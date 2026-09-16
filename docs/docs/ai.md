@@ -35,8 +35,8 @@ implementation rather than infer it.
 Not the feature list. The things that fail silently, because those are what an
 agent cannot discover by reading its own output:
 
-- `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are **designed and
-  not written**. They appear in the design documents. They are not importable.
+- `useRotate`, `useHover`, and `useEdgeSwipe` are **designed and not
+  written**. They appear in the design documents. They are not importable.
 - `usePan` and `useDrag` are different hooks, and an agent that treats them as
   synonyms writes the wrong one. `useDrag` owns a position that accumulates and
   is clamped by `bounds`; `usePan` owns nothing and reports a per-frame

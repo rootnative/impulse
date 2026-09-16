@@ -80,6 +80,11 @@
       "react-native": "./dist/swipe/index.js",
       "default": "./dist/swipe/index.js"
     },
+    "./pinch": {
+      "types": "./dist/pinch/index.d.ts",
+      "react-native": "./dist/pinch/index.js",
+      "default": "./dist/pinch/index.js"
+    },
     "./gesture-handler": {
       "types": "./dist/gesture-handler/index.d.ts",
       "react-native": "./dist/gesture-handler/index.js",

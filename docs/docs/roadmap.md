@@ -19,6 +19,7 @@ site reads as a promise.
 | ✅ | [`useDrag`](/use-drag) | A drag, streaming where it is |
 | ✅ | [`usePan`](/use-pan) | A pan, streaming how the finger moved |
 | ✅ | [`useSwipe`](/use-swipe) | A pan judged at release, with a direction |
+| ✅ | [`usePinch`](/use-pinch) | A two-finger pinch that owns its scale |
 | ✅ | [`useGestures`](/composition) | Composition under one relation |
 | ✅ | [`useRawGesture`](/raw-gestures) | The mechanism-level escape hatch |
 | ✅ | [`alongside` / `blocks` / `deferTo`](/coexistence) | Coexistence, on every hook |
@@ -28,7 +29,7 @@ site reads as a promise.
 **Do not import these.** They are decisions that have been made, not features
 that exist.
 
-`usePinch` · `useRotate` · `useHover` · `useEdgeSwipe`
+`useRotate` · `useHover` · `useEdgeSwipe`
 
 ## Milestones
 
@@ -50,12 +51,12 @@ recognizer resolves it.
 
 ### 2 — The intent set
 
-Six of ten intents exist. Each one needs a screen, a docs page, and a device
+Seven of ten intents exist. Each one needs a screen, a docs page, and a device
 pass, and the device pass is the part none of them has.
 
 - **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
-  `useLongPress`, `useDrag`, `usePan`, `useSwipe`.
-- **Designed only** — `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`.
+  `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`.
+- **Designed only** — `useRotate`, `useHover`, `useEdgeSwipe`.
 
 ### 3 — The Inertia bridge
 
@@ -92,7 +93,14 @@ Honest rather than empty. The ones a consumer can hit:
   default.
 - **No activation default has been measured.** Not one. `useSwipe`'s
   `commitDistance` of 80 points and `commitSpeed` of 800 points per second are
-  the newest guesses on the list.
+  the newest guesses on the list. `usePinch` adds none — RNGH's pinch exposes
+  no threshold — so it is the one continuous intent whose coexistence rests
+  entirely on a relation.
+- **`usePinch`'s `elastic` has no recommended value.** `useDrag` defaults it to
+  `0` and the example screen invented `0.35`. The resistance is also computed
+  on the scale rather than on its logarithm, so pulling below `min` resists
+  differently from pulling above `max` by the same factor. Only a hand can
+  tell whether that reads as wrong.
 - **Web is surveyed by hand, not by tests.** No jsdom test exists for any
   intent.
 

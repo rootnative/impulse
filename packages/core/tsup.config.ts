@@ -11,6 +11,7 @@ export default defineConfig({
     'drag/index': 'src/intents/drag/index.ts',
     'pan/index': 'src/intents/pan/index.ts',
     'swipe/index': 'src/intents/swipe/index.ts',
+    'pinch/index': 'src/intents/pinch/index.ts',
     'gesture-handler/index': 'src/gesture-handler/index.ts',
   },
   // ESM, not CJS, and the choice is load-bearing for worklets.

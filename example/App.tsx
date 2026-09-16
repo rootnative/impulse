@@ -14,6 +14,7 @@ import { LongPressScreen } from './screens/LongPressScreen'
 import { DragScreen } from './screens/DragScreen'
 import { PanScreen } from './screens/PanScreen'
 import { SwipeScreen } from './screens/SwipeScreen'
+import { PinchScreen } from './screens/PinchScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
@@ -26,7 +27,14 @@ import { version as impulseVersion } from '@rootnative/impulse/package.json'
  * gesture feels right on a device.
  */
 type Route =
-  'home' | 'tap' | 'double-tap' | 'long-press' | 'drag' | 'pan' | 'swipe'
+  | 'home'
+  | 'tap'
+  | 'double-tap'
+  | 'long-press'
+  | 'drag'
+  | 'pan'
+  | 'swipe'
+  | 'pinch'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -58,6 +66,7 @@ const SCREENS: readonly ScreenEntry[] = [
   ['drag', DragScreen],
   ['pan', PanScreen],
   ['swipe', SwipeScreen],
+  ['pinch', PinchScreen],
 ]
 
 /**
@@ -134,6 +143,12 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
         description:
           'a pan judged at release, with the direction that decides it',
       },
+      {
+        route: 'pinch',
+        label: 'usePinch',
+        description:
+          'a scale that accumulates, about the point between the fingers',
+      },
     ],
   },
 ]
@@ -150,7 +165,7 @@ const MILESTONES = [
     key: 'intents',
     label: 'Milestone 2 — the intent set',
     detail:
-      'useDoubleTap, useLongPress, usePan and useSwipe are done. usePinch, useRotate, useHover, useEdgeSwipe remain.',
+      'useDoubleTap, useLongPress, usePan, useSwipe and usePinch are done. useRotate, useHover, useEdgeSwipe remain.',
   },
   {
     key: 'inertia',

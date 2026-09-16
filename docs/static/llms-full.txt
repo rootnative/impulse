@@ -17,13 +17,13 @@ ergonomic wrapper around
 You write a gesture as an intent. You do not assemble it from a builder chain,
 a `useMemo`, a ref dance, and hand-written translation maths.
 
-> **WARNING — Alpha — four intents ship today**
+> **WARNING — Alpha — seven intents ship today**
 >
 > [`useTap`](/use-tap), [`useDoubleTap`](/use-double-tap),
 > [`useLongPress`](/use-long-press), [`useDrag`](/use-drag), [`usePan`](/use-pan),
-> and [`useSwipe`](/use-swipe) are implemented. `usePinch`, `useRotate`,
-> `useHover`, and `useEdgeSwipe` are designed and **not written**. Do not import
-> them yet — see the [Roadmap](/roadmap).
+> [`useSwipe`](/use-swipe), and [`usePinch`](/use-pinch) are implemented.
+> `useRotate`, `useHover`, and `useEdgeSwipe` are designed and **not written**. Do
+> not import them yet — see the [Roadmap](/roadmap).
 >
 > No activation-criteria default in these docs has been measured on hardware.
 > Each one is a design intention. Every page marks the defaults that are still
@@ -1569,6 +1569,195 @@ Whatever it commits must be reachable another way:
 
 ---
 
+# `usePinch`
+
+Recognize a two-finger pinch, and own the scale it produces.
+
+```tsx
+import { GestureDetector, usePinch } from '@rootnative/impulse'
+
+const pinch = usePinch({ min: 1, max: 4 })
+
+const style = useAnimatedStyle(() => ({
+  transform: [{ scale: pinch.scale.value }],
+}))
+
+return (
+  <GestureDetector gesture={pinch.gesture}>
+    <Animated.Image style={style} source={source} />
+  </GestureDetector>
+)
+```
+
+## The scale accumulates. RNGH's does not
+
+A bare `Gesture.Pinch()` reports a factor that restarts at `1` on every
+gesture, so a viewer built on it snaps back to its original size the moment the
+fingers lift and land again.
+
+`usePinch` multiplies that factor into the scale it already holds. That is the
+stored start and the multiplication every consumer otherwise writes, and it is
+what lets `min` and `max` be the zoom range of the **viewer** rather than of
+one gesture.
+
+| | Holds | Across gestures |
+| --- | --- | --- |
+| `usePinch` | `scale` | Continues where the last one stopped |
+| RNGH's `scale` | nothing | Restarts at `1` |
+
+`gestureScale` in the payload is RNGH's own factor, kept for the cases that
+want the raw gesture rather than the value.
+
+## Options
+
+| Option | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `initial` | `number` | `1` | The scale before any pinch. Read once, at mount. |
+| `min` | `number` | — | The smallest scale. Unset is unbounded. |
+| `max` | `number` | — | The largest scale. Unset is unbounded. |
+| `elastic` | `number` | `0` | How much of the pull past an end reaches `scale`. `0` stops dead; `1` ignores the end. |
+| `hitSlop` | `HitSlop` | — | Extra touchable area. |
+| `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
+| `onPinchStart` | `(event) => void` | — | **JS thread.** The pinch now owns the touch. |
+| `onPinchEnd` | `(event, { cancelled }) => void` | — | **JS thread.** The pinch ended. `cancelled` says how. |
+| `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
+| `onUpdate` | `(event) => void` | — | **Worklet.** Every frame the fingers move. |
+| `onFinalize` | `(event, success) => void` | — | **Worklet.** Over, activated or not. |
+
+Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
+[Coexistence](/coexistence).
+
+## Payload
+
+```ts
+interface PinchEvent {
+  scale: number         // after min, max and elastic; accumulates
+  gestureScale: number  // RNGH's own factor; resets to 1 each gesture
+  focal: Point          // midpoint between the fingers, relative to the view
+  velocity: number      // scale units per second
+  settled: number       // the nearest scale inside min and max
+  pointers: number
+}
+```
+
+## `focal` is the field a zoom viewer cannot skip
+
+Scaling about the view's centre looks correct in a screenshot and slides the
+content out from under the fingers in the hand. The zoom has to happen about
+the point between them, and that is what `focal` reports — relative to the
+view, so it goes straight into a transform:
+
+```tsx
+const style = useAnimatedStyle(() => {
+  const offsetX = pinch.focal.value.x - width / 2
+  const offsetY = pinch.focal.value.y - height / 2
+  return {
+    transform: [
+      { translateX: offsetX },
+      { translateY: offsetY },
+      { scale: pinch.scale.value },
+      { translateX: -offsetX },
+      { translateY: -offsetY },
+    ],
+  }
+})
+```
+
+Translate the focal point to the origin, scale, translate back.
+
+`focal` keeps the last gesture's point after the fingers lift, so a release
+animation scales about the same place the pinch did rather than snapping to the
+origin. It is read from `onStart` as well as every update, so `onPinchStart`
+reports where the fingers are rather than where the previous gesture left them.
+
+## `min`, `max` and `elastic`
+
+With the default `elastic` of `0` the scale stops dead at an end. With
+`elastic` set, the fingers pull it past and Impulse **leaves it there**:
+
+```tsx
+const pinch = usePinch({
+  min: 1,
+  max: 4,
+  elastic: 0.35,
+  onPinchEnd: (event) => {
+    pinch.scale.value = withSpring(event.settled)
+  },
+})
+```
+
+`settled` is the nearest scale inside the range — the destination that spring
+needs. Impulse does not travel it, because moving a value over time is an
+animation and this library owns no animation vocabulary. See
+[the design principles](/).
+
+## There are no activation criteria
+
+There is nothing to set. RNGH's pinch takes the touch as soon as a second
+finger moves, and it exposes no threshold, so Impulse has none to pass on.
+
+> **DANGER — A pinch cannot be separated from a pan by a threshold**
+>
+> Every other continuous intent has one. This one does not, so the **relation is
+> the only thing** that decides how a pinch and a pan share a view. Say it:
+>
+> ```tsx
+> const { gesture } = useGestures([pinch, pan], { mode: 'simultaneous' })
+> ```
+>
+> `alongside` is the same statement for a gesture this screen does not own — a
+> scroll view, or a gesture from another library. See
+> [Coexistence](/coexistence).
+
+## Writing `scale` is how control comes back
+
+```ts
+pinch.scale // SharedValue<number>
+```
+
+A reset button, a zoom-out control, or a release spring writes it directly. The
+next pinch continues from whatever it holds, so writing it decides where the
+next gesture starts as well.
+
+## The cancel path
+
+`onPinchEnd` fires for both endings, and `cancelled` says which. `true` is the
+system taking the pinch away — a competing gesture won, or the app went to the
+background.
+
+The fingers never lifted on that path, so `velocity` describes the last
+movement rather than a release. Read `settled` on both paths: an elastic
+overshoot has to go home whether the user finished or not.
+
+A touch that never became a pinch reaches neither path. It goes to
+`onFinalize` with `success: false` and stops there.
+
+## Web
+
+RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
+touchscreen, or a device that reports them.
+
+A trackpad's pinch arrives as a `wheel` event with `ctrlKey`. That is not a
+pointer pair, so it never reaches this hook and a desktop browser with a
+trackpad alone cannot zoom. Give it a control that writes `scale` directly,
+which the accessibility fallback needs anyway. The browser's own page zoom is
+unaffected either way.
+
+## Accessibility
+
+A pinch is invisible to a screen reader and unreachable from a keyboard. This
+hook does not fix that.
+
+Whatever the pinch scales must be reachable another way:
+
+- zoom-in and zoom-out buttons that write `scale`
+- a control that resets it
+- `accessibilityActions` with `onAccessibilityAction`
+
+**A pinch-only zoom is a bug, not a trade-off.**
+
+---
+
 # Composition
 
 `useGestures` relates gestures to one another. You pass a list and one mode.
@@ -2177,8 +2366,26 @@ exists to prevent.
 | `useDoubleTap` | Yes — verified in RNGH's source | **Works** |
 | `useLongPress` | Yes — verified in RNGH's source | **Works**, with two caveats below |
 | `useDrag` | Yes — verified in RNGH's source | **Works** |
+| `usePan` | Yes — verified in RNGH's source | **Unverified** |
+| `useSwipe` | Yes — verified in RNGH's source | **Unverified** |
+| `usePinch` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
 
-All four intents recognize correctly under a mouse on web.
+The first four intents recognize correctly under a mouse on web. The last three
+have not been run in a browser, so their rows are not claims.
+
+## A trackpad pinch never reaches `usePinch`
+
+RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
+touchscreen, or a device that reports them.
+
+A trackpad's pinch arrives as a `wheel` event with `ctrlKey`, which is not a
+pointer pair. A desktop browser with a trackpad alone therefore cannot zoom.
+Give it a control that writes `scale` directly, which
+[the accessibility fallback](/use-pinch#accessibility) needs anyway. The
+browser's own page zoom is unaffected either way.
+
+This one is read from RNGH's web implementation rather than measured, which is
+why the row above still says unverified.
 
 ## The cancel path reports on the JS thread
 
@@ -2433,8 +2640,8 @@ implementation rather than infer it.
 Not the feature list. The things that fail silently, because those are what an
 agent cannot discover by reading its own output:
 
-- `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are **designed and
-  not written**. They appear in the design documents. They are not importable.
+- `useRotate`, `useHover`, and `useEdgeSwipe` are **designed and not
+  written**. They appear in the design documents. They are not importable.
 - `usePan` and `useDrag` are different hooks, and an agent that treats them as
   synonyms writes the wrong one. `useDrag` owns a position that accumulates and
   is clamped by `bounds`; `usePan` owns nothing and reports a per-frame
@@ -2479,6 +2686,7 @@ site reads as a promise.
 | ✅ | [`useDrag`](/use-drag) | A drag, streaming where it is |
 | ✅ | [`usePan`](/use-pan) | A pan, streaming how the finger moved |
 | ✅ | [`useSwipe`](/use-swipe) | A pan judged at release, with a direction |
+| ✅ | [`usePinch`](/use-pinch) | A two-finger pinch that owns its scale |
 | ✅ | [`useGestures`](/composition) | Composition under one relation |
 | ✅ | [`useRawGesture`](/raw-gestures) | The mechanism-level escape hatch |
 | ✅ | [`alongside` / `blocks` / `deferTo`](/coexistence) | Coexistence, on every hook |
@@ -2488,7 +2696,7 @@ site reads as a promise.
 **Do not import these.** They are decisions that have been made, not features
 that exist.
 
-`usePinch` · `useRotate` · `useHover` · `useEdgeSwipe`
+`useRotate` · `useHover` · `useEdgeSwipe`
 
 ## Milestones
 
@@ -2510,12 +2718,12 @@ recognizer resolves it.
 
 ### 2 — The intent set
 
-Six of ten intents exist. Each one needs a screen, a docs page, and a device
+Seven of ten intents exist. Each one needs a screen, a docs page, and a device
 pass, and the device pass is the part none of them has.
 
 - **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
-  `useLongPress`, `useDrag`, `usePan`, `useSwipe`.
-- **Designed only** — `usePinch`, `useRotate`, `useHover`, `useEdgeSwipe`.
+  `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`.
+- **Designed only** — `useRotate`, `useHover`, `useEdgeSwipe`.
 
 ### 3 — The Inertia bridge
 
@@ -2552,7 +2760,14 @@ Honest rather than empty. The ones a consumer can hit:
   default.
 - **No activation default has been measured.** Not one. `useSwipe`'s
   `commitDistance` of 80 points and `commitSpeed` of 800 points per second are
-  the newest guesses on the list.
+  the newest guesses on the list. `usePinch` adds none — RNGH's pinch exposes
+  no threshold — so it is the one continuous intent whose coexistence rests
+  entirely on a relation.
+- **`usePinch`'s `elastic` has no recommended value.** `useDrag` defaults it to
+  `0` and the example screen invented `0.35`. The resistance is also computed
+  on the scale rather than on its logarithm, so pulling below `min` resists
+  differently from pulling above `max` by the same factor. Only a hand can
+  tell whether that reads as wrong.
 - **Web is surveyed by hand, not by tests.** No jsdom test exists for any
   intent.
 

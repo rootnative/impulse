@@ -25,8 +25,26 @@ marked **unverified** have not been checked and are not claims.
 | `useDoubleTap` | Yes — verified in RNGH's source | **Works** |
 | `useLongPress` | Yes — verified in RNGH's source | **Works**, with two caveats below |
 | `useDrag` | Yes — verified in RNGH's source | **Works** |
+| `usePan` | Yes — verified in RNGH's source | **Unverified** |
+| `useSwipe` | Yes — verified in RNGH's source | **Unverified** |
+| `usePinch` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
 
-All four intents recognize correctly under a mouse on web.
+The first four intents recognize correctly under a mouse on web. The last three
+have not been run in a browser, so their rows are not claims.
+
+## A trackpad pinch never reaches `usePinch`
+
+RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
+touchscreen, or a device that reports them.
+
+A trackpad's pinch arrives as a `wheel` event with `ctrlKey`, which is not a
+pointer pair. A desktop browser with a trackpad alone therefore cannot zoom.
+Give it a control that writes `scale` directly, which
+[the accessibility fallback](/use-pinch#accessibility) needs anyway. The
+browser's own page zoom is unaffected either way.
+
+This one is read from RNGH's web implementation rather than measured, which is
+why the row above still says unverified.
 
 ## The cancel path reports on the JS thread
 

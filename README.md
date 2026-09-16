@@ -12,14 +12,14 @@
 
 **Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
 
-> **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, and `useSwipe` are the intent hooks so far.** `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened, so no activation-criteria default has been measured.
+> **Status:** `0.0.0-alpha.0` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, and `usePinch` are the intent hooks so far.** `useRotate`, `useHover`, and `useEdgeSwipe` are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete; its gate is a device pass that has not happened, so no activation-criteria default has been measured.
 
 ## Documentation
 
 **[rootnative.github.io/impulse](https://rootnative.github.io/impulse/)** — installation, the six intent hooks, composition, coexistence, and the web behaviour of each intent.
 
 - [Installation](https://rootnative.github.io/impulse/installation)
-- [`useTap`](https://rootnative.github.io/impulse/use-tap), [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap), [`useLongPress`](https://rootnative.github.io/impulse/use-long-press), [`useDrag`](https://rootnative.github.io/impulse/use-drag), [`usePan`](https://rootnative.github.io/impulse/use-pan), [`useSwipe`](https://rootnative.github.io/impulse/use-swipe)
+- [`useTap`](https://rootnative.github.io/impulse/use-tap), [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap), [`useLongPress`](https://rootnative.github.io/impulse/use-long-press), [`useDrag`](https://rootnative.github.io/impulse/use-drag), [`usePan`](https://rootnative.github.io/impulse/use-pan), [`useSwipe`](https://rootnative.github.io/impulse/use-swipe), [`usePinch`](https://rootnative.github.io/impulse/use-pinch)
 - [Composition](https://rootnative.github.io/impulse/composition) and [Coexistence](https://rootnative.github.io/impulse/coexistence)
 - [Web behaviour](https://rootnative.github.io/impulse/web) — what was measured in a browser, and what nobody has checked
 - [Roadmap](https://rootnative.github.io/impulse/roadmap)
@@ -119,7 +119,7 @@ Both build on gesture-handler and both ship a `useDrag`, a `usePan`, and a `useS
 ## Roadmap
 
 1. **Composition and coexistence core** — `useGestures` with all three modes, `alongside` / `blocks` / `deferTo` resolution, `useRawGesture`, the memoisation helper, `useTap`, and `useDrag` are **done**. The device pass that closes this milestone is not.
-2. **The intent set** — `useDoubleTap`, `useLongPress`, `usePan`, and `useSwipe` are **done**. `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` remain.
+2. **The intent set** — `useDoubleTap`, `useLongPress`, `usePan`, `useSwipe`, and `usePinch` are **done**. `useRotate`, `useHover`, and `useEdgeSwipe` remain.
 3. **The Inertia bridge** — `@rootnative/impulse/inertia`, adapting a release payload into Inertia's release transitions.
 
 Each milestone has a graduation gate, and every gate needs a pass on real hardware — a test runner cannot tell you whether a horizontal drag inside a vertical `ScrollView` feels right.
