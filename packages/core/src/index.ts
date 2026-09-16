@@ -7,10 +7,10 @@
  * `deferTo` options both accept.
  *
  * `useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`,
- * and `usePinch` are the intent hooks, and they share one pattern: an
- * intent-shaped payload, JS-thread callbacks named for what happened, worklet
- * phase callbacks named for when, and documented activation criteria. The
- * remaining intents — `useRotate`, `useHover`, `useEdgeSwipe` — are designed
+ * `usePinch`, and `useRotate` are the intent hooks, and they share one
+ * pattern: an intent-shaped payload, JS-thread callbacks named for what
+ * happened, worklet phase callbacks named for when, and documented activation
+ * criteria. The remaining intents — `useHover`, `useEdgeSwipe` — are designed
  * but not implemented; see the repository README for the roadmap.
  */
 
@@ -78,6 +78,13 @@ export type {
   UsePinchOptions,
   UsePinchResult,
 } from './intents/pinch'
+
+export { useRotate } from './intents/rotate'
+export type {
+  RotateEvent,
+  UseRotateOptions,
+  UseRotateResult,
+} from './intents/rotate'
 
 export type {
   AttachableGesture,

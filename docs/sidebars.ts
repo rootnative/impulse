@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
         'use-pan',
         'use-swipe',
         'use-pinch',
+        'use-rotate',
       ],
     },
     {

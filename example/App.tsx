@@ -15,6 +15,7 @@ import { DragScreen } from './screens/DragScreen'
 import { PanScreen } from './screens/PanScreen'
 import { SwipeScreen } from './screens/SwipeScreen'
 import { PinchScreen } from './screens/PinchScreen'
+import { RotateScreen } from './screens/RotateScreen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
@@ -35,6 +36,7 @@ type Route =
   | 'pan'
   | 'swipe'
   | 'pinch'
+  | 'rotate'
 
 /** Every route takes no params — the gallery is a flat list of demos. */
 type RootStackParamList = Record<Route, undefined>
@@ -67,6 +69,7 @@ const SCREENS: readonly ScreenEntry[] = [
   ['pan', PanScreen],
   ['swipe', SwipeScreen],
   ['pinch', PinchScreen],
+  ['rotate', RotateScreen],
 ]
 
 /**
@@ -149,6 +152,11 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
         description:
           'a scale that accumulates, about the point between the fingers',
       },
+      {
+        route: 'rotate',
+        label: 'useRotate',
+        description: 'an angle in degrees, turned about the anchor',
+      },
     ],
   },
 ]
@@ -165,7 +173,7 @@ const MILESTONES = [
     key: 'intents',
     label: 'Milestone 2 — the intent set',
     detail:
-      'useDoubleTap, useLongPress, usePan, useSwipe and usePinch are done. useRotate, useHover, useEdgeSwipe remain.',
+      'useDoubleTap, useLongPress, usePan, useSwipe, usePinch and useRotate are done. useHover, useEdgeSwipe remain.',
   },
   {
     key: 'inertia',

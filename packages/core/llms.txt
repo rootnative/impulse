@@ -4,7 +4,7 @@
 > react-native-gesture-handler. One hook per intent. Hooks return shared values
 > and a gesture; Impulse starts no animation and ships no components.
 
-Status: 0.0.0-alpha.0. Seven intents ship. No activation default has been
+Status: 0.0.0-alpha.0. Eight intents ship. No activation default has been
 measured on hardware — every default below is a design intention.
 
 Docs: https://rootnative.github.io/impulse/
@@ -22,11 +22,11 @@ missing, gestures never fire and nothing warns.
 
 ## What ships
 
-useTap, useDoubleTap, useLongPress, useDrag, usePan, useSwipe, usePinch —
-intent hooks. useGestures — composition. useRawGesture — the escape hatch.
-GestureDetector is re-exported from the package entry.
+useTap, useDoubleTap, useLongPress, useDrag, usePan, useSwipe, usePinch,
+useRotate — intent hooks. useGestures — composition. useRawGesture — the
+escape hatch. GestureDetector is re-exported from the package entry.
 
-NOT IMPLEMENTED, do not import: useRotate, useHover, useEdgeSwipe.
+NOT IMPLEMENTED, do not import: useHover, useEdgeSwipe.
 They are designed only.
 
 usePan and useDrag are not synonyms. useDrag owns a position: x and y
@@ -45,7 +45,14 @@ centre slides the content out from under them. It has NO activation criteria:
 RNGH's pinch exposes no threshold, so a pinch and a pan are separated by a
 relation alone — useGestures([pinch, pan], { mode: 'simultaneous' }).
 
-Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,pan,swipe,pinch,compose,raw,gesture-handler}
+useRotate reports DEGREES, not the radians RNGH reports. This is the one
+place Impulse changes a unit: min: -45, not -Math.PI / 4. It applies to
+angle, gestureAngle, velocity and the min/max range. The angle accumulates
+and does NOT wrap — a second full turn reports 720. anchor is the point the
+turn happens about, the counterpart of pinch's focal. It has NO activation
+criteria either, so rotate and pinch are composed simultaneous.
+
+Subpaths: @rootnative/impulse/{tap,double-tap,long-press,drag,pan,swipe,pinch,rotate,compose,raw,gesture-handler}
 
 ## The shape of every hook
 

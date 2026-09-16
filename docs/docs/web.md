@@ -28,23 +28,28 @@ marked **unverified** have not been checked and are not claims.
 | `usePan` | Yes — verified in RNGH's source | **Unverified** |
 | `useSwipe` | Yes — verified in RNGH's source | **Unverified** |
 | `usePinch` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
+| `useRotate` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
 
-The first four intents recognize correctly under a mouse on web. The last three
+The first four intents recognize correctly under a mouse on web. The last four
 have not been run in a browser, so their rows are not claims.
 
-## A trackpad pinch never reaches `usePinch`
+## A mouse cannot drive a two-finger intent
 
-RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
-touchscreen, or a device that reports them.
+RNGH recognizes pinch and rotation from pointer events, so both need **two
+pointers** — a touchscreen, or a device that reports them. One mouse is one
+pointer, so neither hook fires under it at all.
 
-A trackpad's pinch arrives as a `wheel` event with `ctrlKey`, which is not a
-pointer pair. A desktop browser with a trackpad alone therefore cannot zoom.
-Give it a control that writes `scale` directly, which
-[the accessibility fallback](/use-pinch#accessibility) needs anyway. The
-browser's own page zoom is unaffected either way.
+A trackpad does not close the gap. Its pinch arrives as a `wheel` event with
+`ctrlKey`, and its rotation as a platform gesture event; neither is a pointer
+pair, so neither reaches these hooks. A desktop browser with a trackpad alone
+therefore cannot zoom or turn.
 
-This one is read from RNGH's web implementation rather than measured, which is
-why the row above still says unverified.
+Give both a control that writes `scale` or `angle` directly, which
+[the](/use-pinch#accessibility) [accessibility fallbacks](/use-rotate#accessibility)
+need anyway. The browser's own page zoom is unaffected either way.
+
+This is read from RNGH's web implementation rather than measured, which is why
+the two rows above still say unverified.
 
 ## The cancel path reports on the JS thread
 

@@ -85,6 +85,11 @@
       "react-native": "./dist/pinch/index.js",
       "default": "./dist/pinch/index.js"
     },
+    "./rotate": {
+      "types": "./dist/rotate/index.d.ts",
+      "react-native": "./dist/rotate/index.js",
+      "default": "./dist/rotate/index.js"
+    },
     "./gesture-handler": {
       "types": "./dist/gesture-handler/index.d.ts",
       "react-native": "./dist/gesture-handler/index.js",
