@@ -6,6 +6,7 @@ import {
   useGestureMemo,
   type GestureMemoOptions,
 } from '../internal/useGestureMemo'
+import { buildIntentResult } from '../internal/intentResult'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
 import { toTapEvent, type TapEvent } from './tapEvent'
@@ -268,5 +269,8 @@ export function useTap(options: UseTapOptions = {}): UseTapResult {
   // consumer may put the whole hook result in a dependency list, and a fresh
   // object every render would make that dependency useless. `isActive` is
   // stable for the life of the hook, so `built` is the only real input.
-  return useMemo(() => ({ ...built, isActive }), [built, isActive])
+  return useMemo(
+    () => buildIntentResult(built, { isActive }),
+    [built, isActive],
+  )
 }

@@ -12,6 +12,7 @@ import {
   useGestureMemo,
   type GestureMemoOptions,
 } from '../internal/useGestureMemo'
+import { buildIntentResult } from '../internal/intentResult'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableList } from '../internal/useStableList'
 import { useStableRecord } from '../internal/useStableRecord'
@@ -577,5 +578,8 @@ export function useSwipe(options: UseSwipeOptions = {}): UseSwipeResult {
   // Memoised so a consumer can put the whole hook result in a dependency
   // list. The shared values are stable for the life of the hook, so `built`
   // is the only real input.
-  return useMemo(() => ({ ...built, x, y, isActive }), [built, x, y, isActive])
+  return useMemo(
+    () => buildIntentResult(built, { x, y, isActive }),
+    [built, x, y, isActive],
+  )
 }

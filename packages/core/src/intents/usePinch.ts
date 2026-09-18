@@ -12,6 +12,7 @@ import {
   useGestureMemo,
   type GestureMemoOptions,
 } from '../internal/useGestureMemo'
+import { buildIntentResult } from '../internal/intentResult'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
 import {
@@ -476,7 +477,7 @@ export function usePinch(options: UsePinchOptions = {}): UsePinchResult {
   // list. The shared values are stable for the life of the hook, so `built`
   // is the only real input.
   return useMemo(
-    () => ({ ...built, scale, focal, isActive }),
+    () => buildIntentResult(built, { scale, focal, isActive }),
     [built, scale, focal, isActive],
   )
 }

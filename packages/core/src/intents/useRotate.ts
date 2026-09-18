@@ -12,6 +12,7 @@ import {
   useGestureMemo,
   type GestureMemoOptions,
 } from '../internal/useGestureMemo'
+import { buildIntentResult } from '../internal/intentResult'
 import { useLatestCallback } from '../internal/useLatestCallback'
 import { useStableRecord } from '../internal/useStableRecord'
 import {
@@ -500,7 +501,7 @@ export function useRotate(options: UseRotateOptions = {}): UseRotateResult {
   // list. The shared values are stable for the life of the hook, so `built`
   // is the only real input.
   return useMemo(
-    () => ({ ...built, angle, anchor, isActive }),
+    () => buildIntentResult(built, { angle, anchor, isActive }),
     [built, angle, anchor, isActive],
   )
 }
