@@ -121,7 +121,7 @@ function Card({
       )
       setGone(true)
     },
-    onSwipeEnd: (event) => {
+    onSwipeEnd: (event, { cancelled }) => {
       // Impulse leaves `x` where the finger left it, because moving it is an
       // animation. This is the decision the library refuses to make.
       swipe.x.value = withSpring(
@@ -132,6 +132,13 @@ function Card({
             : 0,
         SPRING,
       )
+      // A cancelled swipe never commits — the system took the touch, so the
+      // finger never lifted and `direction` is null. The card comes back the
+      // same way a release that stopped short does, and only the log tells
+      // the two apart. That difference is what this line is here to show.
+      if (cancelled) {
+        onResolve(`${label} — cancelled`)
+      }
     },
   })
 
@@ -186,9 +193,12 @@ function Compass({ scrollRef }: { scrollRef: RefObject<ScrollView | null> }) {
     deferTo: scrollRef as unknown as GestureReference,
     onSwipe: (event) =>
       setLast(`${event.direction} · ${Math.round(event.distance)} pt`),
-    onSwipeEnd: () => {
+    onSwipeEnd: (_event, { cancelled }) => {
       swipe.x.value = withSpring(0, SPRING)
       swipe.y.value = withSpring(0, SPRING)
+      if (cancelled) {
+        setLast('cancelled')
+      }
     },
   })
 

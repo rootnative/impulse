@@ -161,27 +161,6 @@ const SECTIONS: ReadonlyArray<HomeSection> = [
   },
 ]
 
-/** The roadmap, shown while the gallery is empty. Drop a milestone's row when its screens land. */
-const MILESTONES = [
-  {
-    key: 'core',
-    label: 'Milestone 1 — composition and coexistence',
-    detail:
-      'useGestures, alongside / blocks / deferTo, useRawGesture, useTap, useDrag — done. The gate is a device pass.',
-  },
-  {
-    key: 'intents',
-    label: 'Milestone 2 — the intent set',
-    detail:
-      'useDoubleTap, useLongPress, usePan, useSwipe, usePinch and useRotate are done. useHover, useEdgeSwipe remain.',
-  },
-  {
-    key: 'inertia',
-    label: 'Milestone 3 — the Inertia bridge',
-    detail: '@rootnative/impulse/inertia — a release payload seeds a spring',
-  },
-] as const
-
 const SCREEN_OPTIONS = { headerShown: false } as const
 
 function HomeScreen() {
@@ -204,25 +183,6 @@ function HomeScreen() {
           before it ships.
         </Text>
       </View>
-
-      {SECTIONS.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>Nothing to demonstrate yet</Text>
-          <Text style={styles.emptyBody}>
-            The repository holds its build pipeline, the gesture-handler interop
-            subpath, and the design contract. No intent hook is implemented.
-            This screen fills in as they land.
-          </Text>
-          <View style={styles.milestones}>
-            {MILESTONES.map((milestone) => (
-              <View key={milestone.key} style={styles.milestone}>
-                <Text style={styles.milestoneLabel}>{milestone.label}</Text>
-                <Text style={styles.milestoneDetail}>{milestone.detail}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      ) : null}
 
       {SECTIONS.map((section) => (
         <View key={section.title} style={styles.section}>
@@ -263,7 +223,9 @@ export default function App() {
     // any screen — and in the navigator's own transitions — is served.
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <NavigationContainer>
+        <NavigationContainer
+          initialState={{ routes: [{ name: 'home' }, { name: 'drag' }] }}
+        >
           <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
             {/*
               Every screen renders its own header via `ScreenShell`, so the
@@ -318,44 +280,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#9ca3af',
-  },
-  empty: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 20,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  emptyBody: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: '#6b7280',
-  },
-  milestones: {
-    marginTop: 6,
-    gap: 14,
-  },
-  milestone: {
-    gap: 3,
-    borderLeftWidth: 3,
-    borderLeftColor: '#6b4fbb',
-    paddingLeft: 12,
-  },
-  milestoneLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  milestoneDetail: {
-    fontSize: 13,
-    lineHeight: 19,
     color: '#9ca3af',
   },
   section: {
