@@ -12,7 +12,7 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
 
-> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus six intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, and `useSwipe`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe` are **not implemented**. No activation-criteria default has been measured on hardware yet. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus eight intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. No activation-criteria default has been measured on hardware yet. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 
@@ -219,6 +219,54 @@ const swipe = useSwipe({
 **`directions` is the coexistence setting, not only a filter.** An all-horizontal list gives the gesture a directional threshold on x, so a swipeable row lives inside a vertical list with no relation declared. An all-vertical list does the same on y. A mixed list has no axis to lock, so the threshold is radial and the swipe competes for every touch — declare `deferTo` or `blocks` there.
 
 `onSwipe` fires only for a release that counted, and its payload's `direction` is never `null`. `onSwipeEnd` fires for every release of a swipe that activated, which is how a view that followed the finger learns to go back. A cancelled gesture never commits.
+
+#### `usePinch`
+
+A two-finger pinch that **owns the scale it produces**. RNGH's own factor restarts at `1` on every gesture; `usePinch` multiplies it into the scale it already holds, so `min` and `max` are the zoom range of the viewer rather than of one gesture.
+
+```tsx
+import { GestureDetector, usePinch } from '@rootnative/impulse'
+
+const pinch = usePinch({ min: 1, max: 4 })
+const style = useAnimatedStyle(() => ({
+  transform: [{ scale: pinch.scale.value }],
+}))
+```
+
+| Option | Default | Note |
+| --- | --- | --- |
+| `initial` | `1` | The scale before any pinch. Read once, at mount. |
+| `min` / `max` | unset | The zoom range of the viewer. Unset is unbounded. |
+| `elastic` | `0` | How much of the pull past an end reaches `scale`. `0` stops dead; `1` ignores the end. |
+
+`focal` is the midpoint between the fingers, relative to the view, and a zoom viewer cannot skip it: scaling about the view's centre slides the content out from under the fingers. Translate the focal point to the origin, scale, then translate back. `gestureScale` in the payload is RNGH's own factor, for the cases that want the raw gesture.
+
+**`usePinch` has no activation criteria, and that is RNGH's limit rather than a choice.** `Gesture.Pinch()` takes the touch as soon as a second finger moves and exposes no threshold, so a pinch and a pan are separated by a relation alone — `useGestures([pinch, pan], { mode: 'simultaneous' })`.
+
+#### `useRotate`
+
+A two-finger rotation that owns the angle it produces, the way `usePinch` owns a scale.
+
+```tsx
+import { GestureDetector, useRotate } from '@rootnative/impulse'
+
+const rotate = useRotate({ min: -45, max: 45 })
+const style = useAnimatedStyle(() => ({
+  transform: [{ rotate: `${rotate.angle.value}deg` }],
+}))
+```
+
+| Option | Default | Note |
+| --- | --- | --- |
+| `initial` | `0` | The angle before any rotation, in degrees. Read once, at mount. |
+| `min` / `max` | unset | The travel of the control, in degrees. Unset is unbounded. |
+| `elastic` | `0` | How much of the turn past an end reaches `angle`. `0` stops dead; `1` ignores the end. |
+
+**`useRotate` reports degrees, and RNGH reports radians.** This is the one place in the library where a unit is changed rather than passed through: write `min: -45`, not `-Math.PI / 4`. The conversion applies to `angle`, `gestureAngle`, `velocity`, and the `min` / `max` comparison.
+
+The angle **does not wrap** at a full turn — a second revolution reports `720`. A dial counting turns needs that, and a photo editor takes the remainder itself.
+
+`anchor` is the point the turn happens about, and it is the counterpart of pinch's `focal`. `useRotate` has no activation criteria either, so rotate and pinch are composed `simultaneous`.
 
 ### `useGestures` — composition
 

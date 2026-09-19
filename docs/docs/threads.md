@@ -66,6 +66,39 @@ deprecated.
 
 :::
 
+## A worklet captures the whole result
+
+Reading a shared value inside a worklet captures the **root identifier**, not
+the field:
+
+```tsx
+const drag = useDrag({ axis: 'x' })
+
+// This worklet captures `drag`, not `drag.x`.
+const style = useAnimatedStyle(() => ({
+  transform: [{ translateX: drag.x.value }],
+}))
+```
+
+`react-native-worklets` copies a captured object field by field, through
+`Object.entries`. An RNGH gesture cannot cross the thread boundary, so a plain
+result would throw `[Worklets] Cannot copy value of type 'PanGesture'` at
+render — from the pattern every page on this site shows.
+
+Every intent result therefore hides `gesture` and `ref` from enumeration. Both
+are still properties and still read normally, so
+`<GestureDetector gesture={drag.gesture}>` and every coexistence option are
+unaffected. The copy skips them and the shared values go across, which is all a
+worklet wanted.
+
+:::note What this changes for you
+
+Nothing you write. One thing you may observe: `gesture` and `ref` do not appear
+in `Object.keys`, in a spread, in `JSON.stringify`, or in a logged result. Read
+them by name.
+
+:::
+
 ## The asymmetry that keeps gestures stable
 
 This is the part that looks like an implementation detail and is not.
