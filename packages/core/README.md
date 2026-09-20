@@ -12,7 +12,7 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
 
-> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus eight intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. No activation-criteria default has been measured on hardware yet. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.0` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus eight intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. A device sweep on 2026-09-19 measured the activation criteria a scripted touch can reach; how a gesture feels is still untested. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 
@@ -324,8 +324,8 @@ const fling = useRawGesture(
 
 - **`GestureDetector`**, re-exported from the root entry. Every hook's result is handed to it, so reaching for it is not a reason to add a second gesture import to an app.
 - **`@rootnative/impulse/gesture-handler`** — RNGH's own primitives, re-exported under their original names by reference. It keeps `@rootnative/impulse` the only gesture import in an app.
-- **Subpaths** — `@rootnative/impulse/tap`, `/double-tap`, `/long-press`, `/drag`, `/pan`, `/swipe`, `/compose`, and `/raw`, so an app that uses one hook does not ship the set.
-- **Types** — `AttachableGesture`, `CoexistenceOptions`, `ComposeMode`, `GestureReference`, `GestureReferences`, `HitSlop`, `IntentResult`, `Point`, and per-intent `TapEvent`, `LongPressEvent`, `DragAxis` / `DragBounds` / `DragEvent`, `PanAxis` / `PanEvent`, `SwipeDirection` / `SwipeEvent` / `CommittedSwipeEvent`, plus the `Use*Options` and `Use*Result` pair for each hook. `useTap` and `useDoubleTap` share one `TapEvent`.
+- **Subpaths** — `@rootnative/impulse/tap`, `/double-tap`, `/long-press`, `/drag`, `/pan`, `/swipe`, `/pinch`, `/rotate`, `/compose`, and `/raw`, so an app that uses one hook does not ship the set.
+- **Types** — `AttachableGesture`, `CoexistenceOptions`, `ComposeMode`, `GestureReference`, `GestureReferences`, `HitSlop`, `IntentResult`, `Point`, and per-intent `TapEvent`, `LongPressEvent`, `DragAxis` / `DragBounds` / `DragEvent`, `PanAxis` / `PanEvent`, `SwipeDirection` / `SwipeEvent` / `CommittedSwipeEvent`, `PinchEvent`, `RotateEvent`, plus the `Use*Options` and `Use*Result` pair for each hook. `useTap` and `useDoubleTap` share one `TapEvent`.
 - **`@rootnative/impulse/jest-preset`** — one-line Jest wiring, layered on `@react-native/jest-preset`.
 
 ## Gesture identity is stable by construction
@@ -336,11 +336,11 @@ Worklet callbacks are the deliberate exception: a worklet is captured as written
 
 ## What does not ship yet
 
-Four intent hooks — `usePinch`, `useRotate`, `useHover`, and `useEdgeSwipe`. They are designed and the design is locked; none of them is written.
+Two intent hooks — `useHover` and `useEdgeSwipe`. They are designed and the design is locked; neither is written.
 
 Three further limits today:
 
-- **No activation-criteria default has been measured on a device.** Every number in the tables above is a design intention. `useTap`'s and `useDoubleTap`'s `maxDistance`, `useDoubleTap`'s `maxDelay`, the shared 10-point `threshold`, and `useSwipe`'s `commitDistance` and `commitSpeed` are the ones that will move if any do.
+- **Most activation-criteria defaults are still design intentions.** A device sweep on 2026-09-19 drove every intent on Android or iOS and measured what a scripted touch can: `useDrag`'s `bounds` and `elastic`, `usePinch`'s and `useRotate`'s `min` and `max`, `useLongPress`'s `minDuration`, and `useSwipe`'s `commitDistance` are all honoured exactly. That the library obeys a number is not evidence that the number is right — only a hand reports that. A deliberate double tap still registers at `maxDelay: 250` on both platforms, so the 500ms default is the one most likely to move. Three numbers stay unmeasured, because no instrument here could produce them: `useTap`'s and `useDoubleTap`'s `maxDistance`, the shared 10-point `threshold`, and `useSwipe`'s `commitSpeed`.
 
 - **`useGestures` does not take coexistence options.** RNGH's three relations are methods on a single gesture, and a composed gesture does not have them. Set them on the member hooks instead.
 - **No warning when `<GestureHandlerRootView>` is missing.** Its absence is silent — the gesture simply never fires — and RNGH does not export the context that would let Impulse detect it.
