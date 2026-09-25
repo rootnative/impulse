@@ -223,9 +223,7 @@ export default function App() {
     // any screen — and in the navigator's own transitions — is served.
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <NavigationContainer
-          initialState={{ routes: [{ name: 'home' }, { name: 'drag' }] }}
-        >
+        <NavigationContainer>
           <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
             {/*
               Every screen renders its own header via `ScreenShell`, so the
