@@ -40,8 +40,8 @@ const DEFAULT_MAX_DELAY = 500
  * — a double tap that is fussier than a single tap on the same view is a
  * difference the consumer never asked for.
  *
- * **This number is a design intention, not a measurement.** No hardware pass
- * has happened. See Known gaps in CLAUDE.md.
+ * **This number is a design intention, not a measurement.** The device sweep
+ * of 2026-09-19 did not test it. See Known gaps in docs/docs/roadmap.md.
  */
 const DEFAULT_MAX_DISTANCE = 10
 
@@ -72,7 +72,10 @@ export interface UseDoubleTapOptions extends GestureMemoOptions {
    * ordinary tap on that view waits this long. 500ms is RNGH's number and is
    * generous; 250 to 300 is closer to what the platforms themselves use.
    *
-   * Not measured on hardware. See Known gaps in CLAUDE.md.
+   * The device sweep of 2026-09-19 found that a deliberate double tap still
+   * registers at 250, on an Android emulator and an iOS simulator. Whether
+   * the single-tap latency feels acceptable is unmeasured. See Known gaps in
+   * docs/docs/roadmap.md.
    */
   maxDelay?: number
   /**
@@ -198,7 +201,8 @@ export type UseDoubleTapResult = IntentResult<TapGesture>
  * **Activation criteria.** `maxDuration` and `maxDelay` default to 500ms, and
  * `maxDistance` to 10 points. The distance default is Impulse's, not RNGH's,
  * and matches `useTap` so the two agree about what counts as a tap on one
- * view. None of the three has been measured on hardware yet.
+ * view. The device sweep found that `maxDelay` works at 500ms and at 250ms.
+ * It did not test `maxDuration` or `maxDistance`, and it measured no feel.
  *
  * **Web.** RNGH's web implementation recognizes tap from pointer events, so a
  * double click behaves as a double tap. The browser's own double-click

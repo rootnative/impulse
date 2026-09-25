@@ -29,8 +29,9 @@ import {
  * `Gesture.Pan()` activates almost immediately, which is what makes a pan
  * inside a scroll view steal the scroll.
  *
- * **This number is a design intention, not a measurement.** No hardware pass
- * has happened. See Known gaps in CLAUDE.md.
+ * **This number is a design intention, not a measurement.** The device sweep
+ * of 2026-09-20 drove `usePan` and did not test it. See Known gaps in
+ * docs/docs/roadmap.md.
  */
 const DEFAULT_THRESHOLD = 10
 
@@ -227,8 +228,8 @@ export interface UsePanResult extends IntentResult<PanGesture> {
  * **Activation criteria.** `threshold` defaults to 10 points. With
  * `axis: 'x'` or `'y'` it is directional, so a horizontal pan inside a
  * vertical `ScrollView` leaves the scroll alone until the finger commits
- * sideways; with `'both'` it is a radial distance. The default has not been
- * measured on hardware yet.
+ * sideways; with `'both'` it is a radial distance. The device sweep did not
+ * test the default.
  *
  * **Coexistence.** A threshold decides who moves first; it does not decide
  * who wins a contested touch. Say which gesture the touch belongs to as well

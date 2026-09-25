@@ -141,9 +141,18 @@ It is RNGH's number. The platforms themselves use something closer to 250–300 
 Impulse restates the upstream default rather than inventing a different
 unmeasured guess.
 
-Nothing here has been measured on hardware. `example/screens/DoubleTapScreen.tsx`
-switches between 500 and 250 so the trade — single-tap latency against
-double-tap tolerance — can be felt.
+The device sweep of 2026-09-19 measured the boundary on an Android emulator.
+Two taps closer together than `maxDelay` gave one double tap and no single tap.
+Two taps further apart gave two single taps and no double tap. **A deliberate
+double tap still registered at 250 ms**, on the emulator and on an iOS
+simulator. The single-tap latency on the emulator was about 610 ms at 500 and
+about 375 ms at 250.
+
+The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
+physical device must confirm that number. Whether the latency feels acceptable
+is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
+500 and 250 so the trade — single-tap latency against double-tap tolerance —
+can be felt.
 
 :::
 

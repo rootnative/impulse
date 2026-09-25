@@ -26,8 +26,10 @@ a `useMemo`, a ref dance, and hand-written translation maths.
 > designed and **not written**. Do not import them yet — see the
 > [Roadmap](/roadmap).
 >
-> No activation-criteria default in these docs has been measured on hardware.
-> Each one is a design intention. Every page marks the defaults that are still
+> A device sweep on an Android emulator and an iOS simulator drove every intent
+> on at least one platform. It proves the mechanics, not the feel, and no
+> physical device has run it. So each activation-criteria default is still a
+> design intention. Every page states what the sweep proved and what is still
 > unmeasured.
 
 ## The problem
@@ -536,8 +538,10 @@ roughly a finger's own jitter while pressing.
 
 > **WARNING — Neither default has been measured**
 >
-> No hardware pass has happened. Both are design intentions. `maxDistance` is
-> shared with `useDoubleTap` on purpose, so moving it moves both.
+> The device sweep of 2026-09-19 did not test either value. It tested the race
+> between a tap and a double tap, which passed on both platforms — see
+> [`useDoubleTap`](/use-double-tap). Both defaults are design intentions.
+> `maxDistance` is shared with `useDoubleTap` on purpose, so moving it moves both.
 
 ## Pairing with a double tap
 
@@ -723,9 +727,18 @@ asked for. Moving it moves both.
 > Impulse restates the upstream default rather than inventing a different
 > unmeasured guess.
 >
-> Nothing here has been measured on hardware. `example/screens/DoubleTapScreen.tsx`
-> switches between 500 and 250 so the trade — single-tap latency against
-> double-tap tolerance — can be felt.
+> The device sweep of 2026-09-19 measured the boundary on an Android emulator.
+> Two taps closer together than `maxDelay` gave one double tap and no single tap.
+> Two taps further apart gave two single taps and no double tap. **A deliberate
+> double tap still registered at 250 ms**, on the emulator and on an iOS
+> simulator. The single-tap latency on the emulator was about 610 ms at 500 and
+> about 375 ms at 250.
+>
+> The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
+> physical device must confirm that number. Whether the latency feels acceptable
+> is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
+> 500 and 250 so the trade — single-tap latency against double-tap tolerance —
+> can be felt.
 
 ## Result
 
@@ -1089,10 +1102,14 @@ const row = useDrag({ axis: 'x', threshold: 10, failOffset: 8 })
 `threshold` decides when the drag **wins**. `failOffset` decides when it **gives
 up** — set it when a mostly-diagonal move should go to the other gesture.
 
-> **WARNING — The 10-point default is unmeasured**
+> **WARNING — The 10-point default has no feel result**
 >
 > Too low and a list stops scrolling. Too high and a row feels stuck before it
-> moves. No hardware pass has happened; `example/screens/DragScreen.tsx` is where
+> moves. The device sweep of 2026-09-19 proved the mechanics on an Android
+> emulator and an iOS simulator: a horizontal row inside a vertical list opens,
+> and a vertical drag that starts on the row still scrolls the list. The drag also
+> does not jump by the threshold when it activates. Whether 10 points feels right
+> needs a finger on a physical device. `example/screens/DragScreen.tsx` is where
 > that gets answered.
 
 > **DANGER — A threshold does not decide who wins a contested touch**
@@ -1348,8 +1365,9 @@ has no such escape.
 
 > **WARNING — The 10-point default is unmeasured**
 >
-> No hardware pass has happened. `example/screens/PanScreen.tsx` is where that
-> gets answered.
+> The device sweep of 2026-09-20 drove `usePan` on both platforms. It proved
+> `change` and `pointers`, and it did not test the threshold.
+> `example/screens/PanScreen.tsx` is where that gets answered.
 
 > **DANGER — A threshold does not decide who wins a contested touch**
 >
@@ -1471,10 +1489,14 @@ direction. It reaches `onSwipeEnd` with `direction: null`, and never reaches
 
 Either commit test is enough on its own: far enough, or fast enough.
 
-> **WARNING — 80 points and 800 points per second are unmeasured**
+> **WARNING — `commitSpeed` is untested, and neither number has a feel result**
 >
 > Too low and a card leaves on a nudge. Too high and a deliberate flick does
-> nothing. No hardware pass has happened;
+> nothing. `commitDistance` passed the device sweep of 2026-09-19 on an Android
+> emulator and an iOS simulator: a long swipe committed, and a short, slow one
+> did not. `commitSpeed` is not tested. The iOS simulator delivers about 304
+> points per second, and the Android emulator stops near 690 before it merges the
+> input events. A physical device is necessary.
 > `example/screens/SwipeScreen.tsx` is where that gets answered.
 
 ## Payload
@@ -2327,6 +2349,11 @@ Mark it with the `'worklet'` directive. It receives a worklet-safe payload and
 runs on the UI thread, so it can write a shared value every frame without a
 round trip.
 
+If you forget the directive, Impulse warns once in development. The warning
+names the hook and the callback. Without it, the first touch that reaches the
+phase throws `Tried to synchronously call a Remote Function. Called
+"anonymous"`, which names neither.
+
 > **DANGER — Never close over JS-thread state in a worklet**
 >
 > Read a shared value, or cross back with `scheduleOnRN` from
@@ -2349,11 +2376,6 @@ const drag = useDrag({ axis: 'x' })
 const style = useAnimatedStyle(() => ({
   transform: [{ translateX: drag.x.value }],
 }))
-If you forget the directive, Impulse warns once in development. The warning
-names the hook and the callback. Without it, the first touch that reaches the
-phase throws `Tried to synchronously call a Remote Function. Called
-"anonymous"`, which names neither.
-
 ```
 
 `react-native-worklets` copies a captured object field by field, through
@@ -2948,22 +2970,32 @@ that exist.
 
 The genuinely hard part, built first, because every intent depends on it.
 
-**The code is complete. The gate is not.**
+**The code is complete. The mechanical half of the gate passes. The feel half
+has no result.**
 
 > _Gate:_ a horizontal `useDrag` inside a vertical `ScrollView` works on iOS and
 > Android hardware, and a `useTap` / `useDoubleTap` race resolves correctly.
 > Verified on a device, not in Jest.
 
-**No hardware pass has happened.** Every activation-criteria default on this
-site is a design intention rather than a measurement, and each page says so. The
-composition core is verified only against RNGH's own `prepare()` output, which
-proves the relation Impulse asks for and says nothing about how a platform
-recognizer resolves it.
+**A device sweep ran on 2026-09-19 and 2026-09-20**, on an Android emulator
+with injected touches and on an iOS simulator with XCUITest. Both checks passed
+on both platforms:
+
+- A horizontal `useDrag` row opens to exactly its target of 120 points. A
+  vertical drag that starts on a row scrolls the list, with no relation
+  declared.
+- The race resolves. Below `maxDelay`, two taps gave one double tap and no
+  single tap. Above it, two taps gave two single taps and no double tap.
+
+**The sweep does not measure feel**, and no physical device has run it. So
+each activation-criteria default on this site is still a design intention, and
+each page says what the sweep proved and what it did not.
 
 ### 2 — The intent set
 
 Eight of ten intents exist. Each one needs a screen, a docs page, and a device
-pass, and the device pass is the part none of them has.
+pass. The device sweep drove all eight on at least one platform. None of them
+has a feel result.
 
 - **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
   `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, `useRotate`.
@@ -3002,11 +3034,14 @@ Honest rather than empty. The ones a consumer can hit:
 - **`useLongPress`'s `maxDistance` cancels an active press on web**, against
   RNGH's own documented contract. Hold-then-drag does not work there at the
   default.
-- **No activation default has been measured.** Not one. `useSwipe`'s
-  `commitDistance` of 80 points and `commitSpeed` of 800 points per second are
-  the newest guesses on the list. `usePinch` and `useRotate` add none — neither
-  RNGH recognizer exposes a threshold — so their coexistence rests entirely on
-  a relation.
+- **No activation default has a feel result.** The device sweep proved that
+  some defaults work: the drag threshold, `useSwipe`'s `commitDistance` of 80
+  points, and `maxDelay` at 500 ms and 250 ms. It did not prove that any of
+  them feels right. `useSwipe`'s `commitSpeed` of 800 points per second is not
+  tested, because neither harness can make a swipe that is short enough and
+  fast enough. `usePinch` and `useRotate` add no default — neither RNGH
+  recognizer exposes a threshold — so their coexistence rests entirely on a
+  relation.
 - **`usePinch`'s `elastic` has no recommended value.** `useDrag` defaults it to
   `0` and the example screen invented `0.35`. The resistance is also computed
   on the scale rather than on its logarithm, so pulling below `min` resists

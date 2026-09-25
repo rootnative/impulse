@@ -90,10 +90,14 @@ const row = useDrag({ axis: 'x', threshold: 10, failOffset: 8 })
 `threshold` decides when the drag **wins**. `failOffset` decides when it **gives
 up** — set it when a mostly-diagonal move should go to the other gesture.
 
-:::warning The 10-point default is unmeasured
+:::warning The 10-point default has no feel result
 
 Too low and a list stops scrolling. Too high and a row feels stuck before it
-moves. No hardware pass has happened; `example/screens/DragScreen.tsx` is where
+moves. The device sweep of 2026-09-19 proved the mechanics on an Android
+emulator and an iOS simulator: a horizontal row inside a vertical list opens,
+and a vertical drag that starts on the row still scrolls the list. The drag also
+does not jump by the threshold when it activates. Whether 10 points feels right
+needs a finger on a physical device. `example/screens/DragScreen.tsx` is where
 that gets answered.
 
 :::

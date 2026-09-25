@@ -143,8 +143,10 @@ roughly a finger's own jitter while pressing.
 
 :::warning Neither default has been measured
 
-No hardware pass has happened. Both are design intentions. `maxDistance` is
-shared with `useDoubleTap` on purpose, so moving it moves both.
+The device sweep of 2026-09-19 did not test either value. It tested the race
+between a tap and a double tap, which passed on both platforms — see
+[`useDoubleTap`](/use-double-tap). Both defaults are design intentions.
+`maxDistance` is shared with `useDoubleTap` on purpose, so moving it moves both.
 
 :::
 

@@ -31,8 +31,10 @@ import {
  * can share a view, so it is set here rather than left to the consumer to
  * discover.
  *
- * **This number is a design intention, not a measurement.** No hardware pass
- * has happened. See Known gaps in CLAUDE.md.
+ * **This number is a design intention, not a measurement.** The device sweep
+ * of 2026-09-19 found that it works mechanically on an Android emulator and
+ * an iOS simulator. Whether it feels right is unmeasured. See Known gaps in
+ * docs/docs/roadmap.md.
  */
 const DEFAULT_THRESHOLD = 10
 
@@ -331,7 +333,8 @@ function clamp(
  * vertical `ScrollView` leaves the scroll alone until the finger commits
  * sideways; with `'both'` it is a radial distance. Set `failOffset` as well
  * when a mostly-diagonal move should go to the other gesture rather than to
- * this one. The default has not been measured on hardware yet.
+ * this one. The default works mechanically in the device sweep, and its feel
+ * is unmeasured.
  *
  * **Coexistence.** A threshold decides who moves first; it does not decide
  * who wins a contested touch. For a drag inside a scroll view, say which one

@@ -81,10 +81,14 @@ direction. It reaches `onSwipeEnd` with `direction: null`, and never reaches
 
 Either commit test is enough on its own: far enough, or fast enough.
 
-:::warning 80 points and 800 points per second are unmeasured
+:::warning `commitSpeed` is untested, and neither number has a feel result
 
 Too low and a card leaves on a nudge. Too high and a deliberate flick does
-nothing. No hardware pass has happened;
+nothing. `commitDistance` passed the device sweep of 2026-09-19 on an Android
+emulator and an iOS simulator: a long swipe committed, and a short, slow one
+did not. `commitSpeed` is not tested. The iOS simulator delivers about 304
+points per second, and the Android emulator stops near 690 before it merges the
+input events. A physical device is necessary.
 `example/screens/SwipeScreen.tsx` is where that gets answered.
 
 :::

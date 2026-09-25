@@ -80,7 +80,7 @@ The payload is shaped by intent rather than passed through: `{ x, y, absolute: {
 | `maxDistance` | `10` points | **Not** RNGH's behaviour. RNGH defers the slop to the platform, so the same tap is accepted on one operating system and rejected on the other. |
 | `pointers` | `1` | Raise it for a two-finger tap. |
 
-Neither default has been measured on hardware yet.
+The device sweep of 2026-09-19 did not test either default.
 
 **Accessibility.** A tap gesture is invisible to a screen reader and unreachable from a keyboard, and this hook does not fix that. Whatever the tap does must also be reachable another way — the same action on a `<Pressable>`, or `accessibilityActions` on the view. A tap-only affordance is a bug, not a trade-off.
 

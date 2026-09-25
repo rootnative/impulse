@@ -38,22 +38,32 @@ that exist.
 
 The genuinely hard part, built first, because every intent depends on it.
 
-**The code is complete. The gate is not.**
+**The code is complete. The mechanical half of the gate passes. The feel half
+has no result.**
 
 > _Gate:_ a horizontal `useDrag` inside a vertical `ScrollView` works on iOS and
 > Android hardware, and a `useTap` / `useDoubleTap` race resolves correctly.
 > Verified on a device, not in Jest.
 
-**No hardware pass has happened.** Every activation-criteria default on this
-site is a design intention rather than a measurement, and each page says so. The
-composition core is verified only against RNGH's own `prepare()` output, which
-proves the relation Impulse asks for and says nothing about how a platform
-recognizer resolves it.
+**A device sweep ran on 2026-09-19 and 2026-09-20**, on an Android emulator
+with injected touches and on an iOS simulator with XCUITest. Both checks passed
+on both platforms:
+
+- A horizontal `useDrag` row opens to exactly its target of 120 points. A
+  vertical drag that starts on a row scrolls the list, with no relation
+  declared.
+- The race resolves. Below `maxDelay`, two taps gave one double tap and no
+  single tap. Above it, two taps gave two single taps and no double tap.
+
+**The sweep does not measure feel**, and no physical device has run it. So
+each activation-criteria default on this site is still a design intention, and
+each page says what the sweep proved and what it did not.
 
 ### 2 — The intent set
 
 Eight of ten intents exist. Each one needs a screen, a docs page, and a device
-pass, and the device pass is the part none of them has.
+pass. The device sweep drove all eight on at least one platform. None of them
+has a feel result.
 
 - **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
   `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, `useRotate`.
@@ -92,11 +102,14 @@ Honest rather than empty. The ones a consumer can hit:
 - **`useLongPress`'s `maxDistance` cancels an active press on web**, against
   RNGH's own documented contract. Hold-then-drag does not work there at the
   default.
-- **No activation default has been measured.** Not one. `useSwipe`'s
-  `commitDistance` of 80 points and `commitSpeed` of 800 points per second are
-  the newest guesses on the list. `usePinch` and `useRotate` add none — neither
-  RNGH recognizer exposes a threshold — so their coexistence rests entirely on
-  a relation.
+- **No activation default has a feel result.** The device sweep proved that
+  some defaults work: the drag threshold, `useSwipe`'s `commitDistance` of 80
+  points, and `maxDelay` at 500 ms and 250 ms. It did not prove that any of
+  them feels right. `useSwipe`'s `commitSpeed` of 800 points per second is not
+  tested, because neither harness can make a swipe that is short enough and
+  fast enough. `usePinch` and `useRotate` add no default — neither RNGH
+  recognizer exposes a threshold — so their coexistence rests entirely on a
+  relation.
 - **`usePinch`'s `elastic` has no recommended value.** `useDrag` defaults it to
   `0` and the example screen invented `0.35`. The resistance is also computed
   on the scale rather than on its logarithm, so pulling below `min` resists

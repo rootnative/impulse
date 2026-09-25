@@ -126,8 +126,9 @@ has no such escape.
 
 :::warning The 10-point default is unmeasured
 
-No hardware pass has happened. `example/screens/PanScreen.tsx` is where that
-gets answered.
+The device sweep of 2026-09-20 drove `usePan` on both platforms. It proved
+`change` and `pointers`, and it did not test the threshold.
+`example/screens/PanScreen.tsx` is where that gets answered.
 
 :::
 

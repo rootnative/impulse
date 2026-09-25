@@ -4,8 +4,9 @@
 > react-native-gesture-handler. One hook per intent. Hooks return shared values
 > and a gesture; Impulse starts no animation and ships no components.
 
-Status: 0.0.0-alpha.0. Eight intents ship. No activation default has been
-measured on hardware — every default below is a design intention.
+Status: 0.0.0-alpha.0. Eight intents ship. A device sweep on an Android
+emulator and an iOS simulator drove every intent. It proves mechanics, not
+feel, so every default below is still a design intention.
 
 Docs: https://rootnative.github.io/impulse/
 Full: https://rootnative.github.io/impulse/llms-full.txt

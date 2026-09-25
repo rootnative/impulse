@@ -27,8 +27,8 @@ import {
  * How far the finger must travel before the swipe takes the touch, in points.
  * The same number `useDrag` and `usePan` use.
  *
- * **This number is a design intention, not a measurement.** No hardware pass
- * has happened. See Known gaps in CLAUDE.md.
+ * **This number is a design intention, not a measurement.** The device sweep
+ * of 2026-09-19 did not test it. See Known gaps in docs/docs/roadmap.md.
  */
 const DEFAULT_THRESHOLD = 10
 

@@ -32,8 +32,8 @@ const DEFAULT_MAX_DURATION = 500
  * and rejected on the other. A fixed number is the behaviour a consumer can
  * reason about. 10 points is roughly a finger's own jitter while pressing.
  *
- * **This number is a design intention, not a measurement.** No hardware pass
- * has happened. See Known gaps in CLAUDE.md.
+ * **This number is a design intention, not a measurement.** The device sweep
+ * of 2026-09-19 did not test it. See Known gaps in docs/docs/roadmap.md.
  */
 const DEFAULT_MAX_DISTANCE = 10
 
@@ -152,7 +152,7 @@ export type UseTapResult = IntentResult<TapGesture>
  * **Activation criteria.** `maxDuration` defaults to 500ms and `maxDistance`
  * to 10 points. The distance default is Impulse's, not RNGH's: RNGH defers to
  * the platform there, so the same tap is accepted on one operating system and
- * rejected on the other. Neither default has been measured on hardware yet.
+ * rejected on the other. The device sweep did not test either default.
  *
  * **Pairing with a double tap.** A single tap and a double tap on one view is
  * a composition, not an option — and the mode is `exclusive`, with the double
