@@ -70,9 +70,16 @@ jest.mock('react-native-reanimated', () => {
 // Only what Impulse imports is mocked. `runOnJS` is included because the
 // undeprecated curried form lives in this package too, and a consumer's own
 // code may use it under this setup file.
+//
+// `isWorkletFunction` reports every function as a worklet. The real one reads
+// a hash that only the Worklets Babel plugin writes, and a Jest run without
+// the plugin would then flag every phase callback. Here nothing runs on a UI
+// thread, so a plain function is correct and the phase-callback warning must
+// stay silent.
 jest.mock('react-native-worklets', () => ({
   __esModule: true,
   scheduleOnRN: (fn, ...args) => fn(...args),
+  isWorkletFunction: (value) => typeof value === 'function',
   runOnJS:
     (fn) =>
     (...args) =>

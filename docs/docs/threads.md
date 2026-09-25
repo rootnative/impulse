@@ -54,6 +54,11 @@ Mark it with the `'worklet'` directive. It receives a worklet-safe payload and
 runs on the UI thread, so it can write a shared value every frame without a
 round trip.
 
+If you forget the directive, Impulse warns once in development. The warning
+names the hook and the callback. Without it, the first touch that reaches the
+phase throws `Tried to synchronously call a Remote Function. Called
+"anonymous"`, which names neither.
+
 :::danger Never close over JS-thread state in a worklet
 
 Read a shared value, or cross back with `scheduleOnRN` from

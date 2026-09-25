@@ -8,6 +8,10 @@ import {
 import { type GestureType } from 'react-native-gesture-handler'
 import { applyRelations, warnOnUnresolvableReferences } from '../relations'
 import { type CoexistenceOptions } from '../types'
+import {
+  warnOnPlainPhaseCallbacks,
+  type PhaseCallbacks,
+} from './phaseCallbacks'
 import { useStableList } from './useStableList'
 
 /** What every hook built on this helper accepts on top of its own options. */
@@ -68,18 +72,22 @@ export interface BuiltGesture<G extends GestureType> {
  * @param deps - What the built gesture depends on. Worklet callbacks belong
  *   here, because a worklet is captured as written. JS-thread callbacks do
  *   not — route those through `useLatestCallback` first.
- * @param options - Coexistence options and `testId`.
+ * @param options - Coexistence options, `testId`, and the hook's phase
+ *   callbacks, which are checked for the `'worklet'` directive.
  */
 export function useGestureMemo<G extends GestureType>(
   hookName: string,
   build: () => G,
   deps: DependencyList,
-  options?: GestureMemoOptions,
+  options?: GestureMemoOptions & PhaseCallbacks,
 ): BuiltGesture<G> {
   const alongside = useStableList(options?.alongside)
   const blocks = useStableList(options?.blocks)
   const deferTo = useStableList(options?.deferTo)
   const testId = options?.testId
+  const onBegin = options?.onBegin
+  const onUpdate = options?.onUpdate
+  const onFinalize = options?.onFinalize
   const ref = useRef<GestureType | undefined>(undefined)
 
   const gesture = useMemo(
@@ -118,6 +126,10 @@ export function useGestureMemo<G extends GestureType>(
   useEffect(() => {
     warnOnUnresolvableReferences({ alongside, blocks, deferTo }, hookName)
   }, [alongside, blocks, deferTo, hookName])
+
+  useEffect(() => {
+    warnOnPlainPhaseCallbacks({ onBegin, onUpdate, onFinalize }, hookName)
+  }, [onBegin, onUpdate, onFinalize, hookName])
 
   // The result object is memoised too, so a consumer can put the whole hook
   // result in a dependency list — `useGestures` does exactly that with its

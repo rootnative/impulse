@@ -2349,6 +2349,11 @@ const drag = useDrag({ axis: 'x' })
 const style = useAnimatedStyle(() => ({
   transform: [{ translateX: drag.x.value }],
 }))
+If you forget the directive, Impulse warns once in development. The warning
+names the hook and the callback. Without it, the first touch that reaches the
+phase throws `Tried to synchronously call a Remote Function. Called
+"anonymous"`, which names neither.
+
 ```
 
 `react-native-worklets` copies a captured object field by field, through
