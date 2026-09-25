@@ -2449,8 +2449,13 @@ true at the last commit.
 
 > **WARNING — `isActive` does not mean the same thing in every hook**
 >
-> `useTap` sets it at `onBegin` — while the finger is down. `useDrag` and
-> `useLongPress` set it at recognition — once the gesture actually started.
+> `useTap` and `useDoubleTap` set it at `onBegin` — while the finger is down.
+> `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`
+> set it at recognition — once the gesture actually started.
+>
+> `useDoubleTap`'s `isActive` is also `true` for every ordinary single tap on
+> the view, so it is not a pressed state. See
+> [`useDoubleTap`](/use-double-tap).
 >
 > Both readings are right for their own hook: a tap's whole life is the touch,
 > and a long press that flagged every touch would flag nothing useful. Check the

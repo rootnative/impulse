@@ -68,11 +68,24 @@ accumulating across gestures.
 ## Threads — the callback name states the thread
 
 JS thread: onTap, onDoubleTap, onLongPress, onLongPressEnd, onDragStart,
-onDragEnd. Ordinary functions; Impulse owns the runOnJS boundary.
+onDragEnd, onPanStart, onPanEnd, onSwipe, onSwipeEnd, onPinchStart,
+onPinchEnd, onRotateStart, onRotateEnd. Ordinary functions; Impulse owns the
+scheduleOnRN boundary.
 
-Worklets: onBegin, onUpdate, onFinalize. Mark with 'worklet'. They are direct
-gesture dependencies, so keep their identity stable — an inline worklet
-rebuilds the gesture every render. An inline JS-thread callback does not.
+Every callback that reports an ending takes a second argument, { cancelled }:
+onTap, onDoubleTap, onLongPressEnd, onDragEnd, onPanEnd, onSwipeEnd,
+onPinchEnd, onRotateEnd. It fires on both endings. cancelled is true when the
+system took the gesture away — a competing gesture won, the app went to the
+background, or a relation handed the touch on. onSwipe fires for a commit
+only and takes no second argument.
+
+Worklets: onBegin, onUpdate, onFinalize. Mark with 'worklet'. A plain
+function there makes Impulse warn once in development, and the warning names
+the hook and the callback. Without the directive, the first touch that
+reaches the phase throws "Tried to synchronously call a Remote Function".
+Worklets are direct gesture dependencies, so keep their identity stable — an
+inline worklet rebuilds the gesture every render. An inline JS-thread
+callback does not.
 
 ## Composition
 
@@ -107,17 +120,29 @@ useDoubleTap: same, plus maxDelay 500ms (probably too generous; 250-300 is
   closer to what platforms use)
 useLongPress: minDuration 500ms, maxDistance 10pt
 useDrag: axis both, threshold 10pt, elastic 0, unbounded
+usePan: axis both, threshold 10pt
+useSwipe: directions all four, threshold 10pt, commitDistance 80pt,
+  commitSpeed 800pt/s
+usePinch: initial 1, unbounded, no activation criteria
+useRotate: initial 0, unbounded, no activation criteria
+
+No default has a feel result. The device sweep proved that the drag
+threshold, commitDistance, and maxDelay at 500ms and 250ms work. commitSpeed
+is not tested, because neither harness can make a swipe that fast.
 
 ## isActive does not mean the same thing in every hook
 
-useTap sets it at touch-down — a real pressed state.
-useLongPress and useDrag set it at recognition.
+useTap and useDoubleTap set it at touch-down. For useTap that is a real
+pressed state. For useDoubleTap it is true for every ordinary single tap on
+the view too, so do not drive a pressed state from it.
+useLongPress, useDrag, usePan, useSwipe, usePinch and useRotate set it at
+recognition.
 
 ## Known gaps a consumer can hit
 
-- No JS-thread callback for a cancelled gesture. Every intent callback is
-  guarded on success; onFinalize is the only cancel-aware one and it is a
-  worklet.
+- A cancel is reported, but its velocity is not a throw. The finger never
+  lifted on a cancelled gesture, so springing on velocity when cancelled is
+  true flings a view the user never released.
 - useLongPress maxDistance cancels an ACTIVE press on web, against RNGH's own
   documented contract. Hold-then-drag does not work there at the default.
 - A missing <GestureHandlerRootView> fails silently and Impulse cannot warn.
