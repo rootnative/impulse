@@ -223,8 +223,8 @@ describe('useTap', () => {
       // **This asserts the config, not the behaviour.** `fireGestureHandler`
       // fills a discrete gesture's state sequence from `[BEGAN, ACTIVE, END]`
       // and injects the ACTIVE event itself, so a never-activated failure
-      // cannot be driven from Jest at all — see the Known gaps entry in
-      // CLAUDE.md. The example screen is what answers this one.
+      // cannot be driven from Jest at all — see section 3 of
+      // docs/docs/testing.md. The example screen is what answers this one.
       const { result } = renderHook(() => useTap({ maxDistance: 4 }))
 
       expect(result.current.gesture.config.maxDist).toBe(4)

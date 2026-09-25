@@ -220,7 +220,7 @@ describe('useDoubleTap', () => {
       //
       // **The mock cannot tell them apart.** `fireGestureHandler` injects an
       // ACTIVE event before any FAILED it is given, so the single-tap case is
-      // not reachable from Jest — see the Known gaps entry in CLAUDE.md.
+      // not reachable from Jest — see section 3 of docs/docs/testing.md.
       const onDoubleTap = jest.fn()
       const onFinalize = jest.fn()
       render(

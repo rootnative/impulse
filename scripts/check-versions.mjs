@@ -8,7 +8,7 @@
  * This repository publishes **one** package, and it must stay that way: the
  * whole reason Impulse is not a package inside `inertia` is that Inertia's
  * guard pins every package to core's version and requires an
- * `@rootnative/inertia` peer on each adapter (see CLAUDE.md, Decision 1).
+ * `@rootnative/inertia` peer on each adapter (see README.md).
  * Neither rule appears here, and Impulse must never join that lockstep.
  * Check 1 below is what makes a second public package a visible decision
  * rather than a quiet one.
@@ -113,7 +113,7 @@ if (extras.length > 0) {
     `packages/: ${extras.join(', ')} ${extras.length === 1 ? 'is' : 'are'} public ` +
       `alongside core. This repository ships one package. Adding a second one is a ` +
       `release-shape decision — decide whether it versions with core or on its own, ` +
-      `record it in CLAUDE.md, and teach this script the answer. Do not copy ` +
+      `record it in RELEASING.md, and teach this script the answer. Do not copy ` +
       `Inertia's lockstep: that coupling is what Impulse exists to avoid.`,
   )
 }
@@ -135,7 +135,9 @@ const RELEASE_TAG = tagFor(VERSION)
 function buildFooter(versions) {
   const lines = []
   if (versions.length > 0) {
-    lines.push(`[unreleased]: ${REPO_URL}/compare/${tagFor(versions[0])}...HEAD`)
+    lines.push(
+      `[unreleased]: ${REPO_URL}/compare/${tagFor(versions[0])}...HEAD`,
+    )
   } else {
     // Nothing released yet: [unreleased] is the whole history.
     lines.push(`[unreleased]: ${REPO_URL}/commits/main`)
