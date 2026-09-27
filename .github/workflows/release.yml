@@ -95,7 +95,7 @@ jobs:
       # this on purpose, in its own commit. Trusted publishing needs npm
       # >= 11.5.1, and relying on whatever the runner ships is how that
       # requirement gets missed.
-      - name: Install npm (OIDC trusted publishing requires >=11.5.1)
+      - name: Install npm (staged publishing requires >=11.15.0)
         run: npm install -g npm@11.19.1
 
       - name: Install dependencies
@@ -140,10 +140,16 @@ jobs:
       # The first publish of a new package name — which npm cannot register a
       # trusted publisher for, because the package does not exist yet — is
       # done from a laptop instead. RELEASING.md carries that sequence.
-      - name: Publish to npm
+      # Staged, not direct. Both trusted publishers on npmjs.com are
+      # restricted to stage-only, so a plain `npm publish` from here is
+      # rejected. `npm stage publish` uploads the tarball with provenance and
+      # holds it; nothing is installable until a maintainer approves it with
+      # 2FA, on npmjs.com or with `npm stage approve`. The dist-tag is fixed
+      # at stage time and cannot change at approval. Needs npm >= 11.15.0.
+      - name: Stage the publish on npm
         if: ${{ !inputs.dry_run }}
         working-directory: packages/core
-        run: npm publish --provenance --access public --tag "${{ inputs.tag }}"
+        run: npm stage publish --provenance --access public --tag "${{ inputs.tag }}"
 
       # npm answers an unauthorized publish with a 404, so the default failure
       # says the package does not exist rather than that the credentials are
@@ -156,6 +162,7 @@ jobs:
           echo "  1. Is '.github/workflows/release.yml' registered as a trusted publisher for @rootnative/impulse on npmjs.com? npm binds to the exact filename, and registering release-manual.yml does not cover this file."
           echo "  2. Is this the first publish of the package? Trusted publishing cannot be configured before a package exists — publish that one from a laptop, per RELEASING.md."
           echo "  3. Does the job still have 'id-token: write'?"
+          echo "  4. Did the step run plain 'npm publish'? Both publishers are stage-only on npmjs.com and reject it. This workflow must call 'npm stage publish'."
 
       - name: Create the GitHub Release
         if: ${{ !inputs.dry_run }}
@@ -178,11 +185,11 @@ jobs:
             if [ "$DRY" = "true" ]; then
               echo "### Dry run — nothing was published"
               echo ""
-              echo "Every gate passed and the tarball packed. \`$VERSION\` was **not** published and no tag was pushed."
+              echo "Every gate passed and the tarball packed. \`$VERSION\` was **not** staged and no tag was pushed."
             else
-              echo "### Released \`$VERSION\`"
+              echo "### Staged \`$VERSION\` — not live yet"
               echo ""
-              echo "- npm: \`@rootnative/impulse@$VERSION\` on dist-tag \`$DIST_TAG\`"
+              echo "- npm: \`@rootnative/impulse@$VERSION\` is staged for dist-tag \`$DIST_TAG\`. Approve it with 2FA on npmjs.com (Staged Packages) or with \`npm stage approve\`. Nothing is installable until then."
               echo "- Tag: \`core@$VERSION\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

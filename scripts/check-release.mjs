@@ -20,8 +20,11 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '..')
 
-/** Trusted publishing landed in npm 11.5.1. */
-const MIN_NPM = '11.5.1'
+/**
+ * Trusted publishing landed in npm 11.5.1; `npm stage publish` in 11.15.0.
+ * Both publishers on npmjs.com are stage-only, so the later floor applies.
+ */
+const MIN_NPM = '11.15.0'
 
 /** Read `--name value` out of argv. */
 function arg(name) {
@@ -57,15 +60,16 @@ function compareVersions(a, b) {
 // ── 1. npm is new enough to attempt the OIDC exchange ───────────────────────
 
 // An older npm does not try trusted publishing at all: it looks for a token,
-// finds none, and fails with a 404 that names neither problem. Say it here,
-// where the message can be specific.
+// finds none, and fails with a 404 that names neither problem. An npm without
+// `npm stage` fails with an unknown command. Say it here, where the message
+// can be specific.
 const npmVersion = execFileSync('npm', ['--version'], {
   encoding: 'utf8',
 }).trim()
 if (compareVersions(npmVersion, MIN_NPM) < 0) {
   fail(
-    `npm ${npmVersion} cannot use trusted publishing. ${MIN_NPM} or later is ` +
-      `required — raise the Node version in .nvmrc.`,
+    `npm ${npmVersion} cannot use staged trusted publishing. ${MIN_NPM} or ` +
+      `later is required — raise the pinned npm in the release workflows.`,
   )
 }
 

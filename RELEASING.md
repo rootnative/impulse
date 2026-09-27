@@ -15,8 +15,8 @@ The workflows publish what is already committed. They do not bump the version, w
 Do this before the first CI release. npm binds a trusted publisher to an exact repository and an exact workflow filename. An unregistered workflow fails at the publish step with `404 PUT /@rootnative%2fimpulse`, after every gate has passed.
 
 1. On npmjs.com, open `@rootnative/impulse` → **Settings** → **Trusted publishing**.
-2. Add a GitHub Actions publisher: owner `rootnative`, repository `impulse`, workflow `release.yml`.
-3. Add a second publisher with the workflow `release-manual.yml`. The first one does not cover this file.
+2. Add a GitHub Actions publisher: owner `rootnative`, repository `impulse`, workflow `release.yml`. Restrict it to **staged publishing only**.
+3. Add a second publisher with the workflow `release-manual.yml`, with the same stage-only restriction. The first one does not cover this file.
 4. Do not add an `NPM_TOKEN` or `NODE_AUTH_TOKEN` secret to the repository. A standing token takes precedence over OIDC and hides a registration fault.
 
 Do the steps again if you rename a workflow file. A rename revokes nothing and warns about nothing.
@@ -48,11 +48,13 @@ Work on a branch from `main`.
 
 A stable release also needs the device gate of its milestone. Read the milestones on `docs/docs/roadmap.md` before you cut `0.0.1`. The mechanical half passes. The feel half has no result.
 
-## 2. Publish
+## 2. Stage
+
+The workflows do not publish directly. Both trusted publishers are restricted to staged publishing, so CI can only upload a version and hold it. A maintainer approves it with 2FA in step 3. Until then, nothing is installable.
 
 1. Open **Actions** → **Release** → **Run workflow**, from `main`.
 2. Enter the version and the dist-tag. Set `dry_run` to `true`.
-3. Make sure that the dry run passes. It runs every gate and packs the tarball, and it publishes nothing.
+3. Make sure that the dry run passes. It runs every gate and packs the tarball, and it stages nothing.
 4. Run the workflow again with `dry_run` set to `false`.
 
 The workflow does these steps in this order:
@@ -60,14 +62,26 @@ The workflow does these steps in this order:
 1. It runs `check-release.mjs`.
 2. It runs `pnpm run preflight`.
 3. It pushes the tag `core@<version>`.
-4. It publishes to npm with `--provenance`.
+4. It runs `npm stage publish` with `--provenance` and the dist-tag.
 5. It creates the GitHub Release. A version with a `-` becomes a prerelease.
 
-The tag goes before the publish on purpose. A tag push can fail and leave nothing released. A publish cannot be undone.
+The tag goes before the stage on purpose. A tag push can fail and leave nothing staged. The dist-tag is fixed when the version is staged. It cannot change at approval.
 
-## 3. Verify
+## 3. Approve
 
-1. Run `npm view @rootnative/impulse dist-tags`. The dist-tag must name the new version.
+1. Inspect the staged version. On npmjs.com, open the package → **Staged Packages**. Or, from a laptop:
+
+   ```bash
+   npm stage list @rootnative/impulse
+   npm stage view <stage-id>
+   ```
+
+2. Approve it with 2FA, on the website or with `npm stage approve <stage-id>`. This is the step that cannot be undone.
+3. If the tarball is wrong, reject it with `npm stage reject <stage-id>`, then delete the GitHub Release and the tag, and release the next version number. Do not assume that a rejected version number is free on npm.
+
+## 4. Verify
+
+1. Run `npm view @rootnative/impulse dist-tags`. The dist-tag must name the new version. Before approval, it still names the previous one.
 2. Open the version on npmjs.com. It must show a provenance badge. No badge means that the version did not come from CI.
 3. Make sure that the tag `core@<version>` and the GitHub Release exist.
 4. The docs site deploys through `deploy-web.yml` when the release commit reaches `main`. Make sure that the site shows the new status.
@@ -79,8 +93,8 @@ The tag goes before the publish on purpose. A tag push can fail and leave nothin
 | Check the release | Nothing | Read the message. It names the fix. |
 | Preflight | Nothing | Fix the fault on `main`, then run the workflow again. |
 | Tag the release | Nothing | Fix the push permission or the tag protection, then run the workflow again. |
-| Publish to npm | Nothing on npm. The tag exists. | Read the next step's output. A 404 is authentication, not a missing package. Fix the registration, delete the tag with `git push --delete origin core@<version> && git tag -d core@<version>`, then run the workflow again. |
-| Create the GitHub Release | The version is on npm. The tag exists. | Do not run the workflow again. `check-release.mjs` stops on the tag, and npm refuses a version it already has. Create the release by hand: `gh release create core@<version> --title <version> --generate-notes`. Add `--prerelease` for a prerelease. |
+| Stage the publish on npm | Nothing on npm. The tag exists. | Read the next step's output. A 404 is authentication, not a missing package. A rejected `npm publish` means the workflow ran the direct command against a stage-only publisher. Fix the cause, delete the tag with `git push --delete origin core@<version> && git tag -d core@<version>`, then run the workflow again. |
+| Create the GitHub Release | The version is staged. The tag exists. | Do not run the workflow again. `check-release.mjs` stops on the tag. Create the release by hand: `gh release create core@<version> --title <version> --generate-notes`. Add `--prerelease` for a prerelease. Then approve the staged version. |
 
 npm never accepts the same version two times, even after an unpublish. If a bad version reaches npm, fix the fault and release the next version.
 
@@ -90,7 +104,7 @@ npm never accepts the same version two times, even after an unpublish. If a bad 
 
 1. Enter the ref, the version, and the dist-tag.
 2. Read the "Publishing from" summary. It shows the commit, and it tells you if the commit is not on `main`.
-3. Do a dry run first, as for `release.yml`.
+3. Do a dry run first, as for `release.yml`. It stages, like `release.yml`, and needs the same approval.
 
 **`create_release: false` does not work for the case that its description names.** The input exists to publish again when the tag and the GitHub Release already exist. But `check-release.mjs` stops every run where `core@<version>` already exists, so that run always fails at the first gate. Delete the tag and use the default, as the table above says.
 
