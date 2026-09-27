@@ -6,7 +6,7 @@ description: What ships today, what is designed but not written, and what is out
 
 # Roadmap
 
-Impulse is at `0.0.0-alpha.0`. This page says what exists, so nothing on this
+Impulse is at `0.0.0-alpha.1`. This page says what exists, so nothing on this
 site reads as a promise.
 
 ## What ships today

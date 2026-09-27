@@ -4,7 +4,11 @@ All notable changes to `@rootnative/impulse` are documented here. The format fol
 
 ## [Unreleased]
 
-`0.0.0-alpha.0` is on npm, cut from the `core@0.0.0-alpha.0` tag. This section holds every change since it; the first release note is written when Milestone 1's graduation gate is met and `0.0.1` is cut.
+`0.0.0-alpha.1` is on npm, cut from the `core@0.0.0-alpha.1` tag. This section holds every change since it.
+
+## [0.0.0-alpha.1] - 2026-09-27
+
+The second alpha. It carries every change since `0.0.0-alpha.0`: the eight intent hooks, the `IntentEndInfo` argument on every end callback, and the worklet warning. Milestone 1's gate is closed on mechanics only, and feel is untested.
 
 ### Added
 
@@ -80,10 +84,11 @@ All notable changes to `@rootnative/impulse` are documented here. The format fol
 ### Notes
 
 - **The package ships ESM only.** CJS with code splitting defeats the Reanimated Babel plugin and ships worklets that crash on native — that defect cost `@rootnative/components` two releases. See the comment in `tsup.config.ts` before changing the format.
-- **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate` are the intents implemented.** `useHover` and `useEdgeSwipe` are designed but not written. Milestone 1's code is complete and Milestone 2 is under way; Milestone 1's graduation gate is a device pass that has not happened, so every activation-criteria default in this release is a design intention rather than a measurement.
+- **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate` are the intents implemented.** `useHover` and `useEdgeSwipe` are designed but not written. Milestone 1's code is complete and Milestone 2 is under way. The device sweep of 2026-09-19 and 2026-09-20 measured the mechanical half of Milestone 1's gate on both platforms; feel is untested, so the activation-criteria defaults a scripted touch could not reach are still design intentions.
 - **A gesture that fails before it activates cannot be tested in Jest, and it is not only pan.** RNGH's mock fills every gesture's state sequence from `[BEGAN, ACTIVE, END]`, so it injects an ACTIVE event before any FAILED it is given and `onStart` always runs. For `useDrag` that means the threshold never rejects; for `useLongPress` it means a press released early still reaches `onLongPress`. Both are checked against the gesture's config and on the example screen instead.
 - **A relation cannot name a component ref without a cast.** RNGH types a relation target as `RefObject<ComponentType | undefined | null>` — a ref to a component *type*, which is not what `ref={}` produces — so a real `ScrollView` ref does not typecheck. Impulse's `GestureReference` mirrors RNGH's type exactly, so the mismatch is visible rather than absorbed.
 - **`useGestures` does not take coexistence options**, and that is a limitation rather than a choice. RNGH's three external-gesture relations are methods on a single gesture, and a composed gesture does not have them. Set `alongside` / `blocks` / `deferTo` on the member hooks instead.
 - **Impulse does not yet warn when a hook mounts with no `<GestureHandlerRootView>` above it.** RNGH's root-view context is not exported from its package entry, and reaching it would mean a deep import into `lib/commonjs/`, which pins one module format and breaks under the others.
 
-[unreleased]: https://github.com/rootnative/impulse/commits/main
+[unreleased]: https://github.com/rootnative/impulse/compare/core@0.0.0-alpha.1...HEAD
+[0.0.0-alpha.1]: https://github.com/rootnative/impulse/releases/tag/core@0.0.0-alpha.1

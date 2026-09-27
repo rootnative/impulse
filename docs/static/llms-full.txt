@@ -187,7 +187,7 @@ MIT © RootNative.
 npm install @rootnative/impulse
 ```
 
-The current release is `0.0.0-alpha.0`, and it is published on both the
+The current release is `0.0.0-alpha.1`, and it is published on both the
 `latest` and the `alpha` dist-tag. A plain install resolves it. You do not need
 `@alpha`.
 
@@ -2943,7 +2943,7 @@ is missing from the published tarball.
 
 # Roadmap
 
-Impulse is at `0.0.0-alpha.0`. This page says what exists, so nothing on this
+Impulse is at `0.0.0-alpha.1`. This page says what exists, so nothing on this
 site reads as a promise.
 
 ## What ships today
