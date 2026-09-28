@@ -16,7 +16,10 @@ import { PanScreen } from './screens/PanScreen'
 import { SwipeScreen } from './screens/SwipeScreen'
 import { PinchScreen } from './screens/PinchScreen'
 import { RotateScreen } from './screens/RotateScreen'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
 // Read the version from the package itself so the footer cannot drift behind
 // a release the way a hardcoded string does.
 import { version as impulseVersion } from '@rootnative/impulse/package.json'
@@ -165,6 +168,7 @@ const SCREEN_OPTIONS = { headerShown: false } as const
 
 function HomeScreen() {
   const navigation = useNavigation()
+  const insets = useSafeAreaInsets()
   // `navigate`'s overloads distribute over the param list, so a union of
   // route names satisfies none of them. Dispatching the action takes a plain
   // string and keeps the call site cast-free.
@@ -172,7 +176,10 @@ function HomeScreen() {
     navigation.dispatch(CommonActions.navigate(route))
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
+    >
       <StatusBar style="auto" />
       <View style={styles.hero}>
         <Text style={styles.eyebrow}>@rootnative/impulse</Text>
@@ -252,7 +259,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 12,
-    paddingTop: 64,
     paddingBottom: 40,
     gap: 28,
   },
