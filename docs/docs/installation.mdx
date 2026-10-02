@@ -6,6 +6,32 @@ description: Install @rootnative/impulse, its peers, and the GestureHandlerRootV
 
 # Installation
 
+## Platforms
+
+Impulse runs where `react-native-gesture-handler` runs. This table shows what
+was checked for each platform.
+
+| Platform | Status |
+| --- | --- |
+| iOS | **Supported (alpha).** An XCUITest sweep on an iOS simulator drove every intent. No physical device ran it. |
+| Android | **Supported (alpha).** An injected-touch sweep on an Android emulator drove every intent. No physical device ran it. |
+| Web | **Partial.** `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser. `usePan`, `useSwipe`, `usePinch`, and `useRotate` are not verified. No automated test covers web. |
+| macOS, Windows | **Not tested.** |
+| Electron | **Not tested.** Expo has no Electron target. |
+
+The sweeps check the mechanics only. Nobody has tested the feel of a gesture on
+any platform.
+
+For web, an Expo app also needs `react-dom` and `react-native-web`:
+
+```bash
+npx expo install react-dom react-native-web
+```
+
+The example app runs on web with `react-native-web` 0.21, `react-dom` 19.2.3,
+and Gesture Handler 2.32. [Web behaviour](/web) lists each intent, the
+differences from native, and the open questions.
+
 ## Install the package
 
 ```bash

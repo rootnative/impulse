@@ -8,7 +8,8 @@ const baseUrl = '/impulse/'
 
 const config: Config = {
   title: 'Impulse',
-  tagline: 'Declarative gesture primitives for React Native',
+  tagline:
+    'Declarative gesture primitives for React Native on iOS, Android, and web (partial)',
   url: 'https://rootnative.github.io',
   baseUrl,
   onBrokenLinks: 'throw',

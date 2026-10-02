@@ -14,6 +14,10 @@ ergonomic wrapper around
 [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/)
 (RNGH).
 
+Impulse supports iOS and Android, and web is partial: four of the eight intents
+are verified in a browser. Electron, macOS, and Windows are not tested. See
+[Platforms](/installation#platforms).
+
 You write a gesture as an intent. You do not assemble it from a builder chain,
 a `useMemo`, a ref dance, and hand-written translation maths.
 
@@ -180,6 +184,32 @@ MIT © RootNative.
 ---
 
 # Installation
+
+## Platforms
+
+Impulse runs where `react-native-gesture-handler` runs. This table shows what
+was checked for each platform.
+
+| Platform | Status |
+| --- | --- |
+| iOS | **Supported (alpha).** An XCUITest sweep on an iOS simulator drove every intent. No physical device ran it. |
+| Android | **Supported (alpha).** An injected-touch sweep on an Android emulator drove every intent. No physical device ran it. |
+| Web | **Partial.** `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser. `usePan`, `useSwipe`, `usePinch`, and `useRotate` are not verified. No automated test covers web. |
+| macOS, Windows | **Not tested.** |
+| Electron | **Not tested.** Expo has no Electron target. |
+
+The sweeps check the mechanics only. Nobody has tested the feel of a gesture on
+any platform.
+
+For web, an Expo app also needs `react-dom` and `react-native-web`:
+
+```bash
+npx expo install react-dom react-native-web
+```
+
+The example app runs on web with `react-native-web` 0.21, `react-dom` 19.2.3,
+and Gesture Handler 2.32. [Web behaviour](/web) lists each intent, the
+differences from native, and the open questions.
 
 ## Install the package
 

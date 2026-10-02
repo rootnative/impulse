@@ -95,7 +95,8 @@ function Hero() {
             react-native-gesture-handler — you write a gesture as an intent, not
             as a builder chain, a{' '}
             <code className={styles.inlineCode}>useMemo</code>, a ref dance, and
-            hand-written translation maths.
+            hand-written translation maths. Electron, macOS, and Windows are not
+            tested — see <Link to="/installation#platforms">Platforms</Link>.
           </p>
           <div className={styles.heroCtas}>
             <Link className={styles.ctaPrimary} to="/introduction">

@@ -24,6 +24,8 @@ Then follow the [gesture-handler install guide](https://docs.swmansion.com/react
 
 **Peer dependencies:** `react >=19.2.3`, `react-native >=0.83.0 <0.87.0`, `react-native-gesture-handler >=2.28.0 <3.0.0`, `react-native-reanimated >=4.5.0 <4.6.0`, `react-native-worklets >=0.10.0 <0.11.0`.
 
+**Platforms:** iOS and Android are supported (alpha). Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and the other four intents are not verified. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested. See [Platforms](https://rootnative.github.io/impulse/installation#platforms).
+
 Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires, and it fails silently — nothing happens and nothing is logged.
 
 ## Impulse or `@rootnative/inertia-gestures`?

@@ -14,6 +14,14 @@ Source: https://github.com/rootnative/impulse
 
 ## Install
 
+Platforms: iOS and Android supported (alpha; every intent driven on a
+simulator and an emulator, no physical device). Web partial: useTap,
+useDoubleTap, useLongPress, useDrag verified under a mouse in a desktop
+browser; usePan, useSwipe, usePinch, useRotate not verified; no automated web
+test. Web needs react-dom and react-native-web. Electron, macOS, Windows: not
+tested. Details: https://rootnative.github.io/impulse/installation#platforms
+and https://rootnative.github.io/impulse/web
+
 npm install @rootnative/impulse
 
 Peers: react, react-native, react-native-gesture-handler,
