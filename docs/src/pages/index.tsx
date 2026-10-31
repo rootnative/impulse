@@ -108,10 +108,12 @@ function Hero() {
           </div>
           <CopyCommand />
           <p className={styles.alphaNote}>
-            Alpha. Four intents ship today — <code>useTap</code>,{' '}
-            <code>useDoubleTap</code>, <code>useLongPress</code>, and{' '}
-            <code>useDrag</code>. The rest are designed and not written. See the{' '}
-            <Link to="/roadmap">roadmap</Link>.
+            Alpha. Eight intents ship today — <code>useTap</code>,{' '}
+            <code>useDoubleTap</code>, <code>useLongPress</code>,{' '}
+            <code>useDrag</code>, <code>usePan</code>, <code>useSwipe</code>,{' '}
+            <code>usePinch</code>, and <code>useRotate</code>.{' '}
+            <code>useHover</code> and <code>useEdgeSwipe</code> are designed and
+            not written. See the <Link to="/roadmap">roadmap</Link>.
           </p>
         </div>
         <div className={styles.heroVisual}>
@@ -144,7 +146,7 @@ function Hero() {
 }
 
 const stats = [
-  { value: '4', label: 'Intents shipped' },
+  { value: '8', label: 'Intents shipped' },
   { value: '0', label: 'Builder chains' },
   { value: '100%', label: 'TypeScript' },
   { value: 'MIT', label: 'Licensed' },

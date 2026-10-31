@@ -1,129 +1,380 @@
-<img src="assets/brand/impulse-mark.png" alt="" width="88" height="88" />
+<p align="center">
+  <a href="https://rootnative.github.io/impulse/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/brand/impulse-mark-dark.svg" />
+      <img src="assets/brand/impulse-mark.png" alt="Impulse logo" width="112" height="112" />
+    </picture>
+  </a>
+</p>
 
-# Impulse
+<h1 align="center">Impulse</h1>
 
-[![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![pnpm 10](https://img.shields.io/badge/pnpm-10.x-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
-[![Expo SDK 57](https://img.shields.io/badge/expo-57-000020?logo=expo&logoColor=white)](https://expo.dev/)
-[![Gesture Handler 2](https://img.shields.io/badge/gesture--handler-2.x-6B4FBB)](https://docs.swmansion.com/react-native-gesture-handler/)
-[![Turborepo](https://img.shields.io/badge/monorepo-turbo-EF4444)](https://turbo.build/)
-[![Docs](https://img.shields.io/badge/docs-rootnative.github.io-6B4FBB)](https://rootnative.github.io/impulse/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<p align="center">
+  Declarative gestures for React Native, on iOS, Android, and the web.<br />
+  A gesture is an intent, such as <code>useSwipe</code> or <code>usePinch</code>, not a builder chain.
+</p>
 
-**Declarative gesture primitives for React Native**, built as a thin, ergonomic wrapper around [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent — `useSwipe`, `useDoubleTap`, `usePinch` — not assembled from a builder chain, a `useMemo`, a ref dance, and hand-written translation maths.
+<p align="center">
+  <a href="https://github.com/rootnative/impulse/actions/workflows/ci-build.yml"><img src="https://github.com/rootnative/impulse/actions/workflows/ci-build.yml/badge.svg?branch=main" alt="Build and test status" /></a>
+  <a href="https://github.com/rootnative/impulse/actions/workflows/deploy-web.yml"><img src="https://github.com/rootnative/impulse/actions/workflows/deploy-web.yml/badge.svg?branch=main" alt="Docs and demo deploy status" /></a>
+  <a href="https://www.npmjs.com/package/@rootnative/impulse"><img src="https://img.shields.io/npm/v/@rootnative/impulse?label=npm&logo=npm&color=6B4FBB" alt="npm version of @rootnative/impulse" /></a>
+  <img src="https://img.shields.io/badge/Expo_SDK-57-000020?logo=expo&logoColor=white" alt="Expo SDK 57" />
+  <img src="https://img.shields.io/badge/Gesture_Handler-2.32-6B4FBB" alt="Gesture Handler 2.32" />
+  <img src="https://img.shields.io/badge/platforms-iOS_%7C_Android_%7C_Web_%28partial%29-6B4FBB" alt="Platforms: iOS, Android, and web (partial)" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-6B4FBB" alt="MIT licence" /></a>
+</p>
 
-> **Status:** `0.0.0-alpha.1` — first alpha, published on the `alpha` dist-tag. Milestone 1's foundation is in place: `useGestures`, the `alongside` / `blocks` / `deferTo` coexistence options, `useRawGesture`, and gesture identity that is stable by construction. **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate` are the intent hooks so far.** `useHover` and `useEdgeSwipe` are designed but not written — read them below as decisions that have been made, not as shipped features. Milestone 1's code is complete, and the mechanical half of its gate passed on Android and iOS on 2026-09-19. How a gesture feels is still untested, so the activation-criteria defaults an injected touch could not reach are design intentions.
+<p align="center">
+  <a href="https://rootnative.github.io/impulse/example/"><b>Open the live demo</b></a>
+  ·
+  <a href="#-try-it">Try it</a>
+  ·
+  <a href="#-quick-start">Quick start</a>
+  ·
+  <a href="https://rootnative.github.io/impulse/introduction/">Documentation</a>
+  ·
+  <a href="https://rootnative.github.io/impulse/llms-full.txt">LLM docs</a>
+</p>
 
-## Documentation
+<p align="center">
+  <img src="assets/docs/screenshots/phone-double-tap.jpg" alt="The useDoubleTap screen of the demo: a card that takes one tap or two, a maxDelay choice, and the tap counts" width="30%" />
+  &nbsp;
+  <img src="assets/docs/screenshots/phone-swipe.jpg" alt="The useSwipe screen of the demo: horizontal cards to swipe inside a vertical list" width="30%" />
+  &nbsp;
+  <img src="assets/docs/screenshots/phone-pinch.jpg" alt="The usePinch screen of the demo: a zoom viewer with its scale shown as 1.00x" width="30%" />
+</p>
 
-**[rootnative.github.io/impulse](https://rootnative.github.io/impulse/)** — installation, the six intent hooks, composition, coexistence, and the web behaviour of each intent.
+> **Status:** `0.0.0-alpha.1`, an alpha on the `latest` dist-tag. Eight intent
+> hooks ship, with composition and coexistence. `useHover` and `useEdgeSwipe`
+> are designed and not written. A scripted sweep drove every intent on an iOS
+> simulator and on an Android emulator. Nobody has tested the feel of a gesture
+> yet, so an untested default is a design intention, not a measurement.
 
-- [Installation](https://rootnative.github.io/impulse/installation)
-- [`useTap`](https://rootnative.github.io/impulse/use-tap), [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap), [`useLongPress`](https://rootnative.github.io/impulse/use-long-press), [`useDrag`](https://rootnative.github.io/impulse/use-drag), [`usePan`](https://rootnative.github.io/impulse/use-pan), [`useSwipe`](https://rootnative.github.io/impulse/use-swipe), [`usePinch`](https://rootnative.github.io/impulse/use-pinch), [`useRotate`](https://rootnative.github.io/impulse/use-rotate)
-- [Composition](https://rootnative.github.io/impulse/composition) and [Coexistence](https://rootnative.github.io/impulse/coexistence)
-- [Web behaviour](https://rootnative.github.io/impulse/web) — what was measured in a browser, and what nobody has checked
-- [Roadmap](https://rootnative.github.io/impulse/roadmap)
-- The example app runs in a browser at [/impulse/example/](https://rootnative.github.io/impulse/example/).
+## ✨ Features
 
-For an AI agent: [AI agents and llms.txt](https://rootnative.github.io/impulse/ai) explains the two files, [`llms.txt`](https://rootnative.github.io/impulse/llms.txt) and [`llms-full.txt`](https://rootnative.github.io/impulse/llms-full.txt). After you install the package, `node_modules/@rootnative/impulse/llms.txt` is the exact API of that version.
+| Feature | What it does |
+| --- | --- |
+| **Intents, not mechanisms** | One hook for each intent: tap, double tap, long press, drag, pan, swipe, pinch, and rotate. You do not set activation criteria by hand. |
+| **Composition as data** | `useGestures([tap, doubleTap, pan], { mode: 'race' })` reads from left to right. A composed result can compose again. |
+| **Three coexistence options** | Each hook takes `alongside`, `blocks`, and `deferTo`. Each option maps to exactly one Gesture Handler relation. |
+| **Stable gesture identity** | An inline callback never rebuilds the gesture, so `<GestureDetector>` does not attach it again in the middle of a drag. A test pins this. |
+| **The callback name states its thread** | `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onSwipe`, and `onDragEnd` run on the JS thread, and Impulse owns the boundary. |
+| **Payloads for each intent** | A drag reports `{ translation, velocity, absolute, settled }`, not the flat fields of Gesture Handler. |
+| **Shared values out, no animation in** | Each hook returns shared values and a gesture. You animate them with the library that you already use. |
+| **Accessibility, stated** | The docs page of each intent names its fallback for a screen reader and a keyboard. |
+| **Web behaviour, stated** | The docs say what works in a browser, and what nobody has checked. |
+| **Escape hatches** | `useRawGesture` gives you the mechanism. `@rootnative/impulse/gesture-handler` re-exports Gesture Handler, so Impulse stays your only gesture import. |
+| **One subpath for each hook** | `@rootnative/impulse/drag` ships only `useDrag`. The package has no side effects at import. |
+| **A Jest preset** | `@rootnative/impulse/jest-preset` sets up the mocks in one line. |
 
-## What it is for
+## 🖐️ The intent hooks
 
-RNGH is a good library, and it is not the problem. It deliberately exposes **mechanisms** — activation criteria, gesture relations, state machines — and leaves every **intent** to the consumer. So each app rebuilds swipe-to-dismiss, double-tap, long-press-then-drag, pinch-about-a-focal-point, and edge-swipe from `Pan` plus arithmetic, and each rebuild gets the sharp edges wrong in its own way.
+| Hook | What it reports | Web |
+| --- | --- | --- |
+| [`useTap`](https://rootnative.github.io/impulse/use-tap/) | A single tap, and `isActive` for the pressed state | Works under a mouse |
+| [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap/) | Two taps, paired with a single tap | Works under a mouse |
+| [`useLongPress`](https://rootnative.github.io/impulse/use-long-press/) | A press held past a duration, while the finger is down | Works under a mouse |
+| [`useDrag`](https://rootnative.github.io/impulse/use-drag/) | An `x` and a `y` that follow the finger, with bounds and elastic | Works under a mouse |
+| [`usePan`](https://rootnative.github.io/impulse/use-pan/) | The movement of each frame. Your screen owns the position. | Not verified |
+| [`useSwipe`](https://rootnative.github.io/impulse/use-swipe/) | A pan judged at release: which way, and how hard | Not verified |
+| [`usePinch`](https://rootnative.github.io/impulse/use-pinch/) | A two-finger pinch that owns its scale | Not verified |
+| [`useRotate`](https://rootnative.github.io/impulse/use-rotate/) | A two-finger rotation that owns its angle, in degrees | Not verified |
+| `useHover`, `useEdgeSwipe` | Designed, not written | — |
+
+## 📱 Try it
+
+<table>
+  <tr>
+    <th width="50%">In a browser</th>
+    <th width="50%">On a phone</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://rootnative.github.io/impulse/example/"><b>rootnative.github.io/impulse/example</b></a>
+      <br /><br />
+      One screen for each intent.<br />
+      You do not need an install or an account.
+    </td>
+    <td align="center">
+      Clone this repository, then run<br />
+      <code>pnpm install</code> and <code>pnpm run example</code>.
+      <br /><br />
+      Scan the QR code in the terminal with <b>Expo Go</b> for SDK 57.
+    </td>
+  </tr>
+</table>
+
+> [!NOTE]
+> A browser has a mouse, not fingers. Only `useTap`, `useDoubleTap`,
+> `useLongPress`, and `useDrag` were checked in a desktop browser. Use a phone
+> to try the pinch, the rotation, and the swipe.
+
+## 🚀 Quick start
+
+```bash
+npx expo install @rootnative/impulse react-native-gesture-handler react-native-reanimated react-native-worklets
+```
+
+`npx expo install` picks the peer versions that match your Expo SDK. Expo adds
+the worklets Babel plugin for you. A bare React Native app adds
+`react-native-worklets/plugin` as the last Babel plugin, and runs
+`npx pod-install` for iOS.
+
+Render `<GestureHandlerRootView>` above every component that uses a gesture:
 
 ```tsx
-// RNGH today
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={styles.root}>
+      <Navigation />
+    </GestureHandlerRootView>
+  )
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+})
+```
+
+> [!WARNING]
+> Without the root view, a gesture never fires. Nothing throws and nothing
+> warns. If a gesture does nothing at all, check the root view first.
+
+Then attach a gesture:
+
+```tsx
+import { GestureDetector, useTap } from '@rootnative/impulse'
+
+function Card() {
+  const tap = useTap({ onTap: () => select() })
+
+  return (
+    <GestureDetector gesture={tap.gesture}>
+      <View style={styles.card} />
+    </GestureDetector>
+  )
+}
+```
+
+> [!TIP]
+> Import one hook from its subpath, such as `@rootnative/impulse/drag`. Then an
+> app that uses one gesture does not ship the set.
+
+## 💡 Why Impulse
+
+Gesture Handler is a good library. It gives you **mechanisms**: activation
+criteria, gesture relations, and state machines. It leaves each **intent** to
+you. So each app builds swipe to dismiss, double tap, and pinch from `Pan` and
+its own maths again, and each copy gets the sharp edges wrong in its own way.
+
+The same horizontal drag inside a vertical scroll view, twice:
+
+```tsx
+// Gesture Handler
+const x = useSharedValue(0)
+const start = useSharedValue(0)
+
 const pan = useMemo(
   () =>
     Gesture.Pan()
       .activeOffsetX([-10, 10])
       .failOffsetY([-5, 5])
-      .simultaneousWithExternalGesture(scrollRef)
+      .requireExternalGestureToFail(scrollRef)
+      .onStart(() => {
+        start.value = x.value
+      })
       .onUpdate((e) => {
-        x.value = e.translationX
+        x.value = start.value + e.translationX
       })
       .onEnd((e) => {
         runOnJS(commit)(e.translationX > 100)
       }),
   [],
 )
+```
 
+```tsx
 // Impulse
-const swipe = useSwipe({
-  directions: ['left', 'right'],
-  onSwipe: (e) => commit(e.direction === 'right'),
+const drag = useDrag({
+  axis: 'x',
+  deferTo: scrollRef,
+  onDragEnd: (e) => commit(e.translation.x > 100),
 })
 ```
 
-Impulse is **general-purpose**. It is not built for, owned by, or coupled to any specific consumer, including `@rootnative/ui` and `@rootnative/inertia`. The `@rootnative` scope is a publishing namespace and nothing more.
+`drag.x` is a shared value that keeps its position across gestures, so the
+`start.value` step is gone. `deferTo` names the relation by what it does. The
+step to the JS thread is the job of Impulse, not yours.
 
-## The boundary with Inertia
+## 🧭 How it works
 
-**Impulse detects, Inertia animates.** Impulse owns gesture recognition, composition, coexistence, and the shared values a gesture produces. [`@rootnative/inertia`](https://github.com/rootnative/inertia) owns the transition vocabulary and everything that turns a velocity into motion.
-
-Impulse peers on gesture-handler and Reanimated only. Inertia interop will arrive as an **optional** subpath (`@rootnative/impulse/inertia`) and will never become a required dependency.
-
-That independence is why this is a separate repository rather than a package inside `inertia`. Two rules in that repository's release guard make it impossible there: every non-private package is pinned to core's version, and every adapter must declare a narrow `@rootnative/inertia` peer. Both are correct for an adapter and fatal for a general-purpose gesture library, which has to release on its own cadence and has to be usable without an animation library.
-
-## Repository layout
-
-| Path | What it is |
-| --- | --- |
-| [packages/core/](packages/core/) | `@rootnative/impulse` — the whole public surface. |
-| [docs/](docs/) | Docusaurus site, private. Deployed to [rootnative.github.io/impulse](https://rootnative.github.io/impulse/), and it carries the web build of the example app. |
-| [example/](example/) | Expo app for manual validation, one screen per intent. A device pass is a release requirement, not a nicety. |
-| [scripts/](scripts/) | `build-llms.mjs`, `check-versions.mjs`, and `build-brand.mjs`. |
-
-Inside `packages/core/src`:
-
-| Path | What it is |
-| --- | --- |
-| `compose/` | `useGestures` — the only place RNGH's `Race` / `Simultaneous` / `Exclusive` are referenced. |
-| `relations/` | `alongside` / `blocks` / `deferTo` resolution to RNGH's three external-gesture relations. One module, so the three-way choice is decided once. |
-| `raw/` | `useRawGesture`, the mechanism-level escape hatch. |
-| `internal/` | Not public. The shared memoisation helper, `useLatestCallback`, `useStableList`, and keyed dev warnings. |
-| `gesture-handler/` | The RNGH interop subpath — pure re-exports, pinned to reference identity by a test. |
-
-## Develop
-
-Requires Node 20 or later and pnpm 10.
-
-```bash
-pnpm install
-pnpm run build            # build packages (Turborepo)
-pnpm run dev              # watch mode
-pnpm run typecheck        # tsc --noEmit across packages
-pnpm run test             # Jest
-pnpm run lint             # ESLint
-pnpm run format           # Prettier
-pnpm run example          # Expo dev server
-pnpm run docs:dev         # Docusaurus dev server
-pnpm run build:llms       # regenerate llms.txt and llms-full.txt after a docs change
-pnpm run check:versions   # verify every version reference agrees with core's
+```mermaid
+flowchart LR
+  subgraph app ["Your component"]
+    direction LR
+    hook["Intent hook<br/>useDrag, useSwipe, ..."] --> detector["GestureDetector"]
+  end
+  hook -->|builds once| rngh["Gesture Handler<br/>activation and relations"]
+  rngh -->|phase worklets| values[("Shared values<br/>x, y, scale, angle")]
+  rngh -->|scheduleOnRN| intent["Intent callbacks<br/>onTap, onSwipe, onDragEnd"]
+  values --> anim["Your animation code"]
 ```
 
-To run one test, target the package first:
+- **The gesture is built once.** An inline callback goes through a ref, so a
+  new render does not make a new gesture.
+- **The callback name states its thread.** A phase callback runs on the UI
+  thread. An intent callback runs on the JS thread, and Impulse crosses the
+  boundary for you.
+- **Impulse detects. It does not animate.** It ships no springs, no
+  transitions, and no components. A bridge to
+  [`@rootnative/inertia`](https://www.npmjs.com/package/@rootnative/inertia) is
+  planned as an optional subpath, and Impulse will never require an animation
+  library.
+
+### Impulse or `@rootnative/inertia-gestures`?
+
+Both build on Gesture Handler, and both ship a `useDrag`, a `usePan`, and a
+`useSwipe`. The names are the same, but the products are different.
+[`@rootnative/inertia-gestures`](https://www.npmjs.com/package/@rootnative/inertia-gestures)
+requires `@rootnative/inertia` and gives back an `animatedStyle` that already
+knows the bounds and the spring back. Impulse requires no animation library and
+gives back the gesture and its values. Use `-gestures` to make a `Motion.*`
+component follow a finger. Use Impulse for the gesture itself.
+
+## 📅 Runtime
+
+Impulse is developed against **Expo SDK 57**: React 19.2.3, React Native
+0.86.3, Gesture Handler 2.32.0, Reanimated 4.5.1, and Worklets 0.10.1.
+
+| Peer | Range |
+| --- | --- |
+| `react` | `>=19.2.3 <20.0.0` |
+| `react-native` | `>=0.83.0 <0.87.0` |
+| `react-native-gesture-handler` | `>=2.28.0 <3.0.0` |
+| `react-native-reanimated` | `>=4.5.0 <4.6.0` |
+| `react-native-worklets` | `>=0.10.0 <0.11.0` |
+
+The Reanimated and Worklets ranges are narrow on purpose. The two packages are
+locked to each other, and a wider range lets a package manager pair versions
+that do not install.
+
+## 🗺️ Roadmap
+
+| Milestone | State |
+| --- | --- |
+| 1. Composition and coexistence | Done. The gate (a horizontal `useDrag` in a vertical `ScrollView`, and a tap with a double tap) passed on Android and iOS. The feel is not tested. |
+| 2. The intent set | Eight of ten intents ship. `useHover` and `useEdgeSwipe` are designed, not written. |
+| 3. The Inertia bridge | Not started. `@rootnative/impulse/inertia` will turn a release payload into an Inertia release animation. |
+
+Each milestone gate needs a pass on real hardware. A test runner cannot tell
+you if a horizontal drag inside a vertical `ScrollView` feels right. Read the
+[roadmap](https://rootnative.github.io/impulse/roadmap/) for the detail.
+
+## 🤖 Docs for AI agents
+
+The package ships an [llms.txt](https://llmstxt.org/) file with the exact API
+of its version: `node_modules/@rootnative/impulse/llms.txt`. The docs site
+serves [llms.txt](https://rootnative.github.io/impulse/llms.txt), an overview,
+and [llms-full.txt](https://rootnative.github.io/impulse/llms-full.txt), the
+full API reference. The
+[AI agents page](https://rootnative.github.io/impulse/ai/) explains the two
+files.
+
+## 📚 Documentation
+
+| Page | Read it to |
+| --- | --- |
+| [Introduction](https://rootnative.github.io/impulse/introduction/) | Learn what Impulse does differently from raw Gesture Handler |
+| [Installation](https://rootnative.github.io/impulse/installation/) | Install the peers, add the root view, and see the status of each platform |
+| [Composition](https://rootnative.github.io/impulse/composition/) | Combine gestures with `useGestures` in race, simultaneous, or exclusive mode |
+| [Coexistence](https://rootnative.github.io/impulse/coexistence/) | Choose between `alongside`, `blocks`, and `deferTo` next to a scroll view |
+| [Threads and callbacks](https://rootnative.github.io/impulse/threads/) | Learn which callbacks are worklets and which run on the JS thread |
+| [Raw gestures](https://rootnative.github.io/impulse/raw-gestures/) | Use `useRawGesture` when no intent fits |
+| [Gesture Handler interop](https://rootnative.github.io/impulse/gesture-handler/) | Use a Gesture Handler primitive through `@rootnative/impulse/gesture-handler` |
+| [Web behaviour](https://rootnative.github.io/impulse/web/) | See what each intent does in a browser, and what nobody has checked |
+| [Testing](https://rootnative.github.io/impulse/testing/) | Test gestures in Jest with the preset |
+| [Roadmap](https://rootnative.github.io/impulse/roadmap/) | See each milestone and its gate |
+
+## 🧰 Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Runtime | React 19.2.3, React Native 0.86, Expo SDK 57 |
+| Gestures | `react-native-gesture-handler` 2.32, with Reanimated 4.5 and Worklets 0.10 as peers |
+| Language | TypeScript 5, strict mode |
+| Build | tsup (ESM output), Turborepo |
+| Package manager | pnpm 10 |
+| Tests | Jest 29, `@testing-library/react-native`, and the Gesture Handler Jest utilities |
+| Docs | Docusaurus 3 |
+| Delivery | GitHub Actions, GitHub Pages, and npm with trusted publishing |
+
+## 🔧 Development
+
+You need Node.js 24 (the version in `.nvmrc`) and pnpm 10.
+
+```bash
+git clone https://github.com/rootnative/impulse.git
+cd impulse
+pnpm install
+```
+
+| Command | What it does |
+| --- | --- |
+| `pnpm run build` | Builds the package with Turborepo |
+| `pnpm run dev` | Builds in watch mode |
+| `pnpm run typecheck` | Runs `tsc --noEmit` |
+| `pnpm run test` | Runs Jest |
+| `pnpm run lint` | Runs ESLint |
+| `pnpm run example` | Starts the Expo dev server of the example app |
+| `pnpm run docs:dev` | Starts the docs site |
+| `pnpm run build:llms` | Writes `llms.txt` and `llms-full.txt` again after a docs change |
+| `pnpm run check:versions` | Checks that each version reference agrees with the package |
+| `pnpm run preflight` | Runs the full gate that CI runs before a release |
+
+To run one test, name the package first:
 
 ```bash
 pnpm --filter @rootnative/impulse test -- gestureIdentity
 ```
 
-## Runtime
+To start the example on one platform, run `pnpm run example:ios`,
+`pnpm run example:android`, or `pnpm run example:web`.
 
-Expo SDK 57 — React 19.2.3, React Native 0.86.3, Reanimated 4.5.1, Worklets 0.10.1, Gesture Handler 2.32.0. This is the same band as `inertia`, `ui`, `ui-example`, and `rootnative`.
+<details>
+<summary>Repository layout</summary>
 
-## Impulse or `@rootnative/inertia-gestures`?
+| Path | What it is |
+| --- | --- |
+| [packages/core/](packages/core/) | `@rootnative/impulse`, the whole public surface |
+| [docs/](docs/) | The Docusaurus site. Its build also carries the web build of the example app. |
+| [example/](example/) | The Expo app, one screen for each intent. A pass on a device is a release requirement. |
+| [scripts/](scripts/) | `build-llms.mjs`, `check-versions.mjs`, and `build-brand.mjs` |
 
-Both build on gesture-handler and both ship a `useDrag`, a `usePan`, and a `useSwipe`, so the names collide. The products do not: `-gestures` requires `@rootnative/inertia` and hands back an `animatedStyle` that already knows about bounds and spring-back, while Impulse requires no animation library and hands back the gesture and its values. Reach for `-gestures` to make a Motion primitive follow a finger; reach for Impulse for the gesture itself. `-gestures` is not deprecated.
+Inside `packages/core/src`:
 
-## Roadmap
+| Path | What it is |
+| --- | --- |
+| `intents/` | One file for each intent hook |
+| `compose/` | `useGestures`, the only place that uses the `Race`, `Simultaneous`, and `Exclusive` of Gesture Handler |
+| `relations/` | The resolution of `alongside`, `blocks`, and `deferTo` to the three relations of Gesture Handler |
+| `raw/` | `useRawGesture`, the escape hatch |
+| `internal/` | Not public. The shared memo helper, `useLatestCallback`, `useStableList`, and the dev warnings. |
+| `gesture-handler/` | The re-exports of Gesture Handler, pinned to reference identity by a test |
 
-1. **Composition and coexistence core** — `useGestures` with all three modes, `alongside` / `blocks` / `deferTo` resolution, `useRawGesture`, the memoisation helper, `useTap`, and `useDrag` are **done**. The mechanical half of the device pass that closes this milestone is done on both platforms; feel is not.
-2. **The intent set** — `useDoubleTap`, `useLongPress`, `usePan`, `useSwipe`, `usePinch`, and `useRotate` are **done**. `useHover` and `useEdgeSwipe` remain.
-3. **The Inertia bridge** — `@rootnative/impulse/inertia`, adapting a release payload into Inertia's release transitions.
+</details>
 
-Each milestone has a graduation gate, and every gate needs a pass on real hardware — a test runner cannot tell you whether a horizontal drag inside a vertical `ScrollView` feels right.
+## 🔒 Security
 
-## Licence
+To report a vulnerability, read [SECURITY.md](SECURITY.md).
 
-MIT © RootNative. See [LICENSE](LICENSE).
+## 🙏 Credits
+
+- [Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/)
+  and [Reanimated](https://docs.swmansion.com/react-native-reanimated/) by
+  Software Mansion recognise and run every gesture.
+
+## 📄 Licence
+
+[MIT](LICENSE) © 2026 Root Native
