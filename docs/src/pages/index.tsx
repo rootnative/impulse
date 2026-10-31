@@ -171,8 +171,10 @@ const steps = [
   {
     number: '01',
     title: 'Install',
-    description: 'Add Impulse, gesture-handler, and Reanimated.',
-    command: 'yarn add @rootnative/impulse react-native-gesture-handler',
+    description:
+      'Add Impulse and its peers: gesture-handler, Reanimated, and Worklets.',
+    command:
+      'npx expo install @rootnative/impulse react-native-gesture-handler react-native-reanimated react-native-worklets',
   },
   {
     number: '02',

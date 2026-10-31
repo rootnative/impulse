@@ -43,11 +43,10 @@
   </picture>
 </p>
 
-> **Status:** `0.0.0-alpha.1`, an alpha on the `latest` dist-tag. Eight intent
-> hooks ship, with composition and coexistence. `useHover` and `useEdgeSwipe`
-> are designed and not written. A scripted sweep drove every intent on an iOS
-> simulator and on an Android emulator. Nobody has tested the feel of a gesture
-> yet, so an untested default is a design intention, not a measurement.
+> **Status:** `0.0.0-alpha.1`, an alpha. Eight intent hooks ship, with
+> composition and coexistence. `useHover` and `useEdgeSwipe` are not written
+> yet. Every intent was checked on an iOS simulator and an Android emulator.
+> Nobody has tested the feel of a gesture yet.
 
 ## ✨ Features
 

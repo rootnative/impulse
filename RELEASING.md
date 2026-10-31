@@ -6,8 +6,9 @@ The workflows publish what is already committed. They do not bump the version, w
 
 ## The state on npm
 
-- `0.0.0-alpha.0` is the only published version. It is on the `latest` and `alpha` dist-tags.
-- It was published from a laptop on 2026-09-12, with no provenance. npm cannot register a trusted publisher for a package that does not exist, so the first publish could not use CI.
+- `0.0.0-alpha.1` is the newest version, on the `latest` dist-tag. The `Release (manual)` workflow published it on 2026-09-27.
+- The `alpha` dist-tag still points at `0.0.0-alpha.0`.
+- `0.0.0-alpha.0` was published from a laptop on 2026-09-12, with no provenance. npm cannot register a trusted publisher for a package that does not exist, so the first publish could not use CI.
 - The package now exists. Every later release goes through CI with OIDC.
 
 ## One-time setup: register both workflows

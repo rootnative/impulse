@@ -12,15 +12,15 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
 
-> **Status:** `0.0.0-alpha.1` — published as an alpha on the `alpha` dist-tag. Install it with `@rootnative/impulse@alpha`. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus eight intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. A device sweep on 2026-09-19 measured the activation criteria a scripted touch can reach; how a gesture feels is still untested. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.1` — an alpha. What ships today is the composition and coexistence core — `useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options — plus eight intent hooks, **`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**, and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. A device sweep on 2026-09-19 measured the activation criteria a scripted touch can reach; how a gesture feels is still untested. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 
 ```sh
-pnpm add @rootnative/impulse react-native-gesture-handler react-native-reanimated
+npx expo install @rootnative/impulse react-native-gesture-handler react-native-reanimated react-native-worklets
 ```
 
-Then follow the [gesture-handler install guide](https://docs.swmansion.com/react-native-gesture-handler/docs/fundamentals/installation) and the [Reanimated install guide](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation) to enable their Babel plugins.
+In an Expo app, `npx expo install` picks the peer versions that match your SDK, and `babel-preset-expo` adds the worklets Babel plugin — no Babel change is needed. A bare React Native app installs the four packages with its package manager, adds `react-native-worklets/plugin` as the last Babel plugin, and runs `npx pod-install` for iOS. See [Installation](https://rootnative.github.io/impulse/installation/).
 
 **Peer dependencies:** `react >=19.2.3`, `react-native >=0.83.0 <0.87.0`, `react-native-gesture-handler >=2.28.0 <3.0.0`, `react-native-reanimated >=4.5.0 <4.6.0`, `react-native-worklets >=0.10.0 <0.11.0`.
 
