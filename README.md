@@ -43,7 +43,7 @@
   </picture>
 </p>
 
-> **Status:** `0.0.0-alpha.1`, an alpha. Eight intent hooks ship, with
+> **Status:** `0.0.0-alpha.2`, an alpha. Eight intent hooks ship, with
 > composition and coexistence. `useHover` and `useEdgeSwipe` are not written
 > yet. Every intent was checked on an iOS simulator and an Android emulator.
 > Nobody has tested the feel of a gesture yet.

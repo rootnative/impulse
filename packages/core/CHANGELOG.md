@@ -4,7 +4,11 @@ All notable changes to `@rootnative/impulse` are documented here. The format fol
 
 ## [Unreleased]
 
-`0.0.0-alpha.1` is on npm, cut from the `core@0.0.0-alpha.1` tag. This section holds every change since it.
+`0.0.0-alpha.2` is on npm, cut from the `core@0.0.0-alpha.2` tag. This section holds every change since it.
+
+## [0.0.0-alpha.2] - 2026-11-01
+
+The third alpha, and the first on the Expo SDK 58 band. It moves the peers to React Native 0.88 and Gesture Handler 3, keeps the builder API, and corrects the install docs. An Expo SDK 57 app stays on `0.0.0-alpha.1`.
 
 ### Added
 
@@ -107,5 +111,6 @@ The second alpha. It carries every change since `0.0.0-alpha.0`: the eight inten
 - **`useGestures` does not take coexistence options**, and that is a limitation rather than a choice. RNGH's three external-gesture relations are methods on a single gesture, and a composed gesture does not have them. Set `alongside` / `blocks` / `deferTo` on the member hooks instead.
 - **Impulse does not yet warn when a hook mounts with no `<GestureHandlerRootView>` above it.** RNGH's root-view context is not exported from its package entry, and reaching it would mean a deep import into `lib/commonjs/`, which pins one module format and breaks under the others.
 
-[unreleased]: https://github.com/rootnative/impulse/compare/core@0.0.0-alpha.1...HEAD
+[unreleased]: https://github.com/rootnative/impulse/compare/core@0.0.0-alpha.2...HEAD
+[0.0.0-alpha.2]: https://github.com/rootnative/impulse/releases/tag/core@0.0.0-alpha.2
 [0.0.0-alpha.1]: https://github.com/rootnative/impulse/releases/tag/core@0.0.0-alpha.1
