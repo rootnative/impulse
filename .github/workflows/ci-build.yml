@@ -106,7 +106,7 @@ jobs:
         run: pnpm run docs:check
 
       # Reads the built output and the tarball `files` would produce. Shared
-      # with both release workflows through `scripts/check-artifact.mjs`, so
+      # with the release workflow through `scripts/check-artifact.mjs`, so
       # the guard that runs here is the guard that runs on the publishing
       # path — a guard that runs on pull requests but not on release protects
       # the branch and not the users.

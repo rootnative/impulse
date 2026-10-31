@@ -69,7 +69,7 @@ const npmVersion = execFileSync('npm', ['--version'], {
 if (compareVersions(npmVersion, MIN_NPM) < 0) {
   fail(
     `npm ${npmVersion} cannot use staged trusted publishing. ${MIN_NPM} or ` +
-      `later is required — raise the pinned npm in the release workflows.`,
+      `later is required — raise the pinned npm in release-manual.yml.`,
   )
 }
 
