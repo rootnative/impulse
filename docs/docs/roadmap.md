@@ -92,8 +92,10 @@ Honest rather than empty. The ones a consumer can hit:
   the ref is filled by the time the gesture mounts. A target that mounts later
   stays silent. Use gesture-handler's `LegacyScrollView`. See
   [Coexistence](/coexistence).
-- **A missing `<GestureHandlerRootView>` fails silently.** Impulse cannot warn,
-  because RNGH does not export the context that would let it detect one.
+- **A missing `<GestureHandlerRootView>` fails silently on web and in a release
+  build.** In development on iOS and Android, Gesture Handler 3 throws an error
+  that names the root view. Impulse adds no warning of its own, because RNGH
+  does not export the context that would let it detect one.
 - **A cancel is reported, but the velocity that comes with it is not a
   throw.** Every end callback fires on both paths and carries `cancelled`. The
   finger never lifted on the cancelled one, so springing on `velocity` flings a

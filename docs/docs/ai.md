@@ -50,8 +50,10 @@ agent cannot discover by reading its own output:
   `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled by the time the gesture mounts, and cannot see the
   case where it is filled later.
-- A missing `<GestureHandlerRootView>` means gestures never fire, with an empty
-  console.
+- A missing `<GestureHandlerRootView>` means gestures never fire. In
+  development on iOS and Android, and in Jest, Gesture Handler 3 throws an
+  error that names the root view. On web and in a release build the console
+  stays empty.
 - A tap and a double tap compose `exclusive` with the double tap first. `race`
   fails quietly.
 

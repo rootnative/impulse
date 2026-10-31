@@ -85,7 +85,7 @@ function Hero() {
       <div className={styles.heroInner}>
         <div className={styles.heroContent}>
           <span className={styles.eyebrow}>
-            React Native · gesture-handler 2
+            React Native · gesture-handler 3
           </span>
           <h1 className={styles.heroTitle}>
             Declarative gestures for React Native.

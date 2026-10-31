@@ -19,6 +19,23 @@ Setup and the `@react-native/jest-preset` devDependency it needs are on the
 [Installation](/installation) page. This page is about what you can and cannot
 assert once it runs.
 
+## Render inside the root view
+
+Gesture Handler 3 throws when a `<GestureDetector>` renders outside a
+`<GestureHandlerRootView>`. Jest runs with `__DEV__` set, so a test gets the
+same error as a development build. Pass the root view as the `wrapper` of each
+render:
+
+```tsx
+import { render } from '@testing-library/react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+
+render(<Card />, { wrapper: GestureHandlerRootView })
+```
+
+A test that only calls `renderHook` needs no wrapper, because it renders no
+`<GestureDetector>`.
+
 ## Driving a gesture
 
 Use gesture-handler's own helpers. Do not simulate raw touch events by hand.

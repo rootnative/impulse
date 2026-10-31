@@ -6,6 +6,23 @@ All notable changes to `@rootnative/impulse` are documented here. The format fol
 
 `0.0.0-alpha.1` is on npm, cut from the `core@0.0.0-alpha.1` tag. This section holds every change since it.
 
+### Added
+
+- **The Jest preset now renders Gesture Handler 3's own components.** Its Reanimated mock gains `useComposedEventHandler`, `useHandler`, and `isSharedValue`, which Gesture Handler 3's `ScrollView` and `FlatList` call when they render. Without them, a consumer test that renders either one crashes under the preset.
+- **The package README and `llms.txt` now state the platform support.** iOS and Android are supported as an alpha: every intent was driven on a simulator and an emulator, and no physical device ran them. Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and `usePan`, `useSwipe`, `usePinch`, and `useRotate` are not verified. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested.
+
+### Changed
+
+- **Impulse now targets Expo SDK 58, and the peer ranges moved with it. This is a breaking change.** The peers are `react >=19.3.0 <20.0.0`, `react-native >=0.88.0 <0.89.0`, `react-native-gesture-handler >=3.3.0 <4.0.0`, `react-native-reanimated >=4.7.0 <4.8.0`, and `react-native-worklets >=0.13.0 <0.14.0`. No range covers SDK 57 and SDK 58 together: React 19.2.3 does not pair with React Native 0.88, and Worklets 0.10 does not pair with Reanimated 4.7. An Expo SDK 57 app stays on `0.0.0-alpha.1`.
+- **Impulse still builds its gestures with the builder API of Gesture Handler (`Gesture.Pan()`).** Gesture Handler 3 marks that API as deprecated, in its JSDoc only, and still runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does not compose with an Impulse gesture. The public API of Impulse keeps its shape.
+- **The gesture types in the declaration files now carry Gesture Handler 3's names.** Gesture Handler 3 gave `PanGesture`, `TapGesture`, `LongPressGesture`, `PinchGesture`, `RotationGesture`, and `ComposedGesture` to its hook API, and renamed the builder types to `LegacyPanGesture` and the rest. `UseDragResult['gesture']` is now a `LegacyPanGesture`, and `GesturesResult['gesture']` is a `LegacyComposedGesture`. Code that names the old types from `react-native-gesture-handler` must use the `Legacy` names.
+- **A relation target must now be `LegacyScrollView` or `LegacyFlatList`.** The `ScrollView` and `FlatList` that `@rootnative/impulse/gesture-handler` re-exports are Gesture Handler 3's own now. Their wrapper hands the ref to React Native's component and never puts a handler tag on it, so a builder relation drops it, the same way it drops React Native's own `ScrollView`. The development warning, the docs, and the example name the legacy components. Gesture Handler 3 marks both as deprecated, together with the builder API, so an editor can show them struck through.
+- **A missing `<GestureHandlerRootView>` now throws in development on iOS and Android, and in Jest.** The error comes from Gesture Handler 3: `GestureDetector must be used as a descendant of GestureHandlerRootView`. On web and in a release build the absence is still silent. A test that renders a `<GestureDetector>` must render it inside the root view: `render(<Card />, { wrapper: GestureHandlerRootView })`.
+
+### Fixed
+
+- **The install command now names all four peers.** `react-native-worklets` is a required peer, and the old command did not install it. In an Expo app, run `npx expo install @rootnative/impulse react-native-gesture-handler react-native-reanimated react-native-worklets`. It picks the peer versions that match your SDK, and `babel-preset-expo` adds the worklets Babel plugin, so no Babel change is needed. A bare React Native app installs the four packages with its package manager, adds `react-native-worklets/plugin` as the last Babel plugin, and runs `npx pod-install` for iOS.
+
 ## [0.0.0-alpha.1] - 2026-09-27
 
 The second alpha. It carries every change since `0.0.0-alpha.0`: the eight intent hooks, the `IntentEndInfo` argument on every end callback, and the worklet warning. Milestone 1's gate is closed on mechanics only, and feel is untested.

@@ -7,7 +7,7 @@
 # @rootnative/impulse
 
 [![npm](https://img.shields.io/npm/v/@rootnative/impulse.svg)](https://www.npmjs.com/package/@rootnative/impulse)
-[![Gesture Handler 2](https://img.shields.io/badge/gesture--handler-2.x-6B4FBB)](https://docs.swmansion.com/react-native-gesture-handler/)
+[![Gesture Handler 3](https://img.shields.io/badge/gesture--handler-3.x-6B4FBB)](https://docs.swmansion.com/react-native-gesture-handler/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/). A gesture is written as an intent, not assembled from a builder chain.
@@ -22,11 +22,11 @@ npx expo install @rootnative/impulse react-native-gesture-handler react-native-r
 
 In an Expo app, `npx expo install` picks the peer versions that match your SDK, and `babel-preset-expo` adds the worklets Babel plugin — no Babel change is needed. A bare React Native app installs the four packages with its package manager, adds `react-native-worklets/plugin` as the last Babel plugin, and runs `npx pod-install` for iOS. See [Installation](https://rootnative.github.io/impulse/installation/).
 
-**Peer dependencies:** `react >=19.2.3`, `react-native >=0.83.0 <0.87.0`, `react-native-gesture-handler >=2.28.0 <3.0.0`, `react-native-reanimated >=4.5.0 <4.6.0`, `react-native-worklets >=0.10.0 <0.11.0`.
+**Peer dependencies:** `react >=19.3.0`, `react-native >=0.88.0 <0.89.0`, `react-native-gesture-handler >=3.3.0 <4.0.0`, `react-native-reanimated >=4.7.0 <4.8.0`, `react-native-worklets >=0.13.0 <0.14.0`. This is the Expo SDK 58 band; an Expo SDK 57 app uses `0.0.0-alpha.1`.
 
 **Platforms:** iOS and Android are supported (alpha). Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and the other four intents are not verified. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested. See [Platforms](https://rootnative.github.io/impulse/installation#platforms).
 
-Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires, and it fails silently — nothing happens and nothing is logged.
+Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires. In development on iOS and Android, Gesture Handler 3 throws an error that names the root view; on web and in a release build, nothing happens and nothing is logged.
 
 ## Impulse or `@rootnative/inertia-gestures`?
 
@@ -345,7 +345,7 @@ Three further limits today:
 - **Most activation-criteria defaults are still design intentions.** A device sweep on 2026-09-19 drove every intent on Android or iOS and measured what a scripted touch can: `useDrag`'s `bounds` and `elastic`, `usePinch`'s and `useRotate`'s `min` and `max`, `useLongPress`'s `minDuration`, and `useSwipe`'s `commitDistance` are all honoured exactly. That the library obeys a number is not evidence that the number is right — only a hand reports that. A deliberate double tap still registers at `maxDelay: 250` on both platforms, so the 500ms default is the one most likely to move. Three numbers stay unmeasured, because no instrument here could produce them: `useTap`'s and `useDoubleTap`'s `maxDistance`, the shared 10-point `threshold`, and `useSwipe`'s `commitSpeed`.
 
 - **`useGestures` does not take coexistence options.** RNGH's three relations are methods on a single gesture, and a composed gesture does not have them. Set them on the member hooks instead.
-- **No warning when `<GestureHandlerRootView>` is missing.** Its absence is silent — the gesture simply never fires — and RNGH does not export the context that would let Impulse detect it.
+- **No warning of its own when `<GestureHandlerRootView>` is missing.** In development on iOS and Android, Gesture Handler 3 throws. On web and in a release build the absence is silent — the gesture simply never fires — and RNGH does not export the context that would let Impulse detect it.
 
 ## Testing
 
@@ -357,6 +357,8 @@ module.exports = {
 ```
 
 The preset also needs `@react-native/jest-preset` as a devDependency at the version matching your `react-native`. React Native 0.86 moved its Jest preset into that package and declares it as an optional peer, so no package manager installs it for you.
+
+Render a component that holds a `<GestureDetector>` inside `<GestureHandlerRootView>`: Gesture Handler 3 throws without it, and Jest runs with `__DEV__` set. Pass the root view as the wrapper: `render(<Card />, { wrapper: GestureHandlerRootView })`.
 
 ## Documentation
 

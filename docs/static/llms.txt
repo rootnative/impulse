@@ -24,10 +24,17 @@ and https://rootnative.github.io/impulse/web
 
 npm install @rootnative/impulse
 
-Peers: react, react-native, react-native-gesture-handler,
-react-native-reanimated, react-native-worklets. Render a
-<GestureHandlerRootView> above any component using a gesture — if it is
-missing, gestures never fire and nothing warns.
+Peers (the Expo SDK 58 band): react >=19.3.0, react-native >=0.88.0 <0.89.0,
+react-native-gesture-handler >=3.3.0 <4.0.0, react-native-reanimated >=4.7.0
+<4.8.0, react-native-worklets >=0.13.0 <0.14.0. An Expo SDK 57 app uses
+0.0.0-alpha.1. Impulse builds gestures with the Gesture Handler builder API
+(Gesture.Pan()); a Gesture Handler 3 hook gesture (usePanGesture) does not
+compose with an Impulse gesture.
+
+Render a <GestureHandlerRootView> above any component using a gesture — if it
+is missing, gestures never fire. Gesture Handler 3 throws in development on
+iOS and Android, and in Jest (wrap each render: { wrapper:
+GestureHandlerRootView }). On web and in a release build nothing warns.
 
 ## What ships
 
@@ -154,7 +161,8 @@ recognition.
   true flings a view the user never released.
 - useLongPress maxDistance cancels an ACTIVE press on web, against RNGH's own
   documented contract. Hold-then-drag does not work there at the default.
-- A missing <GestureHandlerRootView> fails silently and Impulse cannot warn.
+- A missing <GestureHandlerRootView> fails silently on web and in a release
+  build. Impulse adds no warning of its own.
 - Web is surveyed by hand; no jsdom test pins any of it.
 
 ## Out of scope, by decision

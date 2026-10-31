@@ -208,8 +208,8 @@ For web, an Expo app also needs `react-dom` and `react-native-web`:
 npx expo install react-dom react-native-web
 ```
 
-The example app runs on web with `react-native-web` 0.21, `react-dom` 19.2.3,
-and Gesture Handler 2.32. [Web behaviour](/web) lists each intent, the
+The example app runs on web with `react-native-web` 0.21, `react-dom` 19.3.0,
+and Gesture Handler 3.3. [Web behaviour](/web) lists each intent, the
 differences from native, and the open questions.
 
 ## Install the package
@@ -233,11 +233,11 @@ In a bare React Native app, install them directly and then run
 
 | Peer | Range |
 | --- | --- |
-| `react` | `>=19.2.3 <20.0.0` |
-| `react-native` | `>=0.83.0 <0.87.0` |
-| `react-native-gesture-handler` | `>=2.28.0 <3.0.0` |
-| `react-native-reanimated` | `>=4.5.0 <4.6.0` |
-| `react-native-worklets` | `>=0.10.0 <0.11.0` |
+| `react` | `>=19.3.0 <20.0.0` |
+| `react-native` | `>=0.88.0 <0.89.0` |
+| `react-native-gesture-handler` | `>=3.3.0 <4.0.0` |
+| `react-native-reanimated` | `>=4.7.0 <4.8.0` |
+| `react-native-worklets` | `>=0.13.0 <0.14.0` |
 
 > **NOTE — Why the Reanimated range is so narrow**
 >
@@ -246,8 +246,15 @@ In a bare React Native app, install them directly and then run
 > worklets build, and that pair does not install. The two tight ranges are
 > load-bearing. Do not widen them.
 
-Impulse is developed against **Expo SDK 57** — React 19.2.3, React Native
-0.86.3, Gesture Handler 2.32.0, Reanimated 4.5.1, and Worklets 0.10.1.
+Impulse is developed against **Expo SDK 58** — React 19.3.0, React Native
+0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+SDK 57 app uses `0.0.0-alpha.1`.
+
+Impulse builds its gestures with the builder API of Gesture Handler
+(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
+not compose with an Impulse gesture, and a relation target must be
+`LegacyScrollView` or `LegacyFlatList` — see [Coexistence](/coexistence).
 
 ## Add the root view
 
@@ -270,14 +277,15 @@ const styles = StyleSheet.create({
 })
 ```
 
-> **DANGER — A missing root view fails silently**
+> **DANGER — A missing root view fails silently on web and in a release build**
 >
-> Without it, your gestures never fire. Nothing throws, nothing warns, and the
-> console stays empty. "Nothing happens" is the whole diagnostic.
+> Without it, your gestures never fire. In development on iOS and Android,
+> Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
+> GestureHandlerRootView`. The same error stops a Jest test that renders a
+> `<GestureDetector>` outside the root view — see [Testing](/testing).
 >
-> Impulse cannot warn you about this yet. RNGH does not export the context that
-> would let a hook detect the root view, so there is no signal to read. This is a
-> known gap. **If a gesture does nothing at all, check this first.**
+> On web and in a release build, nothing throws, nothing warns, and the console
+> stays empty. **If a gesture does nothing at all, check this first.**
 
 Give the root view `flex: 1`, or the area below it receives no touches.
 
@@ -2786,6 +2794,23 @@ Setup and the `@react-native/jest-preset` devDependency it needs are on the
 [Installation](/installation) page. This page is about what you can and cannot
 assert once it runs.
 
+## Render inside the root view
+
+Gesture Handler 3 throws when a `<GestureDetector>` renders outside a
+`<GestureHandlerRootView>`. Jest runs with `__DEV__` set, so a test gets the
+same error as a development build. Pass the root view as the `wrapper` of each
+render:
+
+```tsx
+import { render } from '@testing-library/react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+
+render(<Card />, { wrapper: GestureHandlerRootView })
+```
+
+A test that only calls `renderHook` needs no wrapper, because it renders no
+`<GestureDetector>`.
+
 ## Driving a gesture
 
 Use gesture-handler's own helpers. Do not simulate raw touch events by hand.
@@ -2957,8 +2982,10 @@ agent cannot discover by reading its own output:
   `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled by the time the gesture mounts, and cannot see the
   case where it is filled later.
-- A missing `<GestureHandlerRootView>` means gestures never fire, with an empty
-  console.
+- A missing `<GestureHandlerRootView>` means gestures never fire. In
+  development on iOS and Android, and in Jest, Gesture Handler 3 throws an
+  error that names the root view. On web and in a release build the console
+  stays empty.
 - A tap and a double tap compose `exclusive` with the double tap first. `race`
   fails quietly.
 
@@ -3066,8 +3093,10 @@ Honest rather than empty. The ones a consumer can hit:
   the ref is filled by the time the gesture mounts. A target that mounts later
   stays silent. Use gesture-handler's `LegacyScrollView`. See
   [Coexistence](/coexistence).
-- **A missing `<GestureHandlerRootView>` fails silently.** Impulse cannot warn,
-  because RNGH does not export the context that would let it detect one.
+- **A missing `<GestureHandlerRootView>` fails silently on web and in a release
+  build.** In development on iOS and Android, Gesture Handler 3 throws an error
+  that names the root view. Impulse adds no warning of its own, because RNGH
+  does not export the context that would let it detect one.
 - **A cancel is reported, but the velocity that comes with it is not a
   throw.** Every end callback fires on both paths and carries `cancelled`. The
   finger never lifted on the cancelled one, so springing on `velocity` flings a

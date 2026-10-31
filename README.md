@@ -18,8 +18,8 @@
   <a href="https://github.com/rootnative/impulse/actions/workflows/ci-build.yml"><img src="https://github.com/rootnative/impulse/actions/workflows/ci-build.yml/badge.svg?branch=main" alt="Build and test status" /></a>
   <a href="https://github.com/rootnative/impulse/actions/workflows/deploy-web.yml"><img src="https://github.com/rootnative/impulse/actions/workflows/deploy-web.yml/badge.svg?branch=main" alt="Docs and demo deploy status" /></a>
   <a href="https://www.npmjs.com/package/@rootnative/impulse"><img src="https://img.shields.io/npm/v/@rootnative/impulse?label=npm&logo=npm&color=6B4FBB" alt="npm version of @rootnative/impulse" /></a>
-  <img src="https://img.shields.io/badge/Expo_SDK-57-000020?logo=expo&logoColor=white" alt="Expo SDK 57" />
-  <img src="https://img.shields.io/badge/Gesture_Handler-2.32-6B4FBB" alt="Gesture Handler 2.32" />
+  <img src="https://img.shields.io/badge/Expo_SDK-58-000020?logo=expo&logoColor=white" alt="Expo SDK 58" />
+  <img src="https://img.shields.io/badge/Gesture_Handler-3.3-6B4FBB" alt="Gesture Handler 3.3" />
   <img src="https://img.shields.io/badge/platforms-iOS_%7C_Android_%7C_Web_%28partial%29-6B4FBB" alt="Platforms: iOS, Android, and web (partial)" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-6B4FBB" alt="MIT licence" /></a>
 </p>
@@ -105,7 +105,7 @@
       Clone this repository, then run<br />
       <code>pnpm install</code> and <code>pnpm run example</code>.
       <br /><br />
-      Scan the QR code in the terminal with <b>Expo Go</b> for SDK 57.
+      Scan the QR code in the terminal with <b>Expo Go</b> for SDK 58.
     </td>
   </tr>
 </table>
@@ -145,8 +145,10 @@ const styles = StyleSheet.create({
 ```
 
 > [!WARNING]
-> Without the root view, a gesture never fires. Nothing throws and nothing
-> warns. If a gesture does nothing at all, check the root view first.
+> Without the root view, a gesture never fires. In development on iOS and
+> Android, Gesture Handler 3 throws an error that names the root view. On web
+> and in a release build, nothing throws and nothing warns. If a gesture does
+> nothing at all, check the root view first.
 
 Then attach a gesture:
 
@@ -251,20 +253,26 @@ component follow a finger. Use Impulse for the gesture itself.
 
 ## 📅 Runtime
 
-Impulse is developed against **Expo SDK 57**: React 19.2.3, React Native
-0.86.3, Gesture Handler 2.32.0, Reanimated 4.5.1, and Worklets 0.10.1.
+Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
+0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+SDK 57 app uses `0.0.0-alpha.1`.
 
 | Peer | Range |
 | --- | --- |
-| `react` | `>=19.2.3 <20.0.0` |
-| `react-native` | `>=0.83.0 <0.87.0` |
-| `react-native-gesture-handler` | `>=2.28.0 <3.0.0` |
-| `react-native-reanimated` | `>=4.5.0 <4.6.0` |
-| `react-native-worklets` | `>=0.10.0 <0.11.0` |
+| `react` | `>=19.3.0 <20.0.0` |
+| `react-native` | `>=0.88.0 <0.89.0` |
+| `react-native-gesture-handler` | `>=3.3.0 <4.0.0` |
+| `react-native-reanimated` | `>=4.7.0 <4.8.0` |
+| `react-native-worklets` | `>=0.13.0 <0.14.0` |
 
 The Reanimated and Worklets ranges are narrow on purpose. The two packages are
 locked to each other, and a wider range lets a package manager pair versions
 that do not install.
+
+Impulse builds its gestures with the builder API of Gesture Handler
+(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
+not compose with an Impulse gesture.
 
 ## 🗺️ Roadmap
 
@@ -307,8 +315,8 @@ files.
 
 | Layer | Technology |
 | --- | --- |
-| Runtime | React 19.2.3, React Native 0.86, Expo SDK 57 |
-| Gestures | `react-native-gesture-handler` 2.32, with Reanimated 4.5 and Worklets 0.10 as peers |
+| Runtime | React 19.3, React Native 0.88, Expo SDK 58 |
+| Gestures | `react-native-gesture-handler` 3.3 (the builder API), with Reanimated 4.7 and Worklets 0.13 as peers |
 | Language | TypeScript 5, strict mode |
 | Build | tsup (ESM output), Turborepo |
 | Package manager | pnpm 10 |

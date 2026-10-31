@@ -28,8 +28,8 @@ For web, an Expo app also needs `react-dom` and `react-native-web`:
 npx expo install react-dom react-native-web
 ```
 
-The example app runs on web with `react-native-web` 0.21, `react-dom` 19.2.3,
-and Gesture Handler 2.32. [Web behaviour](/web) lists each intent, the
+The example app runs on web with `react-native-web` 0.21, `react-dom` 19.3.0,
+and Gesture Handler 3.3. [Web behaviour](/web) lists each intent, the
 differences from native, and the open questions.
 
 ## Install the package
@@ -53,11 +53,11 @@ In a bare React Native app, install them directly and then run
 
 | Peer | Range |
 | --- | --- |
-| `react` | `>=19.2.3 <20.0.0` |
-| `react-native` | `>=0.83.0 <0.87.0` |
-| `react-native-gesture-handler` | `>=2.28.0 <3.0.0` |
-| `react-native-reanimated` | `>=4.5.0 <4.6.0` |
-| `react-native-worklets` | `>=0.10.0 <0.11.0` |
+| `react` | `>=19.3.0 <20.0.0` |
+| `react-native` | `>=0.88.0 <0.89.0` |
+| `react-native-gesture-handler` | `>=3.3.0 <4.0.0` |
+| `react-native-reanimated` | `>=4.7.0 <4.8.0` |
+| `react-native-worklets` | `>=0.13.0 <0.14.0` |
 
 :::note Why the Reanimated range is so narrow
 
@@ -68,8 +68,15 @@ load-bearing. Do not widen them.
 
 :::
 
-Impulse is developed against **Expo SDK 57** — React 19.2.3, React Native
-0.86.3, Gesture Handler 2.32.0, Reanimated 4.5.1, and Worklets 0.10.1.
+Impulse is developed against **Expo SDK 58** — React 19.3.0, React Native
+0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+SDK 57 app uses `0.0.0-alpha.1`.
+
+Impulse builds its gestures with the builder API of Gesture Handler
+(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
+not compose with an Impulse gesture, and a relation target must be
+`LegacyScrollView` or `LegacyFlatList` — see [Coexistence](/coexistence).
 
 ## Add the root view
 
@@ -92,14 +99,15 @@ const styles = StyleSheet.create({
 })
 ```
 
-:::danger A missing root view fails silently
+:::danger A missing root view fails silently on web and in a release build
 
-Without it, your gestures never fire. Nothing throws, nothing warns, and the
-console stays empty. "Nothing happens" is the whole diagnostic.
+Without it, your gestures never fire. In development on iOS and Android,
+Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
+GestureHandlerRootView`. The same error stops a Jest test that renders a
+`<GestureDetector>` outside the root view — see [Testing](/testing).
 
-Impulse cannot warn you about this yet. RNGH does not export the context that
-would let a hook detect the root view, so there is no signal to read. This is a
-known gap. **If a gesture does nothing at all, check this first.**
+On web and in a release build, nothing throws, nothing warns, and the console
+stays empty. **If a gesture does nothing at all, check this first.**
 
 :::
 
