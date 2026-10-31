@@ -37,11 +37,10 @@
 </p>
 
 <p align="center">
-  <img src="assets/docs/screenshots/phone-double-tap.jpg" alt="The useDoubleTap screen of the demo: a card that takes one tap or two, a maxDelay choice, and the tap counts" width="30%" />
-  &nbsp;
-  <img src="assets/docs/screenshots/phone-swipe.jpg" alt="The useSwipe screen of the demo: horizontal cards to swipe inside a vertical list" width="30%" />
-  &nbsp;
-  <img src="assets/docs/screenshots/phone-pinch.jpg" alt="The usePinch screen of the demo: a zoom viewer with its scale shown as 1.00x" width="30%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/docs/screenshots/docs-home-dark.jpg" />
+    <img src="assets/docs/screenshots/docs-home-light.jpg" alt="The Impulse docs home page, with the headline 'Declarative gestures for React Native.' and the example gallery in a phone frame" width="100%" />
+  </picture>
 </p>
 
 > **Status:** `0.0.0-alpha.1`, an alpha on the `latest` dist-tag. Eight intent
@@ -82,6 +81,14 @@
 | `useHover`, `useEdgeSwipe` | Designed, not written | — |
 
 ## 📱 Try it
+
+<p align="center">
+  <img src="assets/docs/screenshots/phone-double-tap.jpg" alt="The useDoubleTap screen of the demo: a card that takes one tap or two, a maxDelay choice, and the tap counts" width="30%" />
+  &nbsp;
+  <img src="assets/docs/screenshots/phone-swipe.jpg" alt="The useSwipe screen of the demo: horizontal cards to swipe inside a vertical list" width="30%" />
+  &nbsp;
+  <img src="assets/docs/screenshots/phone-pinch.jpg" alt="The usePinch screen of the demo: a zoom viewer with its scale shown as 1.00x" width="30%" />
+</p>
 
 <table>
   <tr>
