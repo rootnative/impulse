@@ -50,9 +50,15 @@ jest.mock('react-native-reanimated', () => {
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
     isWorkletFunction: () => false,
-    // Needed by RNGH, not by Impulse. See the note above.
+    // Needed by RNGH, not by Impulse. See the note above. The builder's
+    // detector calls the first two. Gesture Handler 3's own components
+    // (`ScrollView`, `FlatList`) call the other three at render, so a consumer
+    // test that renders one of them crashes without them.
     useEvent: (callback) => callback,
     setGestureState: () => {},
+    useComposedEventHandler: () => () => {},
+    useHandler: () => ({ context: {}, doDependenciesDiffer: false }),
+    isSharedValue: () => false,
   }
 })
 

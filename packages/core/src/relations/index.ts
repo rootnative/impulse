@@ -115,7 +115,10 @@ function isUnresolvable(reference: GestureReference): boolean {
  * with no warning, no error, and no way to tell the result apart from a
  * relation that was never written. The gesture keeps working; it just never
  * coexists with the scroll view, which is the whole reason the option was
- * passed.
+ * passed. Gesture Handler 3's own `ScrollView` and `FlatList` fail the same
+ * way: their wrapper hands the ref to React Native's component, so only
+ * `LegacyScrollView` and `LegacyFlatList` carry a tag a builder gesture can
+ * read.
  *
  * **Call this from an effect, never during render.** A ref is empty while the
  * component that owns it renders and is filled during the commit, so a check
@@ -125,10 +128,12 @@ function isUnresolvable(reference: GestureReference): boolean {
  * **A populated ref is a finished ref, which is what makes state 3 above safe
  * to report.** Both places RNGH fills one do it together with the tag:
  * `BaseGesture.initialize` assigns `handlerTag` and sets `config.ref.current`
- * in the same function, and `createNativeWrapper`'s `useImperativeHandle`
- * copies the tag onto the instance before returning it, and returns `null`
- * when it cannot. Neither leaves a window where `.current` is set and the tag
- * is still coming, so a populated ref with no tag is never a timing artifact.
+ * in the same function, and the legacy `createNativeWrapper`'s
+ * `useImperativeHandle` copies the tag onto the instance before returning it,
+ * and returns `null` when it cannot. Neither leaves a window where `.current`
+ * is set and the tag is still coming, so a populated ref with no tag is never
+ * a timing artifact. The v3 wrapper never adds a tag at all, so its ref is
+ * finished and untagged too.
  *
  * What this deliberately does not catch: a target that mounts in a *later*
  * commit than the gesture. Its ref is empty when this runs and nothing
@@ -156,10 +161,11 @@ export function warnOnUnresolvableReferences(
       `${hookName} received a \`${option}\` reference to a component that ` +
         'owns no gesture, so gesture-handler dropped the relation. The ' +
         'gesture still works and the two still conflict — nothing reports ' +
-        "it at runtime. React Native's own `ScrollView` and `FlatList` are " +
-        'the usual cause: they carry no handler tag. Import `ScrollView` or ' +
-        '`FlatList` from `@rootnative/impulse/gesture-handler` and put the ' +
-        'ref on that component instead.',
+        'it at runtime. The usual cause is a `ScrollView` or `FlatList` from ' +
+        'React Native or from Gesture Handler 3: neither puts a handler tag ' +
+        'on its ref. Import `LegacyScrollView` or `LegacyFlatList` from ' +
+        '`@rootnative/impulse/gesture-handler` and put the ref on that ' +
+        'component instead.',
     )
   }
 }

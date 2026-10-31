@@ -1,10 +1,12 @@
 import { useRef, useState, type RefObject } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-// Gesture-handler's `ScrollView`, not React Native's. RNGH resolves every
-// relation ref through `ref.current?.handlerTag` and silently drops anything
-// that has none, so the plain one would make `deferTo` below a no-op and this
-// screen would stop testing the thing it exists to test.
-import { ScrollView } from '@rootnative/impulse/gesture-handler'
+// Gesture-handler's `LegacyScrollView`, not React Native's `ScrollView` and
+// not Gesture Handler 3's. RNGH resolves every relation ref through
+// `ref.current?.handlerTag` and silently drops anything that has none, and
+// only the legacy wrapper puts a tag on the ref. Either other one would make
+// `deferTo` below a no-op and this screen would stop testing the thing it
+// exists to test.
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 import {
   GestureDetector,
   useSwipe,
@@ -46,7 +48,7 @@ export function SwipeScreen({ onBack }: { onBack: () => void }) {
   // The screen owns its scroll view so the compass below can name it in a
   // coexistence option. `ScreenShell`'s own is not reachable from here, and a
   // relation needs a ref.
-  const scrollRef = useRef<ScrollView>(null)
+  const scrollRef = useRef<LegacyScrollView>(null)
 
   return (
     <ScreenShell
@@ -55,7 +57,7 @@ export function SwipeScreen({ onBack }: { onBack: () => void }) {
       onBack={onBack}
       fill
     >
-      <ScrollView
+      <LegacyScrollView
         ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -88,7 +90,7 @@ export function SwipeScreen({ onBack }: { onBack: () => void }) {
           real screen. Pair each card with a visible button, or declare the
           action with accessibilityActions.
         </Text>
-      </ScrollView>
+      </LegacyScrollView>
     </ScreenShell>
   )
 }
@@ -176,7 +178,11 @@ function Card({
  * radial — the case that needs a relation. `deferTo` on the screen's scroll
  * view is what keeps the list scrollable through it.
  */
-function Compass({ scrollRef }: { scrollRef: RefObject<ScrollView | null> }) {
+function Compass({
+  scrollRef,
+}: {
+  scrollRef: RefObject<LegacyScrollView | null>
+}) {
   const [last, setLast] = useState('—')
 
   const swipe = useSwipe({

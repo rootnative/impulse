@@ -4,6 +4,7 @@ import { ScrollView, View, type ScrollViewInstance } from 'react-native'
 import {
   GestureDetector,
   GestureHandlerRootView,
+  ScrollView as GestureHandlerScrollView,
 } from 'react-native-gesture-handler'
 import { useDrag } from '../intents/drag'
 import { useTap } from '../intents/tap'
@@ -129,7 +130,33 @@ describe('relation references', () => {
       const message = warn.mock.calls[0]?.[0] as string
       expect(message).toContain('useDrag')
       expect(message).toContain('`deferTo`')
+      expect(message).toContain('`LegacyScrollView`')
       expect(message).toContain('@rootnative/impulse/gesture-handler')
+    })
+
+    it("for a ref to Gesture Handler 3's own ScrollView", () => {
+      // The trap of the move to Gesture Handler 3. Its root `ScrollView` is
+      // the hook-API wrapper, which hands the ref to React Native's component
+      // and never adds a tag, so a builder relation drops it just the same.
+      function WithV3ScrollView() {
+        const scrollRef = useRef<ScrollViewInstance>(null)
+        const drag = useDrag({
+          deferTo: scrollRef as unknown as GestureReference,
+        })
+
+        return (
+          <GestureHandlerScrollView ref={scrollRef}>
+            <GestureDetector gesture={drag.gesture}>
+              <View />
+            </GestureDetector>
+          </GestureHandlerScrollView>
+        )
+      }
+
+      render(<WithV3ScrollView />, { wrapper: GestureHandlerRootView })
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]?.[0]).toContain('`LegacyScrollView`')
     })
 
     it('once, however many times the hook re-renders', () => {

@@ -1,14 +1,15 @@
 import { useRef, useState, type RefObject } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-// Gesture-handler's `ScrollView`, not React Native's, and the difference is
-// load-bearing. RNGH resolves every relation ref through
-// `ref.current?.handlerTag` and drops anything that returns nothing — no
-// warning, no error, the relation simply is not installed. React Native's
-// `ScrollView` carries no `handlerTag`; this one is the same component wrapped
-// by `createNativeWrapper`, which assigns the tag onto the forwarded ref for
-// exactly this purpose. With the plain one, `blocks` below is a no-op and this
-// screen silently stops testing the thing it exists to test.
-import { ScrollView } from '@rootnative/impulse/gesture-handler'
+// Gesture-handler's `LegacyScrollView`, and the choice is load-bearing. RNGH
+// resolves every relation ref through `ref.current?.handlerTag` and drops
+// anything that returns nothing — no warning, no error, the relation simply
+// is not installed. React Native's `ScrollView` carries no `handlerTag`, and
+// neither does Gesture Handler 3's own `ScrollView`: its wrapper hands the ref
+// straight to React Native's. This one is wrapped by the legacy
+// `createNativeWrapper`, which assigns the tag onto the forwarded ref for
+// exactly this purpose. With either other one, `blocks` below is a no-op and
+// this screen silently stops testing the thing it exists to test.
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 import {
   GestureDetector,
   useDrag,
@@ -47,7 +48,7 @@ const ROWS = [
 ] as const
 
 export function DragScreen({ onBack }: { onBack: () => void }) {
-  const scrollRef = useRef<ScrollView>(null)
+  const scrollRef = useRef<LegacyScrollView>(null)
 
   return (
     <ScreenShell
@@ -61,7 +62,7 @@ export function DragScreen({ onBack }: { onBack: () => void }) {
         coexistence option. `ScreenShell`'s own is not reachable from here,
         and a relation needs a ref.
       */}
-      <ScrollView
+      <LegacyScrollView
         ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -94,7 +95,7 @@ export function DragScreen({ onBack }: { onBack: () => void }) {
           screen would put the same action on a button as well, or declare it
           with accessibilityActions.
         </Text>
-      </ScrollView>
+      </LegacyScrollView>
     </ScreenShell>
   )
 }
@@ -155,7 +156,7 @@ function SwipeRow({ label }: { label: string }) {
 function BoundedBox({
   scrollRef,
 }: {
-  scrollRef: RefObject<ScrollView | null>
+  scrollRef: RefObject<LegacyScrollView | null>
 }) {
   const [readout, setReadout] = useState('—')
 
@@ -173,7 +174,7 @@ function BoundedBox({
     //
     // Note the cast hides the *other* requirement too: that the ref carries a
     // `handlerTag`. See the import above — this is why the scroll view has to
-    // be gesture-handler's.
+    // be `LegacyScrollView`.
     blocks: scrollRef as unknown as GestureReference,
     // `settled` is where an elastic overshoot belongs, and it is right on
     // both endings — which is why this one needs no branch. The readout says

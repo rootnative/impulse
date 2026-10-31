@@ -305,7 +305,7 @@ useRawGesture(build, deps, { deferTo: scrollRef })  // the other one wins
 
 All three may be set at once — they are independent relations, not a choice of one. Naming the same gesture in two of them warns in development.
 
-**The ref has to belong to a gesture.** RNGH resolves a relation through `ref.current?.handlerTag` and drops a ref that has none, without a word — so `deferTo` on React Native's own `ScrollView` installs nothing and the drag and the scroll keep fighting for the touch. Import `ScrollView` or `FlatList` from `@rootnative/impulse/gesture-handler` instead; another Impulse hook's `ref` always carries a tag. Impulse warns once in development when it catches this, which is when the ref is filled by the time the gesture mounts. A target that mounts in a later commit stays silent.
+**The ref has to belong to a gesture.** RNGH resolves a relation through `ref.current?.handlerTag` and drops a ref that has none, without a word — so `deferTo` on React Native's own `ScrollView`, or on Gesture Handler 3's, installs nothing and the drag and the scroll keep fighting for the touch. Import `LegacyScrollView` or `LegacyFlatList` from `@rootnative/impulse/gesture-handler` instead; another Impulse hook's `ref` always carries a tag. Impulse warns once in development when it catches this, which is when the ref is filled by the time the gesture mounts. A target that mounts in a later commit stays silent.
 
 ### `useRawGesture` — the escape hatch
 

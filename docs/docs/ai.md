@@ -44,8 +44,10 @@ agent cannot discover by reading its own output:
   synonyms writes the wrong one. `useDrag` owns a position that accumulates and
   is clamped by `bounds`; `usePan` owns nothing and reports a per-frame
   `change` the consumer adds up.
-- A relation against React Native's `ScrollView` is dropped by gesture-handler,
-  because the ref carries no `handlerTag`. Impulse warns once in development
+- A relation against React Native's `ScrollView`, or Gesture Handler 3's own
+  `ScrollView`, is dropped by gesture-handler, because the ref carries no
+  `handlerTag`. Use `LegacyScrollView` or `LegacyFlatList` from
+  `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled by the time the gesture mounts, and cannot see the
   case where it is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire, with an empty

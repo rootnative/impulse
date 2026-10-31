@@ -215,7 +215,7 @@ function HomeScreen() {
       ))}
 
       <Text style={styles.footer}>
-        {impulseVersion} · React Native · Gesture Handler 2
+        {impulseVersion} · React Native · Gesture Handler 3
       </Text>
     </ScrollView>
   )

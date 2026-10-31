@@ -10,8 +10,8 @@ import { type SharedValue } from 'react-native-reanimated'
  * A gesture that an Impulse gesture can be placed in a relation with.
  *
  * The value is either a ref returned by another Impulse hook (`drag.ref`), a
- * ref on a component that owns a gesture — a `ScrollView`, say — or a raw
- * RNGH gesture object.
+ * ref on a component that owns a gesture — a `LegacyScrollView`, say — or a
+ * raw RNGH gesture object.
  *
  * RNGH models this as `GestureRef` and does **not** export it, so the union
  * is written out here. It is RNGH's own minus the numeric form: RNGH accepts

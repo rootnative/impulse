@@ -115,8 +115,9 @@ deferTo   -> the named gesture wins  (requireExternalGestureToFail)
 Name another hook's .ref, not its .gesture.
 
 TRAP: a relation target must carry a handlerTag. React Native's ScrollView has
-none, so the relation is SILENTLY dropped on every platform. Use
-gesture-handler's ScrollView / FlatList, from @rootnative/impulse/gesture-handler.
+none, and neither has Gesture Handler 3's own ScrollView, so the relation is
+SILENTLY dropped on every platform. Use LegacyScrollView / LegacyFlatList, from
+@rootnative/impulse/gesture-handler.
 
 TRAP: a component ref needs `as unknown as GestureReference`. RNGH types the
 target as a ref to a component type, which is not what ref={} produces.

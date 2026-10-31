@@ -104,7 +104,8 @@ behaviour.
 
 A relation needs a ref that carries a `handlerTag`, and that rule comes from
 RNGH's shared code rather than its platform code. A relation against React
-Native's `ScrollView` is therefore a no-op on web **and** on native.
+Native's `ScrollView`, or Gesture Handler 3's own, is therefore a no-op on web
+**and** on native.
 
 See [Coexistence](/coexistence) for the working form.
 

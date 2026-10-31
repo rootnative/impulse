@@ -93,10 +93,11 @@ const drag = useDrag({
 > absorbed into a wider type that would stop catching upstream drift. This is a
 > known gap, not a decision.
 >
-> `scrollRef` must also come from gesture-handler's `ScrollView`, not React
-> Native's. RNGH resolves a relation through `ref.current?.handlerTag` and
-> silently drops a ref that has none; Impulse warns in development when it
-> catches it. See [Coexistence](/coexistence).
+> `scrollRef` must also come from gesture-handler's `LegacyScrollView`, not
+> React Native's `ScrollView` or Gesture Handler 3's. RNGH resolves a relation
+> through `ref.current?.handlerTag` and silently drops a ref that has none;
+> Impulse warns in development when it catches it. See
+> [Coexistence](/coexistence).
 
 `drag.x` is a shared value that accumulates across gestures, so the
 `start.value` dance is gone. [`deferTo`](/coexistence) is the relation, named
@@ -2237,32 +2238,38 @@ until then, and it stays quiet for a ref that has not been filled — see
 
 ```tsx
 // Silently does nothing. The drag and the scroll both fight for the touch.
-import { ScrollView } from 'react-native'
+import { ScrollView, type ScrollViewInstance } from 'react-native'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<ScrollViewInstance>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Use gesture-handler's `ScrollView` instead. It is the same component wrapped so
-its ref carries the tag:
+Use gesture-handler's `LegacyScrollView` instead. Its wrapper puts the tag on
+the ref:
 
 ```tsx
 // Works. The ref carries a handlerTag.
-import { ScrollView } from '@rootnative/impulse/gesture-handler'
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<LegacyScrollView>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-The same holds for `FlatList`. Both come from
-[`@rootnative/impulse/gesture-handler`](/gesture-handler), so this does not add
-an import of gesture-handler to your app.
+Do not use the `ScrollView` of the same subpath. That is Gesture Handler 3's
+own `ScrollView`, and its wrapper gives the ref to React Native's component, so
+the ref has no tag. The same holds for `FlatList`: use `LegacyFlatList`. Both
+come from [`@rootnative/impulse/gesture-handler`](/gesture-handler), so this
+does not add an import of gesture-handler to your app.
+
+Gesture Handler 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
+together with the gesture builder that Impulse uses, so your editor can show
+them struck through. They work in Gesture Handler 3.
 
 > **WARNING — This is not a web-only problem**
 >
 > The resolution happens in RNGH's shared code, so it behaves the same on iOS,
-> Android, and web. A relation against a plain React Native scroll view is a
-> no-op on every platform.
+> Android, and web. A relation against React Native's scroll view, or against
+> Gesture Handler 3's own, is a no-op on every platform.
 
 Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
 none of this.
@@ -2291,8 +2298,9 @@ it is the one consumers learn to ignore.
 
 ```tsx
 import { type GestureReference } from '@rootnative/impulse'
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<LegacyScrollView>(null)
 
 const drag = useDrag({
   axis: 'x',
@@ -2733,7 +2741,8 @@ behaviour.
 
 A relation needs a ref that carries a `handlerTag`, and that rule comes from
 RNGH's shared code rather than its platform code. A relation against React
-Native's `ScrollView` is therefore a no-op on web **and** on native.
+Native's `ScrollView`, or Gesture Handler 3's own, is therefore a no-op on web
+**and** on native.
 
 See [Coexistence](/coexistence) for the working form.
 
@@ -2942,8 +2951,10 @@ agent cannot discover by reading its own output:
   synonyms writes the wrong one. `useDrag` owns a position that accumulates and
   is clamped by `bounds`; `usePan` owns nothing and reports a per-frame
   `change` the consumer adds up.
-- A relation against React Native's `ScrollView` is dropped by gesture-handler,
-  because the ref carries no `handlerTag`. Impulse warns once in development
+- A relation against React Native's `ScrollView`, or Gesture Handler 3's own
+  `ScrollView`, is dropped by gesture-handler, because the ref carries no
+  `handlerTag`. Use `LegacyScrollView` or `LegacyFlatList` from
+  `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled by the time the gesture mounts, and cannot see the
   case where it is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire, with an empty
@@ -3049,11 +3060,12 @@ library, which is the whole reason it is a separate package.
 
 Honest rather than empty. The ones a consumer can hit:
 
-- **A relation against a plain React Native `ScrollView` is dropped.** The ref
-  carries no `handlerTag`, so gesture-handler installs nothing. Impulse warns
-  once in development when it can see it, which is when the ref is filled by
-  the time the gesture mounts. A target that mounts later stays silent. Use
-  gesture-handler's `ScrollView`. See [Coexistence](/coexistence).
+- **A relation against React Native's `ScrollView`, or Gesture Handler 3's, is
+  dropped.** The ref carries no `handlerTag`, so gesture-handler installs
+  nothing. Impulse warns once in development when it can see it, which is when
+  the ref is filled by the time the gesture mounts. A target that mounts later
+  stays silent. Use gesture-handler's `LegacyScrollView`. See
+  [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently.** Impulse cannot warn,
   because RNGH does not export the context that would let it detect one.
 - **A cancel is reported, but the velocity that comes with it is not a

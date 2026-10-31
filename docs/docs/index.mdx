@@ -93,10 +93,11 @@ mirrors RNGH's type exactly, so the mismatch stays visible instead of being
 absorbed into a wider type that would stop catching upstream drift. This is a
 known gap, not a decision.
 
-`scrollRef` must also come from gesture-handler's `ScrollView`, not React
-Native's. RNGH resolves a relation through `ref.current?.handlerTag` and
-silently drops a ref that has none; Impulse warns in development when it
-catches it. See [Coexistence](/coexistence).
+`scrollRef` must also come from gesture-handler's `LegacyScrollView`, not
+React Native's `ScrollView` or Gesture Handler 3's. RNGH resolves a relation
+through `ref.current?.handlerTag` and silently drops a ref that has none;
+Impulse warns in development when it catches it. See
+[Coexistence](/coexistence).
 
 :::
 

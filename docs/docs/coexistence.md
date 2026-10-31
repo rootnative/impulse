@@ -116,32 +116,38 @@ until then, and it stays quiet for a ref that has not been filled — see
 
 ```tsx
 // Silently does nothing. The drag and the scroll both fight for the touch.
-import { ScrollView } from 'react-native'
+import { ScrollView, type ScrollViewInstance } from 'react-native'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<ScrollViewInstance>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Use gesture-handler's `ScrollView` instead. It is the same component wrapped so
-its ref carries the tag:
+Use gesture-handler's `LegacyScrollView` instead. Its wrapper puts the tag on
+the ref:
 
 ```tsx
 // Works. The ref carries a handlerTag.
-import { ScrollView } from '@rootnative/impulse/gesture-handler'
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<LegacyScrollView>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-The same holds for `FlatList`. Both come from
-[`@rootnative/impulse/gesture-handler`](/gesture-handler), so this does not add
-an import of gesture-handler to your app.
+Do not use the `ScrollView` of the same subpath. That is Gesture Handler 3's
+own `ScrollView`, and its wrapper gives the ref to React Native's component, so
+the ref has no tag. The same holds for `FlatList`: use `LegacyFlatList`. Both
+come from [`@rootnative/impulse/gesture-handler`](/gesture-handler), so this
+does not add an import of gesture-handler to your app.
+
+Gesture Handler 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
+together with the gesture builder that Impulse uses, so your editor can show
+them struck through. They work in Gesture Handler 3.
 
 :::warning This is not a web-only problem
 
 The resolution happens in RNGH's shared code, so it behaves the same on iOS,
-Android, and web. A relation against a plain React Native scroll view is a
-no-op on every platform.
+Android, and web. A relation against React Native's scroll view, or against
+Gesture Handler 3's own, is a no-op on every platform.
 
 :::
 
@@ -172,8 +178,9 @@ it is the one consumers learn to ignore.
 
 ```tsx
 import { type GestureReference } from '@rootnative/impulse'
+import { LegacyScrollView } from '@rootnative/impulse/gesture-handler'
 
-const scrollRef = useRef<ScrollView>(null)
+const scrollRef = useRef<LegacyScrollView>(null)
 
 const drag = useDrag({
   axis: 'x',
