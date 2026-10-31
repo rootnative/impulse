@@ -3,7 +3,7 @@ import {
   Gesture,
   type GestureStateChangeEvent,
   type GestureUpdateEvent,
-  type RotationGesture,
+  type LegacyRotationGesture,
   type RotationGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
@@ -198,7 +198,7 @@ export interface UseRotateOptions extends GestureMemoOptions {
 }
 
 /** What {@link useRotate} returns. */
-export interface UseRotateResult extends IntentResult<RotationGesture> {
+export interface UseRotateResult extends IntentResult<LegacyRotationGesture> {
   /**
    * How far the thing is turned, in **degrees**, after `min`, `max` and
    * `elastic`.

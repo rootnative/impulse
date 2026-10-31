@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Gesture, type TapGesture } from 'react-native-gesture-handler'
+import { Gesture, type LegacyTapGesture } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import {
@@ -122,7 +122,7 @@ export interface UseTapOptions extends GestureMemoOptions {
  * whole result. An intent that does produce one — a drag's `x`, a pinch's
  * `scale` — extends {@link IntentResult} instead.
  */
-export type UseTapResult = IntentResult<TapGesture>
+export type UseTapResult = IntentResult<LegacyTapGesture>
 
 /**
  * Recognize a single tap.

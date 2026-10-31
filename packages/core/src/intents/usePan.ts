@@ -3,7 +3,7 @@ import {
   Gesture,
   type GestureStateChangeEvent,
   type GestureUpdateEvent,
-  type PanGesture,
+  type LegacyPanGesture,
   type PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
@@ -175,7 +175,7 @@ export interface UsePanOptions extends GestureMemoOptions {
 }
 
 /** What {@link usePan} returns. */
-export interface UsePanResult extends IntentResult<PanGesture> {
+export interface UsePanResult extends IntentResult<LegacyPanGesture> {
   /**
    * How far the finger has moved along the x axis since the pan activated.
    *

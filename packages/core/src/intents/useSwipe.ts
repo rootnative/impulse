@@ -3,7 +3,7 @@ import {
   Gesture,
   type GestureStateChangeEvent,
   type GestureUpdateEvent,
-  type PanGesture,
+  type LegacyPanGesture,
   type PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
@@ -231,7 +231,7 @@ export interface UseSwipeOptions extends GestureMemoOptions {
 }
 
 /** What {@link useSwipe} returns. */
-export interface UseSwipeResult extends IntentResult<PanGesture> {
+export interface UseSwipeResult extends IntentResult<LegacyPanGesture> {
   /**
    * How far the finger has moved along the x axis since the swipe activated.
    *

@@ -1,7 +1,11 @@
 import { useRef } from 'react'
 import { render, renderHook } from '@testing-library/react-native'
 import { View } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 import {
   fireGestureHandler,
   getByGestureTestId,
@@ -170,7 +174,9 @@ describe('useLongPress', () => {
 
     it('calls onLongPress with an intent-shaped payload', () => {
       const onLongPress = jest.fn()
-      render(<LongPressView onLongPress={onLongPress} />)
+      render(<LongPressView onLongPress={onLongPress} />, {
+        wrapper: GestureHandlerRootView,
+      })
 
       fireGestureHandler(getByGestureTestId('hold'), [
         { state: State.BEGAN, x: 10, y: 20, absoluteX: 30, absoluteY: 40 },
@@ -212,6 +218,7 @@ describe('useLongPress', () => {
           onLongPress={() => calls.push('press')}
           onLongPressEnd={() => calls.push('end')}
         />,
+        { wrapper: GestureHandlerRootView },
       )
 
       fireGestureHandler(getByGestureTestId('hold'), [
@@ -228,7 +235,9 @@ describe('useLongPress', () => {
       // is in the payload instead of left to the consumer to derive from two
       // timestamps they would have to record themselves.
       const onLongPressEnd = jest.fn()
-      render(<LongPressView onLongPressEnd={onLongPressEnd} />)
+      render(<LongPressView onLongPressEnd={onLongPressEnd} />, {
+        wrapper: GestureHandlerRootView,
+      })
 
       fireGestureHandler(getByGestureTestId('hold'), [
         { state: State.BEGAN },
@@ -253,7 +262,9 @@ describe('useLongPress', () => {
       // failure, which is what makes it the right place to undo whatever
       // `onBegin` set.
       const onFinalize = jest.fn()
-      render(<LongPressView onFinalize={onFinalize} />)
+      render(<LongPressView onFinalize={onFinalize} />, {
+        wrapper: GestureHandlerRootView,
+      })
 
       fireGestureHandler(getByGestureTestId('hold'), [
         { state: State.BEGAN },
@@ -278,6 +289,7 @@ describe('useLongPress', () => {
           onLongPress={onLongPress}
           onLongPressEnd={onLongPressEnd}
         />,
+        { wrapper: GestureHandlerRootView },
       )
 
       fireGestureHandler(getByGestureTestId('hold'), [
@@ -314,7 +326,7 @@ describe('useLongPress', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('active-hold'), [
         { state: State.BEGAN },
@@ -338,7 +350,7 @@ describe('useLongPress', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('cancelled-hold'), [
         { state: State.BEGAN },

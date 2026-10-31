@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import {
   Gesture,
   type GestureStateChangeEvent,
-  type LongPressGesture,
+  type LegacyLongPressGesture,
   type LongPressGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
@@ -172,7 +172,7 @@ export interface UseLongPressOptions extends GestureMemoOptions {
  * shared value, because nothing on the UI thread can read a clock per frame
  * without Impulse starting an animation to drive it.
  */
-export type UseLongPressResult = IntentResult<LongPressGesture>
+export type UseLongPressResult = IntentResult<LegacyLongPressGesture>
 
 /**
  * Shape RNGH's flat state-change event into the long-press payload.

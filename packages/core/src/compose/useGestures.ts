@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
-import { Gesture, type ComposedGesture } from 'react-native-gesture-handler'
+import {
+  Gesture,
+  type LegacyComposedGesture,
+} from 'react-native-gesture-handler'
 import { warnOnce } from '../internal/warnOnce'
 import { useStableList } from '../internal/useStableList'
 import { type AttachableGesture, type ComposeMode } from '../types'
@@ -21,7 +24,7 @@ export type GestureMember = GestureCarrier | AttachableGesture
 /** What `useGestures` returns. It is itself a valid composition member. */
 export interface GesturesResult {
   /** The composed gesture. Hand it to `<GestureDetector>`. */
-  readonly gesture: ComposedGesture
+  readonly gesture: LegacyComposedGesture
 }
 
 /** Options for {@link useGestures}. */
@@ -103,7 +106,7 @@ function memberGesture(member: GestureMember): AttachableGesture {
 function compose(
   mode: ComposeMode,
   gestures: readonly AttachableGesture[],
-): ComposedGesture {
+): LegacyComposedGesture {
   if (gestures.length === 0) {
     warnOnce(
       'compose:empty',

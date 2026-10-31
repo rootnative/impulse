@@ -3,7 +3,7 @@ import {
   Gesture,
   type GestureStateChangeEvent,
   type GestureUpdateEvent,
-  type PinchGesture,
+  type LegacyPinchGesture,
   type PinchGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
@@ -183,7 +183,7 @@ export interface UsePinchOptions extends GestureMemoOptions {
 }
 
 /** What {@link usePinch} returns. */
-export interface UsePinchResult extends IntentResult<PinchGesture> {
+export interface UsePinchResult extends IntentResult<LegacyPinchGesture> {
   /**
    * How much the thing is scaled, after `min`, `max` and `elastic`.
    *

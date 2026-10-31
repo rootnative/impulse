@@ -1,8 +1,8 @@
 import { type ComponentProps, type ComponentType, type RefObject } from 'react'
 import {
-  type ComposedGesture,
   type GestureDetector,
   type GestureType,
+  type LegacyComposedGesture,
 } from 'react-native-gesture-handler'
 import { type SharedValue } from 'react-native-reanimated'
 
@@ -51,15 +51,22 @@ type _AssertReferenceIsComplete = Assert<
  * for it, so Impulse names it — every hook result's `gesture` has this type,
  * and so does every member `useGestures` accepts.
  */
-export type AttachableGesture = GestureType | ComposedGesture
+export type AttachableGesture = GestureType | LegacyComposedGesture
 
 /**
- * Compile-time proof that `AttachableGesture` is exactly what
- * `<GestureDetector>` accepts. Same purpose as the assertions above: RNGH
+ * Compile-time proof that `AttachableGesture` is exactly the builder half of
+ * what `<GestureDetector>` accepts. Same purpose as the assertions above: RNGH
  * does not export the type, so this one is written out, and a hand-copied
  * type is one that absorbs an upstream change without a word.
+ *
+ * RNGH 3's detector also takes a gesture from its hook API (`usePanGesture`),
+ * which Impulse never builds. Only a hook gesture carries
+ * `detectorCallbacks`, so excluding that shape leaves the builder gestures.
  */
-type DetectorGesture = ComponentProps<typeof GestureDetector>['gesture']
+type DetectorGesture = Exclude<
+  ComponentProps<typeof GestureDetector>['gesture'],
+  { detectorCallbacks: unknown }
+>
 type _AssertAttachableIsAccepted = Assert<
   AttachableGesture extends DetectorGesture ? true : false
 >

@@ -1,7 +1,11 @@
 import { useRef } from 'react'
 import { render, renderHook } from '@testing-library/react-native'
 import { View } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 import {
   fireGestureHandler,
   getByGestureTestId,
@@ -172,7 +176,7 @@ describe('useTap', () => {
 
     it('calls onTap with an intent-shaped payload', () => {
       const onTap = jest.fn()
-      render(<TapView onTap={onTap} />)
+      render(<TapView onTap={onTap} />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('tap'), [
         { state: State.BEGAN, x: 10, y: 20, absoluteX: 30, absoluteY: 40 },
@@ -197,7 +201,9 @@ describe('useTap', () => {
     it('reports a cancel on onTap when the tap is taken away', () => {
       const onTap = jest.fn()
       const onFinalize = jest.fn()
-      render(<TapView onTap={onTap} onFinalize={onFinalize} />)
+      render(<TapView onTap={onTap} onFinalize={onFinalize} />, {
+        wrapper: GestureHandlerRootView,
+      })
 
       fireGestureHandler(getByGestureTestId('tap'), [
         { state: State.BEGAN },
@@ -256,7 +262,7 @@ describe('useTap', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('active'), [
         { state: State.BEGAN },
@@ -280,7 +286,7 @@ describe('useTap', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('failing'), [
         { state: State.BEGAN },

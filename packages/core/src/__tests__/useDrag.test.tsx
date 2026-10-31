@@ -1,6 +1,11 @@
 import { render, renderHook } from '@testing-library/react-native'
 import { View } from 'react-native'
-import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+  State,
+} from 'react-native-gesture-handler'
 import {
   fireGestureHandler,
   getByGestureTestId,
@@ -34,7 +39,7 @@ describe('useDrag', () => {
         </GestureDetector>
       )
     }
-    render(<Probe />)
+    render(<Probe />, { wrapper: GestureHandlerRootView })
     return () => drag as UseDragResult
   }
 
@@ -451,7 +456,7 @@ describe('useDrag', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('active'), [
         move(0, 0, State.BEGAN),

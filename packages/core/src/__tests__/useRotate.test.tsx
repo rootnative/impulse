@@ -1,6 +1,10 @@
 import { render, renderHook } from '@testing-library/react-native'
 import { View } from 'react-native'
-import { GestureDetector, State } from 'react-native-gesture-handler'
+import {
+  GestureDetector,
+  GestureHandlerRootView,
+  State,
+} from 'react-native-gesture-handler'
 import {
   fireGestureHandler,
   getByGestureTestId,
@@ -33,7 +37,7 @@ describe('useRotate', () => {
         </GestureDetector>
       )
     }
-    render(<Probe />)
+    render(<Probe />, { wrapper: GestureHandlerRootView })
     return () => rotate as UseRotateResult
   }
 

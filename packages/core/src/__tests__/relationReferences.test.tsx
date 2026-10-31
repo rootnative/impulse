@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { render, renderHook } from '@testing-library/react-native'
-import { ScrollView, View } from 'react-native'
-import { GestureDetector } from 'react-native-gesture-handler'
+import { ScrollView, View, type ScrollViewInstance } from 'react-native'
+import {
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 import { useDrag } from '../intents/drag'
 import { useTap } from '../intents/tap'
 import { resetWarnings } from '../internal/warnOnce'
@@ -61,7 +64,7 @@ describe('relation references', () => {
         )
       }
 
-      render(<Both />)
+      render(<Both />, { wrapper: GestureHandlerRootView })
 
       expect(warn).not.toHaveBeenCalled()
 
@@ -88,7 +91,7 @@ describe('relation references', () => {
         )
       }
 
-      render(<Pending />)
+      render(<Pending />, { wrapper: GestureHandlerRootView })
 
       expect(warn).not.toHaveBeenCalled()
     })
@@ -106,7 +109,7 @@ describe('relation references', () => {
       // filled — and it carries no handler tag, so RNGH resolves it to `-1`
       // and drops the relation without a word.
       function WithScrollView() {
-        const scrollRef = useRef<ScrollView>(null)
+        const scrollRef = useRef<ScrollViewInstance>(null)
         const drag = useDrag({
           deferTo: scrollRef as unknown as GestureReference,
         })
@@ -120,7 +123,7 @@ describe('relation references', () => {
         )
       }
 
-      render(<WithScrollView />)
+      render(<WithScrollView />, { wrapper: GestureHandlerRootView })
 
       expect(warn).toHaveBeenCalledTimes(1)
       const message = warn.mock.calls[0]?.[0] as string
@@ -131,7 +134,7 @@ describe('relation references', () => {
 
     it('once, however many times the hook re-renders', () => {
       function WithScrollView({ id }: { id: number }) {
-        const scrollRef = useRef<ScrollView>(null)
+        const scrollRef = useRef<ScrollViewInstance>(null)
         const drag = useDrag({
           testId: `drag-${id}`,
           deferTo: scrollRef as unknown as GestureReference,
@@ -146,7 +149,9 @@ describe('relation references', () => {
         )
       }
 
-      const { rerender } = render(<WithScrollView id={1} />)
+      const { rerender } = render(<WithScrollView id={1} />, {
+        wrapper: GestureHandlerRootView,
+      })
       rerender(<WithScrollView id={2} />)
       rerender(<WithScrollView id={3} />)
 

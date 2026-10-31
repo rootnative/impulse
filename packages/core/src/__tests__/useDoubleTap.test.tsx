@@ -1,7 +1,11 @@
 import { useRef } from 'react'
 import { render, renderHook } from '@testing-library/react-native'
 import { View } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler'
 import {
   fireGestureHandler,
   getByGestureTestId,
@@ -189,7 +193,9 @@ describe('useDoubleTap', () => {
 
     it('calls onDoubleTap with an intent-shaped payload', () => {
       const onDoubleTap = jest.fn()
-      render(<DoubleTapView onDoubleTap={onDoubleTap} />)
+      render(<DoubleTapView onDoubleTap={onDoubleTap} />, {
+        wrapper: GestureHandlerRootView,
+      })
 
       fireGestureHandler(getByGestureTestId('double'), [
         { state: State.BEGAN, x: 10, y: 20, absoluteX: 30, absoluteY: 40 },
@@ -225,6 +231,7 @@ describe('useDoubleTap', () => {
       const onFinalize = jest.fn()
       render(
         <DoubleTapView onDoubleTap={onDoubleTap} onFinalize={onFinalize} />,
+        { wrapper: GestureHandlerRootView },
       )
 
       fireGestureHandler(getByGestureTestId('double'), [
@@ -258,7 +265,7 @@ describe('useDoubleTap', () => {
           </GestureDetector>
         )
       }
-      render(<Probe />)
+      render(<Probe />, { wrapper: GestureHandlerRootView })
 
       fireGestureHandler(getByGestureTestId('active-double'), [
         { state: State.BEGAN },

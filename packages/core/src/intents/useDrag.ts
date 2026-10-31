@@ -3,7 +3,7 @@ import {
   Gesture,
   type GestureStateChangeEvent,
   type GestureUpdateEvent,
-  type PanGesture,
+  type LegacyPanGesture,
   type PanGestureHandlerEventPayload,
 } from 'react-native-gesture-handler'
 import { useSharedValue, type SharedValue } from 'react-native-reanimated'
@@ -238,7 +238,7 @@ export interface UseDragOptions extends GestureMemoOptions {
 }
 
 /** What {@link useDrag} returns. */
-export interface UseDragResult extends IntentResult<PanGesture> {
+export interface UseDragResult extends IntentResult<LegacyPanGesture> {
   /**
    * Where the drag is along the x axis, after `bounds` and `elastic`.
    *

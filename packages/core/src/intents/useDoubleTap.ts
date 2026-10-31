@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Gesture, type TapGesture } from 'react-native-gesture-handler'
+import { Gesture, type LegacyTapGesture } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import {
@@ -147,7 +147,7 @@ export interface UseDoubleTapOptions extends GestureMemoOptions {
  * without a breaking rename. A double tap produces no continuous value, so
  * the gesture, the ref, and `isActive` are the whole result.
  */
-export type UseDoubleTapResult = IntentResult<TapGesture>
+export type UseDoubleTapResult = IntentResult<LegacyTapGesture>
 
 /**
  * Recognize two taps in quick succession.
