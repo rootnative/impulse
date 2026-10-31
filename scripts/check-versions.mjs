@@ -25,7 +25,9 @@
  *                        definition, and `[unreleased]` compares from the
  *                        newest released tag.
  *   4. Status lines    — the `> **Status:** `x.y.z`` line in README.md and
- *                        packages/core/README.md names the current version.
+ *                        packages/core/README.md, the "Impulse is at" line of
+ *                        docs/docs/roadmap.md, and the `Status:` line of
+ *                        docs/static/llms.txt name the current version.
  *                        The package README is in the list because it ships
  *                        in the npm tarball, so a stale one is published.
  *   5. Version form    — no `v`-prefixed version strings (`v0.2`, `v1.0.0`)
@@ -61,9 +63,31 @@ const REPO_URL = 'https://github.com/rootnative/impulse'
  */
 const tagFor = (version) => `core@${version}`
 
-/** Files carrying a `> **Status:** \`x.y.z\`` line that must name the current version. */
-const STATUS_FILES = ['README.md', join('packages', 'core', 'README.md')]
-const STATUS_RE = /^(> \*\*Status:\*\* `)([^`]+)(`)/m
+const README_STATUS_RE = /^(> \*\*Status:\*\* `)([^`]+)(`)/m
+
+/**
+ * Lines that must name the current version, each in the shape its file uses.
+ * `build:llms` copies `docs/static/llms.txt` into the package and reads the
+ * roadmap page into `llms-full.txt`, so `--fix` must run before it.
+ */
+const STATUS_LINES = [
+  { path: 'README.md', re: README_STATUS_RE, shape: '> **Status:** `x.y.z`' },
+  {
+    path: join('packages', 'core', 'README.md'),
+    re: README_STATUS_RE,
+    shape: '> **Status:** `x.y.z`',
+  },
+  {
+    path: join('docs', 'docs', 'roadmap.md'),
+    re: /^(Impulse is at `)([^`]+)(`)/m,
+    shape: 'Impulse is at `x.y.z`',
+  },
+  {
+    path: join('docs', 'static', 'llms.txt'),
+    re: /^(Status: )(\S+?)(\.\s)/m,
+    shape: 'Status: x.y.z.',
+  },
+]
 
 /** Roots scanned by check 5. Directories are walked for the listed extensions. */
 const FORM_SCAN_ROOTS = [
@@ -162,14 +186,14 @@ if (raw !== null) {
   // Released-version headings, in document order (newest first by convention).
   const versions = [...raw.matchAll(/^## \[(\d[^\]]*)\]/gm)].map((m) => m[1])
 
-  // Nothing has been published while the version carries a prerelease tag, so
-  // a matching section is not required yet — `## [Unreleased]` is where the
-  // notes live until the first release is cut.
-  const isPrerelease = VERSION.includes('-')
-  if (!isPrerelease && !versions.includes(VERSION)) {
+  // A prerelease needs its section too. The release workflow bumps the version
+  // and then runs this check, so the section a human wrote before dispatching
+  // it is the only release note the version will ever get.
+  if (!versions.includes(VERSION)) {
     fail(
-      `${changelogRel}: no "## [${VERSION}]" section, but the package is published ` +
-        `at ${VERSION}. Write the release note by hand — --fix will not invent one.`,
+      `${changelogRel}: no "## [${VERSION}]" section for the version in ` +
+        `packages/core/package.json. Write the release note by hand before the ` +
+        `release — --fix will not invent one.`,
     )
   }
 
@@ -201,7 +225,7 @@ if (raw !== null) {
 
 // ── 4. Status lines ─────────────────────────────────────────────────────────
 
-for (const rel of STATUS_FILES) {
+for (const { path: rel, re, shape } of STATUS_LINES) {
   const abs = join(repoRoot, rel)
   let text
   try {
@@ -210,17 +234,17 @@ for (const rel of STATUS_FILES) {
     fail(`${rel}: missing.`)
     continue
   }
-  const match = text.match(STATUS_RE)
+  const match = text.match(re)
   if (!match) {
     fail(
-      `${rel}: no "> **Status:** \`x.y.z\`" line found. The guard keys on that exact ` +
-        `shape — keep it, or update STATUS_FILES in scripts/check-versions.mjs.`,
+      `${rel}: no "${shape}" line found. The guard keys on that exact ` +
+        `shape — keep it, or update STATUS_LINES in scripts/check-versions.mjs.`,
     )
     continue
   }
   if (match[2] !== VERSION) {
     if (FIX) {
-      writeFileSync(abs, text.replace(STATUS_RE, `$1${VERSION}$3`))
+      writeFileSync(abs, text.replace(re, `$1${VERSION}$3`))
       fixed(`${rel}: status version ${match[2]} → ${VERSION}.`)
     } else {
       fail(
