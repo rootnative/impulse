@@ -41,8 +41,7 @@ const { gesture } = useGestures(
 )
 ```
 
-Precedence reads left to right, and depth is a choice rather than a
-consequence.
+Precedence reads left to right, and depth is a choice, not a consequence.
 
 ## The three modes
 
@@ -50,7 +49,7 @@ consequence.
 | --- | --- | --- |
 | `race` | The first member to activate wins and cancels the rest. | Mutually exclusive readings of one touch. |
 | `simultaneous` | Every member recognizes independently. | A drag and a long press on one card. |
-| `exclusive` | Members are tried in order. A later one activates only after every earlier one has failed. | A tap that must wait for a double tap. |
+| `exclusive` | Impulse tries the members in order. A later member activates only after every earlier member failed. | A tap that must wait for a double tap. |
 
 Order matters for `exclusive` only. `race` and `simultaneous` ignore it.
 
@@ -70,7 +69,7 @@ single tap wait to learn whether a second tap is coming.
 
 :::warning The price is latency
 
-A composed single tap cannot report for `maxDelay` milliseconds — 500 ms by
+A composed single tap can't report for `maxDelay` milliseconds, 500 ms by
 default. Every ordinary tap pays it. See the `useDoubleTap` page for the
 trade.
 
@@ -78,21 +77,21 @@ trade.
 
 ## Members
 
-A member is anything carrying a gesture:
+A member is anything that carries a gesture:
 
-- any Impulse hook result — `tap`, `drag`, `useGestures(…)`
+- any Impulse hook result: `tap`, `drag`, `useGestures(…)`
 - a bare RNGH gesture from [`@rootnative/impulse/gesture-handler`](/gesture-handler)
 
 Pass the hook result itself, not `result.gesture`. Both work, but the result
-is memoised, so it is stable to depend on.
+is memoised, so you can depend on it.
 
 ## Coexistence options do not belong here
 
-`useGestures` does not accept `alongside`, `blocks`, or `deferTo`. Put them on
+`useGestures` doesn't accept `alongside`, `blocks`, or `deferTo`. Put them on
 the member hooks.
 
 ```tsx
-// Right — the relation sits on the member that has it.
+// Right. The relation sits on the member that has it.
 const drag = useDrag({ axis: 'y', deferTo: scrollRef })
 const { gesture } = useGestures([tap, drag], { mode: 'simultaneous' })
 ```
@@ -100,10 +99,10 @@ const { gesture } = useGestures([tap, drag], { mode: 'simultaneous' })
 :::note This is a limitation, not a preference
 
 RNGH's three external-gesture relations are methods on a single gesture. A
-composed gesture does not have them. Impulse could apply a relation to each
-member instead, but that means mutating gesture objects another hook already
-built and memoised, which breaks the rule that a gesture is configured exactly
-once. So the options stay on the members.
+composed gesture doesn't have them. Impulse could apply a relation to each
+member instead. But that would mutate gesture objects that another hook
+already built and memoised, and that breaks the rule that a gesture is
+configured exactly once. So the options stay on the members.
 
 Tell us if that is awkward in a real app. It is recorded as an open question,
 not a settled one.
@@ -117,15 +116,15 @@ Read [Coexistence](/coexistence) for what the three options do.
 Both are development-only and print at most once.
 
 **An empty list.** The composition recognizes nothing, so the
-`<GestureDetector>` holding it is inert. Build the list conditionally around
-the hook call rather than passing no members.
+`<GestureDetector>` that holds it is inert. Build the list conditionally
+around the hook call. Don't pass an empty list.
 
-**An unknown mode.** Unreachable from TypeScript, reachable from JavaScript.
-Impulse falls back to `race` and names the valid modes, because a misspelled
-mode would otherwise fail as "the gesture does not work".
+**An unknown mode.** TypeScript can't reach it. JavaScript can. Impulse falls
+back to `race` and names the valid modes. Otherwise a misspelled mode would
+fail as "the gesture doesn't work".
 
 ## Accessibility
 
-A composition is as reachable as its members, which is to say a screen reader
-and a keyboard see none of it. Each member hook names its own fallback, and a
-composition needs the union of them.
+A composition is as reachable as its members: a screen reader and a keyboard
+see none of it. Each member hook names its own fallback, and a composition
+needs the union of them.

@@ -16,40 +16,40 @@ Impulse supports iOS and Android, and web is partial: four of the eight intents
 are verified in a browser. Electron, macOS, and Windows are not tested. See
 [Platforms](/installation#platforms).
 
-You write a gesture as an intent. You do not assemble it from a builder chain,
-a `useMemo`, a ref dance, and hand-written translation maths.
+You write a gesture as an intent. You don't assemble it from a builder chain,
+a `useMemo`, a ref, and hand-written translation maths.
 
 :::warning Alpha — eight intents ship today
 
 [`useTap`](/use-tap), [`useDoubleTap`](/use-double-tap),
 [`useLongPress`](/use-long-press), [`useDrag`](/use-drag), [`usePan`](/use-pan),
 [`useSwipe`](/use-swipe), [`usePinch`](/use-pinch), and
-[`useRotate`](/use-rotate) are implemented. `useHover` and `useEdgeSwipe` are
-designed and **not written**. Do not import them yet — see the
+[`useRotate`](/use-rotate) ship. `useHover` and `useEdgeSwipe` are
+designed and **not written**. Don't import them yet. See the
 [Roadmap](/roadmap).
 
 A device sweep on an Android emulator and an iOS simulator drove every intent
-on at least one platform. It proves the mechanics, not the feel, and no
-physical device has run it. So each activation-criteria default is still a
-design intention. Every page states what the sweep proved and what is still
+on at least one platform. It proves the mechanics, not the feel. No physical
+device ran it. So each activation-criteria default is still a design
+intention. Every page states what the sweep proved and what is still
 unmeasured.
 
 :::
 
 ## The problem
 
-RNGH is a good library, and it is not the problem. RNGH exposes **mechanisms**
-on purpose — activation criteria, gesture relations, state machines — and
+RNGH is a good library, and it isn't the problem. RNGH exposes **mechanisms**
+on purpose: activation criteria, gesture relations, and state machines. It
 leaves every **intent** to you.
 
 So each app rebuilds swipe-to-dismiss, double tap, long-press-then-drag, and
 pinch-about-a-focal-point from `Pan` plus arithmetic. Each rebuild gets the
-sharp edges wrong in its own way.
+traps wrong in its own way.
 
 ## The same drag, twice
 
 A horizontal drag that must let a vertical scroll view win. This is the case
-consumers get wrong most often.
+that apps get wrong most often.
 
 ```tsx
 // RNGH today
@@ -87,22 +87,22 @@ const drag = useDrag({
 :::info Two sharp edges Impulse does not absorb yet
 
 `scrollRef` needs an `as unknown as GestureReference` cast in both snippets.
-RNGH types a relation target as a ref to a component *type*, which is not what
-`ref={}` produces, so a real `ScrollView` ref does not satisfy it. Impulse
-mirrors RNGH's type exactly, so the mismatch stays visible instead of being
-absorbed into a wider type that would stop catching upstream drift. This is a
-known gap, not a decision.
+RNGH types a relation target as a ref to a component *type*. `ref={}` doesn't
+produce that type, so a real `ScrollView` ref doesn't satisfy it. Impulse
+copies RNGH's type exactly, so the mismatch stays visible. A wider type would
+hide it, and would stop catching upstream drift. This is a known gap, not a
+decision.
 
-`scrollRef` must also come from gesture-handler's `LegacyScrollView`, not
-React Native's `ScrollView` or Gesture Handler 3's. RNGH resolves a relation
-through `ref.current?.handlerTag` and silently drops a ref that has none;
-Impulse warns in development when it catches it. See
+`scrollRef` must also come from RNGH's `LegacyScrollView`, not from React
+Native's `ScrollView` or from Gesture Handler 3's `ScrollView`. RNGH resolves
+a relation through `ref.current?.handlerTag`. It drops a ref that has no tag,
+and it doesn't warn. Impulse warns in development when it catches this. See
 [Coexistence](/coexistence).
 
 :::
 
 `drag.x` is a shared value that accumulates across gestures, so the
-`start.value` dance is gone. [`deferTo`](/coexistence) is the relation, named
+`start.value` step is gone. [`deferTo`](/coexistence) is the relation, named
 for what happens rather than for the method it calls. The
 [`scheduleOnRN` boundary](/threads) is Impulse's job, not yours.
 
@@ -110,17 +110,17 @@ for what happens rather than for the method it calls. The
 
 | Sharp edge in RNGH | What Impulse does |
 | --- | --- |
-| Composition reads inside-out. `Gesture.Simultaneous(Gesture.Race(tap, double), pan)` has to be parsed backwards, and nesting grows with each gesture. | Composition is data, not nesting: `useGestures([tap, double, pan], { mode: 'race' })`. Precedence reads left to right, and a composed result is itself composable. |
+| Composition reads inside-out. You read `Gesture.Simultaneous(Gesture.Race(tap, double), pan)` backwards, and nesting grows with each gesture. | Composition is data, not nesting: `useGestures([tap, double, pan], { mode: 'race' })`. Precedence reads left to right, and a composed result can compose again. |
 | Coexisting with a scroll view needs one of three methods — `simultaneousWithExternalGesture`, `blocksExternalGesture`, `requireExternalGestureToFail` — with no hint about which one you want. | Three named options on every hook: `alongside` runs together, `blocks` wins over, `deferTo` waits for the other to fail. Each maps to exactly one RNGH relation. |
 | An inline callback changes the gesture's identity, and `<GestureDetector>` re-attaches it — mid-drag. | Gesture identity is stable by construction. A JS-thread callback is never a gesture dependency. A test pins identity across an inline-callback re-render. |
 | There is no swipe direction, no double tap, no pinch about a focal point. Each one is `Pan` plus maths you write again per project. | One hook per intent. The intent is the primary surface, and the mechanism is the escape hatch. |
 | Every semantic callback needs `runOnJS`, and a mistake fails on the UI thread with an unhelpful message. | The callback name states its thread. `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onDragEnd`, and `onLongPress` run on JS, and Impulse owns the boundary. |
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
-| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse does not claim to solve this — it states it. |
+| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
 ## What Impulse does not do
 
-Impulse **detects**. It does not animate.
+Impulse **detects**. It doesn't animate.
 
 Every hook returns shared values and a gesture. Impulse starts no animation,
 owns no transition vocabulary, and has no spring config. You pass the values to
@@ -128,7 +128,7 @@ the animation library you already use.
 
 It also ships no components. There is no `<Swipeable>`, no drawer, and no
 carousel. A component makes layout and styling decisions, and a gesture library
-has no business making them.
+must not make them.
 
 ## Install
 
@@ -141,8 +141,9 @@ Full setup, including the peers and the root view, is on the
 
 Impulse needs `react-native-gesture-handler` and `react-native-reanimated` as
 peers. Your app must render a `<GestureHandlerRootView>` above any component
-that uses a gesture. **If that view is missing, nothing happens and nothing
-warns you** — the gesture simply never fires.
+that uses a gesture. **If that view is missing, the gesture never fires.** In
+development on iOS and Android, Gesture Handler 3 throws. On web and in a
+release build, nothing warns you.
 
 ## A first gesture
 
@@ -160,26 +161,26 @@ function Card() {
 }
 ```
 
-`GestureDetector` is re-exported from the package entry, because every hook's
-result needs it. `@rootnative/impulse` stays your only gesture import.
+The package entry re-exports `GestureDetector`, because every hook's result
+needs it. `@rootnative/impulse` stays your only gesture import.
 
 ## Where it sits
 
-Impulse is **general-purpose**. It is not built for, owned by, or coupled to
-any consumer, including `@rootnative/ui` and `@rootnative/inertia`. The
-`@rootnative` scope is a publishing namespace and nothing more.
+Impulse is **general-purpose**. It isn't built for, owned by, or coupled to
+any consumer, including the other `@rootnative` packages. The `@rootnative`
+scope is a publishing namespace and nothing more.
 
 [`@rootnative/inertia`](https://rootnative.github.io/inertia/) is the animation
 half of the pair: Impulse detects, Inertia animates. A bridge subpath is
-planned and not built, and Impulse will never require an animation library.
+planned and not built. Impulse will never require an animation library.
 
 `@rootnative/inertia-gestures` ships a `useDrag` too, so that one name
-collides. The products do not. That package **requires** `@rootnative/inertia`
-and hands back an `animatedStyle` that already knows about bounds and
-spring-back. Impulse requires no animation library and hands back the gesture
-and its values. Reach for `-gestures` to make a Motion primitive follow a
-finger. Reach for Impulse for the gesture itself.
+collides. The products don't. That package **requires** `@rootnative/inertia`
+and returns an `animatedStyle` that already knows the bounds and the spring
+back. Impulse requires no animation library and returns the gesture and its
+values. Use `-gestures` to make a `Motion.*` component follow a finger. Use
+Impulse for the gesture itself.
 
 ## Licence
 
-MIT © RootNative.
+MIT © Root Native.

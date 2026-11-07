@@ -14,9 +14,8 @@ names:
 import { Directions, Gesture, State } from '@rootnative/impulse/gesture-handler'
 ```
 
-The point is that `@rootnative/impulse` stays your only gesture import. You do
-not add a second dependency to your imports to reach a mechanism Impulse does
-not model.
+So `@rootnative/impulse` stays your only gesture import. You don't add a
+second import to reach a mechanism that Impulse doesn't model.
 
 ## These are pure re-exports
 
@@ -25,11 +24,11 @@ not model.
 
 :::warning None of Impulse's guarantees apply to what you build with it
 
-Stable gesture identity, thread-explicit callbacks, and intent-shaped payloads
-are all things Impulse's hooks do. A bare RNGH gesture has none of them.
+The hooks of Impulse give you stable gesture identity, thread-explicit
+callbacks, and intent-shaped payloads. A bare RNGH gesture has none of them.
 
-To keep identity and coexistence handling while building the gesture yourself,
-use [`useRawGesture`](/raw-gestures) instead of a bare `useMemo`.
+To keep identity and coexistence while you build the gesture yourself, use
+[`useRawGesture`](/raw-gestures) instead of a bare `useMemo`.
 
 :::
 
@@ -39,8 +38,8 @@ use [`useRawGesture`](/raw-gestures) instead of a bare `useMemo`.
 import { GestureDetector } from '@rootnative/impulse'
 ```
 
-Every hook's result has to be handed to it, so it is exported from the package
-entry. Reaching for it is not a reason to import from this subpath.
+You pass the result of every hook to it, so the package entry exports it. You
+don't need this subpath to get it.
 
 ## Composing a raw gesture with Impulse hooks
 
@@ -56,5 +55,5 @@ const tap = useTap({ onTap: select })
 const { gesture } = useGestures([tap, fling], { mode: 'race' })
 ```
 
-Prefer [`useRawGesture`](/raw-gestures) over the hand-rolled `useMemo` above.
-It does the memoisation for you and accepts the coexistence options.
+Use [`useRawGesture`](/raw-gestures) instead of the hand-written `useMemo`
+above. It does the memoisation for you and accepts the coexistence options.

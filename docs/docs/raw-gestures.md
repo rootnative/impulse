@@ -7,7 +7,7 @@ description: useRawGesture — build an RNGH gesture by hand, with Impulse's mem
 # Raw gestures
 
 `useRawGesture` is the mechanism-level escape hatch. Use it for a recognizer
-Impulse does not model, or a configuration it does not expose.
+that Impulse doesn't model, or a configuration that Impulse doesn't expose.
 
 ```tsx
 import { useRawGesture } from '@rootnative/impulse'
@@ -31,8 +31,8 @@ accepts.
 
 ## What Impulse still gives you
 
-- **Gesture identity across renders**, so an inline option cannot re-attach the
-  gesture mid-drag.
+- **Gesture identity across renders**, so an inline option can't re-attach the
+  gesture in the middle of a drag.
 - **`alongside` / `blocks` / `deferTo` resolution**, so the three RNGH
   relations are still chosen by outcome rather than by method name.
 - **A `ref`** other hooks can name in their own coexistence options.
@@ -41,15 +41,15 @@ accepts.
 
 **The dependency list.** `build` runs only when `deps` change, and a stale
 capture is a stale gesture. A worklet callback belongs in `deps`. A JS-thread
-callback does not — give it a stable identity first and depend on that.
+callback doesn't. Give it a stable identity first, and depend on that.
 
-**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here. RNGH
-decides per callback, by whether it carries the `'worklet'` directive, and
+**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here.
+RNGH decides per callback, by the presence of the `'worklet'` directive. It
 warns in development when a gesture mixes the two. The intent hooks can own
-that boundary because they know what each callback means. This one does not.
+that boundary, because they know what each callback means. This hook doesn't.
 
-**The payload.** You get RNGH's flat event — `translationX`, `velocityY`,
-`absoluteX` — not an intent-shaped one.
+**The payload.** You get RNGH's flat event (`translationX`, `velocityY`,
+`absoluteX`), not an intent-shaped one.
 
 ## Do not call relation methods in the builder
 
@@ -64,8 +64,8 @@ useRawGesture(
 useRawGesture(() => Gesture.Fling(), [], { deferTo: scrollRef })
 ```
 
-Pass them in `options`. RNGH's relation methods append to a gesture's config
-rather than replacing it, so a relation applied in the builder **and** in the
+Pass them in `options`. RNGH's relation methods append to the config of a
+gesture, and don't replace it. So a relation in the builder **and** in the
 options installs the same reference twice. Impulse applies them exactly once,
 inside the same memo that builds the gesture.
 
@@ -73,16 +73,15 @@ See [Coexistence](/coexistence) for what the three options mean.
 
 ## Accessibility
 
-Nothing here is reachable by a screen reader or a keyboard, and Impulse cannot
-name a fallback for a gesture it did not design. Whatever this gesture does
-must be doable another way — an `accessibilityActions` entry, or a visible
+Nothing here is reachable by a screen reader or a keyboard, and Impulse can't
+name a fallback for a gesture it didn't design. Whatever this gesture does
+must be reachable another way: an `accessibilityActions` entry, or a visible
 control.
 
 ## When to reach for it
 
-Reach for an intent hook first. `useRawGesture` gives up intent-shaped
-payloads and the owned thread boundary, which are two of the three reasons
-Impulse exists.
+Use an intent hook first. `useRawGesture` gives up intent-shaped payloads and
+the owned thread boundary, which are two of the three reasons Impulse exists.
 
-If you find yourself building the same raw gesture in more than one project,
-that is a gap in Impulse. Report it.
+If you build the same raw gesture in more than one project, that is a gap in
+Impulse. Report it.

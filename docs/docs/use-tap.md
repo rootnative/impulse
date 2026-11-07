@@ -25,11 +25,11 @@ return (
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `pointers` | `number` | `1` | How many fingers must be down. A two-finger tap is the same intent with a different count. |
-| `maxDuration` | `number` | `500` | How long the finger may stay down, in ms. Past it the gesture **fails** rather than firing, which leaves the touch to a long press racing against it. |
-| `maxDistance` | `number` | `10` | How far the finger may travel, in points. Raising it makes the tap forgiving and makes it harder for a drag in the same view to win. |
-| `hitSlop` | `HitSlop` | — | Extra touchable area. An inline object is fine; the gesture is not rebuilt when the contents are unchanged. |
-| `enabled` | `boolean` | `true` | Prefer this over unmounting the detector — a disabled gesture keeps its identity and its relations. |
-| `onTap` | `(event, { cancelled }) => void` | — | **JS thread.** The tap ended. `cancelled` says how — see below. |
+| `maxDuration` | `number` | `500` | How long the finger may stay down, in ms. After that, the gesture **fails** and doesn't fire. A long press in a race can then take the touch. |
+| `maxDistance` | `number` | `10` | How far the finger may travel, in points. A larger value accepts a less precise tap, and makes it harder for a drag in the same view to win. |
+| `hitSlop` | `HitSlop` | — | Extra touchable area. An inline object is fine. Impulse doesn't rebuild the gesture when the contents are the same. |
+| `enabled` | `boolean` | `true` | Use this instead of unmounting the detector. A disabled gesture keeps its identity and its relations. |
+| `onTap` | `(event, { cancelled }) => void` | — | **JS thread.** The tap ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** The finger went down and the gesture is a candidate. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
@@ -38,18 +38,18 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## Callbacks and threads
 
-`onTap` is an ordinary function. Set React state in it directly — Impulse owns
+`onTap` is an ordinary function. Set React state in it directly. Impulse owns
 the boundary.
 
-`onBegin` and `onFinalize` are **worklets**. Mark them with `'worklet'`, and
-keep their identity stable, because a worklet is a direct gesture dependency.
+`onBegin` and `onFinalize` are **worklets**. Mark them with `'worklet'`. Keep
+their identity stable, because a worklet is a direct gesture dependency.
 See [Threads and callbacks](/threads).
 
 :::note Being a candidate is not winning
 
 `onBegin` fires on touch-down. In a race with a long press or a drag, the
-gesture may still fail afterwards. Use `onBegin` to show a pressed state, and
-undo it in `onFinalize`, which runs on both paths.
+gesture may still fail afterwards. Use `onBegin` to show a pressed state. Undo
+it in `onFinalize`, which runs on both paths.
 
 :::
 
@@ -64,20 +64,20 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
 A touch that moved past `maxDistance` or stayed down past `maxDuration` was
-never a tap at all. It does not reach `onTap` on either path — it reaches
-`onFinalize` with `success: false` and stops there.
+never a tap. It doesn't reach `onTap` on either path. It reaches `onFinalize`
+with `success: false` and stops there.
 
 ```tsx
 const tap = useTap({
@@ -102,8 +102,8 @@ interface TapEvent {
 }
 ```
 
-Prefer `absolute` when the view itself is being transformed by a gesture. A tap
-on a view that is mid-animation reports a moving `x`.
+Use `absolute` when a gesture transforms the view itself. A tap on a view in
+the middle of an animation reports a moving `x`.
 
 ## Result
 
@@ -127,26 +127,27 @@ const style = useAnimatedStyle(() => ({
 :::warning `isActive` means something different in other hooks
 
 `useTap` sets it at touch-down. `useLongPress` and `useDrag` set it at
-recognition. Check each hook's page before driving UI from it.
+recognition. Check the page of each hook before you use it in UI.
 
 :::
 
 ## Activation criteria
 
-`maxDuration` is RNGH's own default, restated so it cannot move underneath
-Impulse in an RNGH release.
+`maxDuration` is RNGH's own default. Impulse restates it, so an RNGH release
+can't move it.
 
-`maxDistance` is **Impulse's number, not RNGH's**. RNGH defers the slop to the
-platform, so the same tap is accepted on one operating system and rejected on
-the other. A fixed number is what a consumer can reason about. 10 points is
-roughly a finger's own jitter while pressing.
+`maxDistance` is **Impulse's number, not RNGH's**. RNGH leaves the slop to the
+platform, so one operating system accepts a tap and the other rejects the same
+tap. You can reason about a fixed number. 10 points is about the jitter of a
+finger while it presses.
 
-:::warning Neither default has been measured
+:::warning Neither default is measured
 
-The device sweep of 2026-09-19 did not test either value. It tested the race
-between a tap and a double tap, which passed on both platforms — see
+The device sweep of 2026-09-19 didn't test either value. It tested the race
+between a tap and a double tap, and that race passed on both platforms. See
 [`useDoubleTap`](/use-double-tap). Both defaults are design intentions.
-`maxDistance` is shared with `useDoubleTap` on purpose, so moving it moves both.
+`useDoubleTap` shares `maxDistance` on purpose, so a move of that value moves
+both.
 
 :::
 
@@ -166,8 +167,8 @@ const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
 release, so it wins every race and the double tap never fires. `exclusive` makes
 the single tap wait to learn whether a second tap is coming.
 
-The cost is latency: the single tap cannot report for `maxDelay` milliseconds.
-Lower [`maxDelay`](/use-double-tap) rather than building the pair by hand.
+The cost is latency: the single tap can't report for `maxDelay` milliseconds.
+Lower [`maxDelay`](/use-double-tap) instead of building the pair by hand.
 
 ## Web
 
@@ -180,7 +181,7 @@ emulation varies by browser. See [Web behaviour](/web).
 ## Accessibility
 
 A tap gesture is invisible to a screen reader and unreachable from a keyboard.
-This hook does not fix that, and it cannot.
+This hook doesn't fix that, and it can't.
 
 Whatever the tap does must be reachable another way:
 
@@ -192,9 +193,8 @@ Whatever the tap does must be reachable another way:
 
 :::tip A plain tap rarely needs this hook
 
-If all you need is "run this when the user taps", `<Pressable>` already does it
-and is accessible by default. Reach for `useTap` when you need the tap to
-*compose* — to race a long press, defer to a scroll view, or drive a pressed
-state on the UI thread.
+If you only need to run an action on a tap, `<Pressable>` already does it and
+is accessible by default. Use `useTap` when the tap must *compose*: race a
+long press, defer to a scroll view, or drive a pressed state on the UI thread.
 
 :::

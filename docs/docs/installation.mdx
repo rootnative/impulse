@@ -9,7 +9,7 @@ description: Install @rootnative/impulse, its peers, and the GestureHandlerRootV
 ## Platforms
 
 Impulse runs where `react-native-gesture-handler` runs. This table shows what
-was checked for each platform.
+we checked on each platform.
 
 | Platform | Status |
 | --- | --- |
@@ -48,7 +48,7 @@ In an Expo app, let Expo pick the versions that match your SDK:
 npx expo install react-native-gesture-handler react-native-reanimated react-native-worklets
 ```
 
-In a bare React Native app, install them directly and then run
+In a bare React Native app, install them with your package manager. Then run
 `npx pod-install` for iOS.
 
 | Peer | Range |
@@ -63,20 +63,20 @@ In a bare React Native app, install them directly and then run
 
 Reanimated 4 and `react-native-worklets` are version-locked to each other. An
 open upper bound lets a package manager pair a new Reanimated with an old
-worklets build, and that pair does not install. The two tight ranges are
-load-bearing. Do not widen them.
+worklets build, and that pair doesn't install. The two narrow ranges are on
+purpose. Don't widen them.
 
 :::
 
-Impulse is developed against **Expo SDK 58** — React 19.3.0, React Native
+Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
 0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
 SDK 57 app uses `0.0.0-alpha.1`.
 
 Impulse builds its gestures with the builder API of Gesture Handler
 (`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
-not compose with an Impulse gesture, and a relation target must be
-`LegacyScrollView` or `LegacyFlatList` — see [Coexistence](/coexistence).
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+doesn't compose with an Impulse gesture. A relation target must be
+`LegacyScrollView` or `LegacyFlatList`. See [Coexistence](/coexistence).
 
 ## Add the root view
 
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
 Without it, your gestures never fire. In development on iOS and Android,
 Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
 GestureHandlerRootView`. The same error stops a Jest test that renders a
-`<GestureDetector>` outside the root view — see [Testing](/testing).
+`<GestureDetector>` outside the root view. See [Testing](/testing).
 
 On web and in a release build, nothing throws, nothing warns, and the console
 stays empty. **If a gesture does nothing at all, check this first.**
@@ -118,8 +118,8 @@ Give the root view `flex: 1`, or the area below it receives no touches.
 **An Expo app needs no Babel change.** `babel-preset-expo` adds
 `react-native-worklets/plugin` on its own as soon as the package is installed.
 
-A **bare React Native** app has to add the plugin by hand, and it must be the
-last entry in the list:
+In a **bare React Native** app, add the plugin by hand. It must be the last
+entry in the list:
 
 ```js
 // babel.config.js
@@ -154,25 +154,28 @@ import { useDrag } from '@rootnative/impulse/drag'
 | `@rootnative/impulse/double-tap` | `useDoubleTap` |
 | `@rootnative/impulse/long-press` | `useLongPress` |
 | `@rootnative/impulse/drag` | `useDrag` |
+| `@rootnative/impulse/pan` | `usePan` |
+| `@rootnative/impulse/swipe` | `useSwipe` |
+| `@rootnative/impulse/pinch` | `usePinch` |
+| `@rootnative/impulse/rotate` | `useRotate` |
 | `@rootnative/impulse/compose` | `useGestures` |
 | `@rootnative/impulse/raw` | `useRawGesture` |
 | `@rootnative/impulse/gesture-handler` | RNGH's own primitives, re-exported under their original names. |
 
-`GestureDetector` is re-exported from the entry because every hook's result
-needs it. Reaching for it is not a reason to add a second gesture import to
-your app.
+The entry re-exports `GestureDetector`, because every hook's result needs it.
+You don't need a second gesture import to get it.
 
 :::info The package ships ESM only
 
-There is no CommonJS build, and that is deliberate. CommonJS with code
+There is no CommonJS build, and that is on purpose. CommonJS with code
 splitting defeats the Reanimated Babel plugin and ships worklets that crash on
-a device. Metro handles ESM. A Node-side tool that requires CommonJS does not.
+a device. Metro handles ESM. A Node-side tool that requires CommonJS doesn't.
 
 :::
 
 ## Set up Jest
 
-Impulse ships its own Jest wiring, so a consumer needs one line:
+Impulse ships its own Jest wiring, so you need one line:
 
 ```js
 // jest.config.js
@@ -182,8 +185,8 @@ module.exports = {
 ```
 
 The preset layers on `@react-native/jest-preset`. It adds RNGH's native-module
-mocks and widens `transformIgnorePatterns`, so Jest transforms Impulse's ESM
-bundle and gesture-handler. Neither passes the default React Native pattern.
+mocks and widens `transformIgnorePatterns`, so Jest transforms the ESM bundle
+of Impulse and RNGH. Neither passes the default React Native pattern.
 
 You also need `@react-native/jest-preset` as a devDependency:
 
@@ -195,7 +198,7 @@ React Native 0.86 moved its Jest preset into that package and declares it as an
 **optional** peer. No package manager installs an optional peer, so you install
 it yourself, at the version that matches your `react-native`.
 
-Drive gestures in a test with RNGH's own helpers, and tag the gesture so the
+Drive gestures in a test with RNGH's own helpers. Tag the gesture so the
 helper can find it:
 
 ```tsx
@@ -211,8 +214,7 @@ fireGestureHandler(getByGestureTestId('card'))
 ## In a monorepo
 
 Metro needs exactly one copy of five packages. Two copies of Reanimated or
-gesture-handler load two native modules, and the second one's gestures never
-fire.
+RNGH load two native modules, and the gestures of the second copy never fire.
 
 Point Metro at one copy of each:
 
@@ -257,7 +259,7 @@ function Card() {
 }
 ```
 
-Tap the card. If the log does not appear, check the root view first.
+Tap the card. If the log doesn't appear, check the root view first.
 
 Next: [Composition](/composition) relates gestures to one another, and
 [Coexistence](/coexistence) makes them share a touch with a scroll view.

@@ -31,9 +31,9 @@ gesture, so a viewer built on it snaps back to its original size the moment the
 fingers lift and land again.
 
 `usePinch` multiplies that factor into the scale it already holds. That is the
-stored start and the multiplication every consumer otherwise writes, and it is
-what lets `min` and `max` be the zoom range of the **viewer** rather than of
-one gesture.
+stored start and the multiplication that you would otherwise write. It is
+what lets `min` and `max` be the zoom range of the **viewer**, not of one
+gesture.
 
 | | Holds | Across gestures |
 | --- | --- | --- |
@@ -41,7 +41,7 @@ one gesture.
 | RNGH's `scale` | nothing | Restarts at `1` |
 
 `gestureScale` in the payload is RNGH's own factor, kept for the cases that
-want the raw gesture rather than the value.
+want the raw gesture, not the value.
 
 ## Options
 
@@ -50,7 +50,7 @@ want the raw gesture rather than the value.
 | `initial` | `number` | `1` | The scale before any pinch. Read once, at mount. |
 | `min` | `number` | — | The smallest scale. Unset is unbounded. |
 | `max` | `number` | — | The largest scale. Unset is unbounded. |
-| `elastic` | `number` | `0` | How much of the pull past an end reaches `scale`. `0` stops dead; `1` ignores the end. |
+| `elastic` | `number` | `0` | How much of the pull past an end reaches `scale`. `0` stops at the end. `1` ignores the end. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onPinchStart` | `(event) => void` | — | **JS thread.** The pinch now owns the touch. |
@@ -77,10 +77,10 @@ interface PinchEvent {
 
 ## `focal` is the field a zoom viewer cannot skip
 
-Scaling about the view's centre looks correct in a screenshot and slides the
-content out from under the fingers in the hand. The zoom has to happen about
-the point between them, and that is what `focal` reports — relative to the
-view, so it goes straight into a transform:
+A zoom about the centre of the view looks correct in a screenshot, and slides
+the content out from under the fingers in the hand. The zoom has to happen
+about the point between the fingers. That is what `focal` reports, relative to
+the view, so it goes straight into a transform:
 
 ```tsx
 const style = useAnimatedStyle(() => {
@@ -98,17 +98,18 @@ const style = useAnimatedStyle(() => {
 })
 ```
 
-Translate the focal point to the origin, scale, translate back.
+Translate the focal point to the origin. Scale. Translate back.
 
-`focal` keeps the last gesture's point after the fingers lift, so a release
-animation scales about the same place the pinch did rather than snapping to the
-origin. It is read from `onStart` as well as every update, so `onPinchStart`
-reports where the fingers are rather than where the previous gesture left them.
+`focal` keeps the point of the last gesture after the fingers lift. So a
+release animation scales about the same place as the pinch, and doesn't snap
+to the origin. Impulse reads it at `onStart` and at every update, so
+`onPinchStart` reports where the fingers are now, not where the previous
+gesture left them.
 
 ## `min`, `max` and `elastic`
 
-With the default `elastic` of `0` the scale stops dead at an end. With
-`elastic` set, the fingers pull it past and Impulse **leaves it there**:
+With the default `elastic` of `0`, the scale stops at an end. With `elastic`
+set, the fingers pull it past the end and Impulse **leaves it there**:
 
 ```tsx
 const pinch = usePinch({
@@ -121,9 +122,9 @@ const pinch = usePinch({
 })
 ```
 
-`settled` is the nearest scale inside the range — the destination that spring
-needs. Impulse does not travel it, because moving a value over time is an
-animation and this library owns no animation vocabulary. See
+`settled` is the nearest scale inside the range: the destination that the
+spring needs. Impulse doesn't travel it, because a value that moves over time
+is an animation, and this library owns no animation vocabulary. See
 [the design principles](/).
 
 ## There are no activation criteria
@@ -133,15 +134,15 @@ finger moves, and it exposes no threshold, so Impulse has none to pass on.
 
 :::danger A pinch cannot be separated from a pan by a threshold
 
-Every other continuous intent has one. This one does not, so the **relation is
+Every other continuous intent has one. This one doesn't, so the **relation is
 the only thing** that decides how a pinch and a pan share a view. Say it:
 
 ```tsx
 const { gesture } = useGestures([pinch, pan], { mode: 'simultaneous' })
 ```
 
-`alongside` is the same statement for a gesture this screen does not own — a
-scroll view, or a gesture from another library. See
+`alongside` is the same statement for a gesture that this screen doesn't own:
+a scroll view, or a gesture from another library. See
 [Coexistence](/coexistence).
 
 :::
@@ -153,37 +154,37 @@ pinch.scale // SharedValue<number>
 ```
 
 A reset button, a zoom-out control, or a release spring writes it directly. The
-next pinch continues from whatever it holds, so writing it decides where the
-next gesture starts as well.
+next pinch continues from the value it holds, so a write also decides where
+the next gesture starts.
 
 ## The cancel path
 
-`onPinchEnd` fires for both endings, and `cancelled` says which. `true` is the
-system taking the pinch away — a competing gesture won, or the app went to the
-background.
+`onPinchEnd` fires for both endings, and `cancelled` says which. `true` means
+the system took the pinch away: a competing gesture won, or the app went to
+the background.
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement rather than a release. Read `settled` on both paths: an elastic
-overshoot has to go home whether the user finished or not.
+movement, not a release. Read `settled` on both paths: an elastic overshoot
+has to go home on both endings.
 
 A touch that never became a pinch reaches neither path. It goes to
 `onFinalize` with `success: false` and stops there.
 
 ## Web
 
-RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
+RNGH recognizes pinch from pointer events, so it needs **two pointers**: a
 touchscreen, or a device that reports them.
 
 A trackpad's pinch arrives as a `wheel` event with `ctrlKey`. That is not a
-pointer pair, so it never reaches this hook and a desktop browser with a
-trackpad alone cannot zoom. Give it a control that writes `scale` directly,
-which the accessibility fallback needs anyway. The browser's own page zoom is
-unaffected either way.
+pointer pair, so it never reaches this hook. A desktop browser with only a
+trackpad can't zoom. Give it a control that writes `scale` directly. The
+accessibility fallback needs that control anyway. The browser's own page zoom
+is unaffected in both cases.
 
 ## Accessibility
 
 A pinch is invisible to a screen reader and unreachable from a keyboard. This
-hook does not fix that.
+hook doesn't fix that.
 
 Whatever the pinch scales must be reachable another way:
 

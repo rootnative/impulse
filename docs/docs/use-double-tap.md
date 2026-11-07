@@ -27,13 +27,13 @@ half**, and it has its own section below.
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `pointers` | `number` | `1` | Applies to **both** taps — a two-finger double tap is two taps of two fingers. |
+| `pointers` | `number` | `1` | Applies to **both** taps. A two-finger double tap is two taps of two fingers. |
 | `maxDuration` | `number` | `500` | How long each tap may hold the finger down, in ms. Per tap, not for the pair. |
 | `maxDelay` | `number` | `500` | The gap allowed between the two taps, in ms. **This is the latency a composed single tap pays.** |
-| `maxDistance` | `number` | `10` | How far the finger may travel **within** a tap. It does not limit how far the second tap lands from the first. |
+| `maxDistance` | `number` | `10` | How far the finger may travel **within** a tap. It doesn't limit how far the second tap lands from the first. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
-| `onDoubleTap` | `(event, { cancelled }) => void` | — | **JS thread.** The double tap ended. `cancelled` says how — see below. |
+| `onDoubleTap` | `(event, { cancelled }) => void` | — | **JS thread.** The double tap ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Fires once for the pair, on the first touch. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
@@ -51,20 +51,19 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
-A single tap that was never followed by a second is **not** this path. It never
-activates, so it reaches `onFinalize` with `success: false` and never gets to
-`onDoubleTap` at all.
+A single tap with no second tap is **not** this path. It never activates. It
+reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
 
 ```tsx
 const double = useDoubleTap({
@@ -77,8 +76,8 @@ const double = useDoubleTap({
 
 ## Payload
 
-The same [`TapEvent`](/use-tap) that `useTap` receives — one payload rather than
-two identical ones.
+The same [`TapEvent`](/use-tap) that `useTap` receives: one payload, not two
+identical ones.
 
 ```ts
 interface TapEvent {
@@ -105,40 +104,39 @@ const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
 
 Two things must be right, and both fail quietly when they are not:
 
-1. **The mode is `exclusive`, not `race`.** `exclusive` tries members in order
-   and lets a later one activate only after every earlier one has failed, so the
-   single tap waits to learn whether a second is coming. A single tap recognizes
-   on the first release, so in a `race` it wins every time and the double tap
-   never fires at all.
+1. **The mode is `exclusive`, not `race`.** `exclusive` tries the members in
+   order. A later member activates only after every earlier member failed, so
+   the single tap waits for a possible second tap. A single tap recognizes on
+   the first release, so in a `race` it wins every time and the double tap
+   never fires.
 2. **The double tap comes first in the list.** Order is what `exclusive` reads.
 
 :::warning The single tap pays `maxDelay` in latency
 
-Once composed, an ordinary single tap on that view cannot report until the
+Once composed, an ordinary single tap on that view can't report until the
 `maxDelay` window closes without a second tap. At the default that is half a
 second on every tap.
 
-**Lowering `maxDelay` is the first thing to reach for when a composed single tap
-feels slow.**
+**When a composed single tap feels slow, lower `maxDelay` first.**
 
 :::
 
-**A view that only needs a double tap does not need the composition.** Use this
-hook alone — there is nothing for it to wait on, and nothing pays the latency.
+**A view that only needs a double tap doesn't need the composition.** Use this
+hook alone. It waits on nothing, and nothing pays the latency.
 
 ## Activation criteria
 
-`maxDuration` and `maxDelay` are RNGH's own defaults, restated so they cannot
-move underneath Impulse in an RNGH release.
+`maxDuration` and `maxDelay` are RNGH's own defaults. Impulse restates them,
+so an RNGH release can't move them.
 
-`maxDistance` is Impulse's number, and it matches `useTap` on purpose — a double
-tap that is fussier than a single tap on the same view is a difference nobody
-asked for. Moving it moves both.
+`maxDistance` is Impulse's number, and it matches `useTap` on purpose. A
+double tap that accepts less travel than a single tap on the same view is a
+difference nobody asked for. A move of that value moves both.
 
 :::warning `maxDelay: 500` is probably too generous
 
 It is RNGH's number. The platforms themselves use something closer to 250–300 ms.
-Impulse restates the upstream default rather than inventing a different
+Impulse restates the upstream default instead of inventing a different
 unmeasured guess.
 
 The device sweep of 2026-09-19 measured the boundary on an Android emulator.
@@ -149,10 +147,10 @@ simulator. The single-tap latency on the emulator was about 610 ms at 500 and
 about 375 ms at 250.
 
 The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
-physical device must confirm that number. Whether the latency feels acceptable
+physical device must check that number. Whether the latency feels acceptable
 is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
-500 and 250 so the trade — single-tap latency against double-tap tolerance —
-can be felt.
+500 and 250, so you can feel the trade between single-tap latency and
+double-tap tolerance.
 
 :::
 
@@ -166,22 +164,22 @@ double.isActive   // SharedValue<boolean>
 
 :::danger `isActive` is not a pressed state here
 
-It is `true` from the first finger down until the pair resolves — which means it
-is `true` for **every ordinary single tap on the view**, and most of those end
-in failure.
+It is `true` from the first finger down until the pair resolves. So it is
+`true` for **every ordinary single tap on the view**, and most of those end in
+failure.
 
-Drive a pressed state from a composed `useTap` instead. Use this `isActive` only
-for something that should show while a double tap is genuinely in progress.
+Drive a pressed state from a composed `useTap` instead. Use this `isActive`
+only for UI that must show while a double tap is in progress.
 
 :::
 
-`onBegin` has the same problem: it fires once per pair on the first touch, and
-most touches that reach it are single taps that will fail this gesture. It is a
-poor place to show anything a user would read as commitment.
+`onBegin` has the same problem. It fires once per pair, on the first touch, and
+most touches that reach it are single taps that fail this gesture. Don't show
+a committed state from it.
 
 ## Three taps and up are not modelled
 
-A triple tap is rare enough that a named intent would be dead API. Build it with
+A triple tap is rare, so a named intent would be unused API. Build it with
 [`useRawGesture`](/raw-gestures):
 
 ```tsx
@@ -194,10 +192,10 @@ const triple = useRawGesture(() => Gesture.Tap().numberOfTaps(3), [])
 
 Verified working. A double click behaves as a double tap.
 
-Two caveats:
+Two limits:
 
-- **The browser's own double-click handling is not suppressed** — text selection
-  and zoom still happen. This hook does not prevent them.
+- **This hook doesn't suppress the browser's own double-click handling.** Text
+  selection and zoom still happen.
 - `pointers` above 1 is unreliable, because a mouse reports one pointer and
   touch emulation varies by browser.
 
@@ -211,8 +209,7 @@ and it is **worse than a single tap on both counts**.
 :::danger VoiceOver and TalkBack consume the double tap
 
 Both screen readers use a double tap as their own activation gesture, so a
-screen-reader user cannot reach this hook at all. Not "with difficulty" — not at
-all.
+screen-reader user can't reach this hook at all.
 
 :::
 

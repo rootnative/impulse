@@ -52,10 +52,10 @@
 
 | Feature | What it does |
 | --- | --- |
-| **Intents, not mechanisms** | One hook for each intent: tap, double tap, long press, drag, pan, swipe, pinch, and rotate. You do not set activation criteria by hand. |
+| **Intents, not mechanisms** | One hook for each intent: tap, double tap, long press, drag, pan, swipe, pinch, and rotate. You don't set activation criteria by hand. |
 | **Composition as data** | `useGestures([tap, doubleTap, pan], { mode: 'race' })` reads from left to right. A composed result can compose again. |
 | **Three coexistence options** | Each hook takes `alongside`, `blocks`, and `deferTo`. Each option maps to exactly one Gesture Handler relation. |
-| **Stable gesture identity** | An inline callback never rebuilds the gesture, so `<GestureDetector>` does not attach it again in the middle of a drag. A test pins this. |
+| **Stable gesture identity** | An inline callback never rebuilds the gesture, so `<GestureDetector>` doesn't attach it again in the middle of a drag. A test pins this. |
 | **The callback name states its thread** | `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onSwipe`, and `onDragEnd` run on the JS thread, and Impulse owns the boundary. |
 | **Payloads for each intent** | A drag reports `{ translation, velocity, absolute, settled }`, not the flat fields of Gesture Handler. |
 | **Shared values out, no animation in** | Each hook returns shared values and a gesture. You animate them with the library that you already use. |
@@ -99,7 +99,7 @@
       <a href="https://rootnative.github.io/impulse/example/"><b>rootnative.github.io/impulse/example</b></a>
       <br /><br />
       One screen for each intent.<br />
-      You do not need an install or an account.
+      You don't need an install or an account.
     </td>
     <td align="center">
       Clone this repository, then run<br />
@@ -122,8 +122,8 @@ npx expo install @rootnative/impulse react-native-gesture-handler react-native-r
 ```
 
 `npx expo install` picks the peer versions that match your Expo SDK. Expo adds
-the worklets Babel plugin for you. A bare React Native app adds
-`react-native-worklets/plugin` as the last Babel plugin, and runs
+the worklets Babel plugin for you. In a bare React Native app, add
+`react-native-worklets/plugin` as the last Babel plugin. Then run
 `npx pod-install` for iOS.
 
 Render `<GestureHandlerRootView>` above every component that uses a gesture:
@@ -168,14 +168,14 @@ function Card() {
 
 > [!TIP]
 > Import one hook from its subpath, such as `@rootnative/impulse/drag`. Then an
-> app that uses one gesture does not ship the set.
+> app that uses one gesture doesn't ship the set.
 
 ## 💡 Why Impulse
 
 Gesture Handler is a good library. It gives you **mechanisms**: activation
 criteria, gesture relations, and state machines. It leaves each **intent** to
 you. So each app builds swipe to dismiss, double tap, and pinch from `Pan` and
-its own maths again, and each copy gets the sharp edges wrong in its own way.
+its own maths again. Each copy gets the traps wrong in its own way.
 
 The same horizontal drag inside a vertical scroll view, twice:
 
@@ -231,11 +231,11 @@ flowchart LR
 ```
 
 - **The gesture is built once.** An inline callback goes through a ref, so a
-  new render does not make a new gesture.
+  new render doesn't make a new gesture.
 - **The callback name states its thread.** A phase callback runs on the UI
   thread. An intent callback runs on the JS thread, and Impulse crosses the
   boundary for you.
-- **Impulse detects. It does not animate.** It ships no springs, no
+- **Impulse detects. It doesn't animate.** It ships no springs, no
   transitions, and no components. A bridge to
   [`@rootnative/inertia`](https://www.npmjs.com/package/@rootnative/inertia) is
   planned as an optional subpath, and Impulse will never require an animation
@@ -267,12 +267,12 @@ SDK 57 app uses `0.0.0-alpha.1`.
 
 The Reanimated and Worklets ranges are narrow on purpose. The two packages are
 locked to each other, and a wider range lets a package manager pair versions
-that do not install.
+that don't install.
 
 Impulse builds its gestures with the builder API of Gesture Handler
 (`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
-not compose with an Impulse gesture.
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+doesn't compose with an Impulse gesture.
 
 ## 🗺️ Roadmap
 
@@ -282,7 +282,7 @@ not compose with an Impulse gesture.
 | 2. The intent set | Eight of ten intents ship. `useHover` and `useEdgeSwipe` are designed, not written. |
 | 3. The Inertia bridge | Not started. `@rootnative/impulse/inertia` will turn a release payload into an Inertia release animation. |
 
-Each milestone gate needs a pass on real hardware. A test runner cannot tell
+Each milestone gate needs a pass on real hardware. A test runner can't tell
 you if a horizontal drag inside a vertical `ScrollView` feels right. Read the
 [roadmap](https://rootnative.github.io/impulse/roadmap/) for the detail.
 

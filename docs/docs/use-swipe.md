@@ -26,15 +26,15 @@ return (
 )
 ```
 
-A swipe is a pan that is **judged at release**. The finger moves, `x` and `y`
-report it so the view can follow, and on release the travel and the speed along
-the dominant axis decide whether it counted.
+A swipe is a pan that is **judged at release**. While the finger moves, `x`
+and `y` report it, so the view can follow. On release, the travel and the
+speed along the dominant axis decide whether the swipe counted.
 
 ## Options
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `directions` | `SwipeDirection[]` | all four | Which directions may commit — **and the activation criterion**. See below. |
+| `directions` | `SwipeDirection[]` | all four | Which directions may commit, **and the activation criterion**. See below. |
 | `threshold` | `number` | `10` | How far the finger travels before the swipe **activates** and starts reporting. |
 | `commitDistance` | `number` | `80` | How far a release must have travelled to **count**. |
 | `commitSpeed` | `number` | `800` | How fast a release must be moving to count. The flick. |
@@ -53,13 +53,13 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## `directions` is the coexistence setting, not only a filter
 
-This is the part that is easy to read as a filter and is not one.
+It is easy to read this option as a filter. It isn't one.
 
 | `directions` | Activation criterion | Shares a view with a vertical list? |
 | --- | --- | --- |
 | all horizontal | directional on x | Yes, with no relation declared |
 | all vertical | directional on y | Yes, against a horizontal pager |
-| mixed | radial | No — declare `deferTo` or `blocks` |
+| mixed | radial | No. Declare `deferTo` or `blocks` |
 
 ```tsx
 // The list still scrolls: vertical movement never reaches the x offset.
@@ -67,13 +67,12 @@ const card = useSwipe({ directions: ['left', 'right'], onSwipe: dismiss })
 ```
 
 Narrow `directions` even when the extra directions would never fire. It is the
-cheapest coexistence fix there is.
+cheapest coexistence fix.
 
 ## Two thresholds, and they mean different things
 
-`threshold` is when the swipe **takes the touch** and `x` and `y` start
-reporting. `commitDistance` and `commitSpeed` are what the **release** is
-measured against.
+`threshold` is when the swipe **takes the touch** and `x` and `y` start to
+report. `commitDistance` and `commitSpeed` are the tests for the **release**.
 
 A swipe that activates and stops short is a successful gesture with no
 direction. It reaches `onSwipeEnd` with `direction: null`, and never reaches
@@ -86,10 +85,10 @@ Either commit test is enough on its own: far enough, or fast enough.
 Too low and a card leaves on a nudge. Too high and a deliberate flick does
 nothing. `commitDistance` passed the device sweep of 2026-09-19 on an Android
 emulator and an iOS simulator: a long swipe committed, and a short, slow one
-did not. `commitSpeed` is not tested. The iOS simulator delivers about 304
+didn't. `commitSpeed` is not tested. The iOS simulator delivers about 304
 points per second, and the Android emulator stops near 690 before it merges the
 input events. A physical device is necessary.
-`example/screens/SwipeScreen.tsx` is where that gets answered.
+`example/screens/SwipeScreen.tsx` is the screen for that check.
 
 :::
 
@@ -107,21 +106,21 @@ interface SwipeEvent {
 }
 ```
 
-`onSwipe` receives a `CommittedSwipeEvent` — the same payload with `direction`
-narrowed to a real direction, which saves that callback a null check for a case
-it cannot be in.
+`onSwipe` receives a `CommittedSwipeEvent`: the same payload, with `direction`
+narrowed to a real direction. That saves the callback a null check for a case
+that can't happen.
 
 `distance` and `speed` are measured **from the activation point**, so the
-`threshold` travel does not count towards `commitDistance`.
+`threshold` travel doesn't count towards `commitDistance`.
 
 ## The dominant axis decides, alone
 
-The dominant axis is the one the finger travelled furthest along. Only that
-axis is tested — a release is one swipe, not two.
+The dominant axis is the axis along which the finger travelled furthest.
+Impulse tests only that axis. A release is one swipe, not two.
 
-A dominant axis whose direction is not allowed does **not** fall back to the
-other axis. A release that went mostly down is not a left swipe, however far
-sideways it also drifted.
+If the direction on the dominant axis isn't allowed, Impulse does **not** fall
+back to the other axis. A release that went mostly down is not a left swipe,
+however far it also drifted sideways.
 
 ## `onSwipe` and `onSwipeEnd` do different jobs
 
@@ -139,37 +138,37 @@ const swipe = useSwipe({
 })
 ```
 
-`onSwipe` says to act. `onSwipeEnd` says to put the view back — or to send it
+`onSwipe` says to act. `onSwipeEnd` says to put the view back, or to send it
 off the screen.
 
 ## `x` and `y` are movement, not a position
 
 Zero at the start of every gesture, like [`usePan`](/use-pan). They keep their
-final number after the gesture ends, because **Impulse does not put them
-back** — that is an animation, and Impulse owns no animation vocabulary.
+final number after the gesture ends, because **Impulse doesn't put them
+back**. That is an animation, and Impulse owns no animation vocabulary.
 
 :::info No style, and no animation
 
 `@rootnative/inertia-gestures` ships a `useSwipe` that owns the snap-back and
-the commit exit, and it **requires** `@rootnative/inertia` to do it. Reach for
-that one when a `Motion.View` should follow a finger and spring home. Reach for
-this one when the numbers are what you want.
+the commit exit, and it **requires** `@rootnative/inertia` to do it. Use that
+one when a `Motion.View` must follow a finger and spring home. Use this one
+when you want the numbers.
 
 :::
 
 ## The cancel path
 
-A cancelled gesture **never commits**. The finger did not lift, so the velocity
-describes the last movement rather than a release, and acting on it would
-commit a swipe the user never finished.
+A cancelled gesture **never commits**. The finger didn't lift, so the velocity
+describes the last movement, not a release. An action on it would commit a
+swipe that the finger never finished.
 
-`onSwipe` does not fire. `onSwipeEnd` fires with `direction: null` and
+`onSwipe` doesn't fire. `onSwipeEnd` fires with `direction: null` and
 `cancelled: true`.
 
 ## Web
 
 RNGH recognizes pan from pointer events, so a mouse drag commits the same way a
-touch does, and `speed` is reported in the same units.
+touch does, and `speed` has the same units.
 
 A trackpad's two-finger swipe is a scroll, not a pan, and never reaches this
 hook.

@@ -18,38 +18,38 @@ Impulse supports iOS and Android, and web is partial: four of the eight intents
 are verified in a browser. Electron, macOS, and Windows are not tested. See
 [Platforms](/installation#platforms).
 
-You write a gesture as an intent. You do not assemble it from a builder chain,
-a `useMemo`, a ref dance, and hand-written translation maths.
+You write a gesture as an intent. You don't assemble it from a builder chain,
+a `useMemo`, a ref, and hand-written translation maths.
 
 > **WARNING — Alpha — eight intents ship today**
 >
 > [`useTap`](/use-tap), [`useDoubleTap`](/use-double-tap),
 > [`useLongPress`](/use-long-press), [`useDrag`](/use-drag), [`usePan`](/use-pan),
 > [`useSwipe`](/use-swipe), [`usePinch`](/use-pinch), and
-> [`useRotate`](/use-rotate) are implemented. `useHover` and `useEdgeSwipe` are
-> designed and **not written**. Do not import them yet — see the
+> [`useRotate`](/use-rotate) ship. `useHover` and `useEdgeSwipe` are
+> designed and **not written**. Don't import them yet. See the
 > [Roadmap](/roadmap).
 >
 > A device sweep on an Android emulator and an iOS simulator drove every intent
-> on at least one platform. It proves the mechanics, not the feel, and no
-> physical device has run it. So each activation-criteria default is still a
-> design intention. Every page states what the sweep proved and what is still
+> on at least one platform. It proves the mechanics, not the feel. No physical
+> device ran it. So each activation-criteria default is still a design
+> intention. Every page states what the sweep proved and what is still
 > unmeasured.
 
 ## The problem
 
-RNGH is a good library, and it is not the problem. RNGH exposes **mechanisms**
-on purpose — activation criteria, gesture relations, state machines — and
+RNGH is a good library, and it isn't the problem. RNGH exposes **mechanisms**
+on purpose: activation criteria, gesture relations, and state machines. It
 leaves every **intent** to you.
 
 So each app rebuilds swipe-to-dismiss, double tap, long-press-then-drag, and
 pinch-about-a-focal-point from `Pan` plus arithmetic. Each rebuild gets the
-sharp edges wrong in its own way.
+traps wrong in its own way.
 
 ## The same drag, twice
 
 A horizontal drag that must let a vertical scroll view win. This is the case
-consumers get wrong most often.
+that apps get wrong most often.
 
 ```tsx
 // RNGH today
@@ -87,20 +87,20 @@ const drag = useDrag({
 > **INFO — Two sharp edges Impulse does not absorb yet**
 >
 > `scrollRef` needs an `as unknown as GestureReference` cast in both snippets.
-> RNGH types a relation target as a ref to a component *type*, which is not what
-> `ref={}` produces, so a real `ScrollView` ref does not satisfy it. Impulse
-> mirrors RNGH's type exactly, so the mismatch stays visible instead of being
-> absorbed into a wider type that would stop catching upstream drift. This is a
-> known gap, not a decision.
+> RNGH types a relation target as a ref to a component *type*. `ref={}` doesn't
+> produce that type, so a real `ScrollView` ref doesn't satisfy it. Impulse
+> copies RNGH's type exactly, so the mismatch stays visible. A wider type would
+> hide it, and would stop catching upstream drift. This is a known gap, not a
+> decision.
 >
-> `scrollRef` must also come from gesture-handler's `LegacyScrollView`, not
-> React Native's `ScrollView` or Gesture Handler 3's. RNGH resolves a relation
-> through `ref.current?.handlerTag` and silently drops a ref that has none;
-> Impulse warns in development when it catches it. See
+> `scrollRef` must also come from RNGH's `LegacyScrollView`, not from React
+> Native's `ScrollView` or from Gesture Handler 3's `ScrollView`. RNGH resolves
+> a relation through `ref.current?.handlerTag`. It drops a ref that has no tag,
+> and it doesn't warn. Impulse warns in development when it catches this. See
 > [Coexistence](/coexistence).
 
 `drag.x` is a shared value that accumulates across gestures, so the
-`start.value` dance is gone. [`deferTo`](/coexistence) is the relation, named
+`start.value` step is gone. [`deferTo`](/coexistence) is the relation, named
 for what happens rather than for the method it calls. The
 [`scheduleOnRN` boundary](/threads) is Impulse's job, not yours.
 
@@ -108,17 +108,17 @@ for what happens rather than for the method it calls. The
 
 | Sharp edge in RNGH | What Impulse does |
 | --- | --- |
-| Composition reads inside-out. `Gesture.Simultaneous(Gesture.Race(tap, double), pan)` has to be parsed backwards, and nesting grows with each gesture. | Composition is data, not nesting: `useGestures([tap, double, pan], { mode: 'race' })`. Precedence reads left to right, and a composed result is itself composable. |
+| Composition reads inside-out. You read `Gesture.Simultaneous(Gesture.Race(tap, double), pan)` backwards, and nesting grows with each gesture. | Composition is data, not nesting: `useGestures([tap, double, pan], { mode: 'race' })`. Precedence reads left to right, and a composed result can compose again. |
 | Coexisting with a scroll view needs one of three methods — `simultaneousWithExternalGesture`, `blocksExternalGesture`, `requireExternalGestureToFail` — with no hint about which one you want. | Three named options on every hook: `alongside` runs together, `blocks` wins over, `deferTo` waits for the other to fail. Each maps to exactly one RNGH relation. |
 | An inline callback changes the gesture's identity, and `<GestureDetector>` re-attaches it — mid-drag. | Gesture identity is stable by construction. A JS-thread callback is never a gesture dependency. A test pins identity across an inline-callback re-render. |
 | There is no swipe direction, no double tap, no pinch about a focal point. Each one is `Pan` plus maths you write again per project. | One hook per intent. The intent is the primary surface, and the mechanism is the escape hatch. |
 | Every semantic callback needs `runOnJS`, and a mistake fails on the UI thread with an unhelpful message. | The callback name states its thread. `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onDragEnd`, and `onLongPress` run on JS, and Impulse owns the boundary. |
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
-| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse does not claim to solve this — it states it. |
+| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
 ## What Impulse does not do
 
-Impulse **detects**. It does not animate.
+Impulse **detects**. It doesn't animate.
 
 Every hook returns shared values and a gesture. Impulse starts no animation,
 owns no transition vocabulary, and has no spring config. You pass the values to
@@ -126,7 +126,7 @@ the animation library you already use.
 
 It also ships no components. There is no `<Swipeable>`, no drawer, and no
 carousel. A component makes layout and styling decisions, and a gesture library
-has no business making them.
+must not make them.
 
 ## Install
 
@@ -139,8 +139,9 @@ Full setup, including the peers and the root view, is on the
 
 Impulse needs `react-native-gesture-handler` and `react-native-reanimated` as
 peers. Your app must render a `<GestureHandlerRootView>` above any component
-that uses a gesture. **If that view is missing, nothing happens and nothing
-warns you** — the gesture simply never fires.
+that uses a gesture. **If that view is missing, the gesture never fires.** In
+development on iOS and Android, Gesture Handler 3 throws. On web and in a
+release build, nothing warns you.
 
 ## A first gesture
 
@@ -158,29 +159,29 @@ function Card() {
 }
 ```
 
-`GestureDetector` is re-exported from the package entry, because every hook's
-result needs it. `@rootnative/impulse` stays your only gesture import.
+The package entry re-exports `GestureDetector`, because every hook's result
+needs it. `@rootnative/impulse` stays your only gesture import.
 
 ## Where it sits
 
-Impulse is **general-purpose**. It is not built for, owned by, or coupled to
-any consumer, including `@rootnative/ui` and `@rootnative/inertia`. The
-`@rootnative` scope is a publishing namespace and nothing more.
+Impulse is **general-purpose**. It isn't built for, owned by, or coupled to
+any consumer, including the other `@rootnative` packages. The `@rootnative`
+scope is a publishing namespace and nothing more.
 
 [`@rootnative/inertia`](https://rootnative.github.io/inertia/) is the animation
 half of the pair: Impulse detects, Inertia animates. A bridge subpath is
-planned and not built, and Impulse will never require an animation library.
+planned and not built. Impulse will never require an animation library.
 
 `@rootnative/inertia-gestures` ships a `useDrag` too, so that one name
-collides. The products do not. That package **requires** `@rootnative/inertia`
-and hands back an `animatedStyle` that already knows about bounds and
-spring-back. Impulse requires no animation library and hands back the gesture
-and its values. Reach for `-gestures` to make a Motion primitive follow a
-finger. Reach for Impulse for the gesture itself.
+collides. The products don't. That package **requires** `@rootnative/inertia`
+and returns an `animatedStyle` that already knows the bounds and the spring
+back. Impulse requires no animation library and returns the gesture and its
+values. Use `-gestures` to make a `Motion.*` component follow a finger. Use
+Impulse for the gesture itself.
 
 ## Licence
 
-MIT © RootNative.
+MIT © Root Native.
 
 ---
 
@@ -189,7 +190,7 @@ MIT © RootNative.
 ## Platforms
 
 Impulse runs where `react-native-gesture-handler` runs. This table shows what
-was checked for each platform.
+we checked on each platform.
 
 | Platform | Status |
 | --- | --- |
@@ -228,7 +229,7 @@ In an Expo app, let Expo pick the versions that match your SDK:
 npx expo install react-native-gesture-handler react-native-reanimated react-native-worklets
 ```
 
-In a bare React Native app, install them directly and then run
+In a bare React Native app, install them with your package manager. Then run
 `npx pod-install` for iOS.
 
 | Peer | Range |
@@ -243,18 +244,18 @@ In a bare React Native app, install them directly and then run
 >
 > Reanimated 4 and `react-native-worklets` are version-locked to each other. An
 > open upper bound lets a package manager pair a new Reanimated with an old
-> worklets build, and that pair does not install. The two tight ranges are
-> load-bearing. Do not widen them.
+> worklets build, and that pair doesn't install. The two narrow ranges are on
+> purpose. Don't widen them.
 
-Impulse is developed against **Expo SDK 58** — React 19.3.0, React Native
+Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
 0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
 SDK 57 app uses `0.0.0-alpha.1`.
 
 Impulse builds its gestures with the builder API of Gesture Handler
 (`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`) does
-not compose with an Impulse gesture, and a relation target must be
-`LegacyScrollView` or `LegacyFlatList` — see [Coexistence](/coexistence).
+runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+doesn't compose with an Impulse gesture. A relation target must be
+`LegacyScrollView` or `LegacyFlatList`. See [Coexistence](/coexistence).
 
 ## Add the root view
 
@@ -282,7 +283,7 @@ const styles = StyleSheet.create({
 > Without it, your gestures never fire. In development on iOS and Android,
 > Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
 > GestureHandlerRootView`. The same error stops a Jest test that renders a
-> `<GestureDetector>` outside the root view — see [Testing](/testing).
+> `<GestureDetector>` outside the root view. See [Testing](/testing).
 >
 > On web and in a release build, nothing throws, nothing warns, and the console
 > stays empty. **If a gesture does nothing at all, check this first.**
@@ -294,8 +295,8 @@ Give the root view `flex: 1`, or the area below it receives no touches.
 **An Expo app needs no Babel change.** `babel-preset-expo` adds
 `react-native-worklets/plugin` on its own as soon as the package is installed.
 
-A **bare React Native** app has to add the plugin by hand, and it must be the
-last entry in the list:
+In a **bare React Native** app, add the plugin by hand. It must be the last
+entry in the list:
 
 ```js
 // babel.config.js
@@ -330,23 +331,26 @@ import { useDrag } from '@rootnative/impulse/drag'
 | `@rootnative/impulse/double-tap` | `useDoubleTap` |
 | `@rootnative/impulse/long-press` | `useLongPress` |
 | `@rootnative/impulse/drag` | `useDrag` |
+| `@rootnative/impulse/pan` | `usePan` |
+| `@rootnative/impulse/swipe` | `useSwipe` |
+| `@rootnative/impulse/pinch` | `usePinch` |
+| `@rootnative/impulse/rotate` | `useRotate` |
 | `@rootnative/impulse/compose` | `useGestures` |
 | `@rootnative/impulse/raw` | `useRawGesture` |
 | `@rootnative/impulse/gesture-handler` | RNGH's own primitives, re-exported under their original names. |
 
-`GestureDetector` is re-exported from the entry because every hook's result
-needs it. Reaching for it is not a reason to add a second gesture import to
-your app.
+The entry re-exports `GestureDetector`, because every hook's result needs it.
+You don't need a second gesture import to get it.
 
 > **INFO — The package ships ESM only**
 >
-> There is no CommonJS build, and that is deliberate. CommonJS with code
+> There is no CommonJS build, and that is on purpose. CommonJS with code
 > splitting defeats the Reanimated Babel plugin and ships worklets that crash on
-> a device. Metro handles ESM. A Node-side tool that requires CommonJS does not.
+> a device. Metro handles ESM. A Node-side tool that requires CommonJS doesn't.
 
 ## Set up Jest
 
-Impulse ships its own Jest wiring, so a consumer needs one line:
+Impulse ships its own Jest wiring, so you need one line:
 
 ```js
 // jest.config.js
@@ -356,8 +360,8 @@ module.exports = {
 ```
 
 The preset layers on `@react-native/jest-preset`. It adds RNGH's native-module
-mocks and widens `transformIgnorePatterns`, so Jest transforms Impulse's ESM
-bundle and gesture-handler. Neither passes the default React Native pattern.
+mocks and widens `transformIgnorePatterns`, so Jest transforms the ESM bundle
+of Impulse and RNGH. Neither passes the default React Native pattern.
 
 You also need `@react-native/jest-preset` as a devDependency:
 
@@ -369,7 +373,7 @@ React Native 0.86 moved its Jest preset into that package and declares it as an
 **optional** peer. No package manager installs an optional peer, so you install
 it yourself, at the version that matches your `react-native`.
 
-Drive gestures in a test with RNGH's own helpers, and tag the gesture so the
+Drive gestures in a test with RNGH's own helpers. Tag the gesture so the
 helper can find it:
 
 ```tsx
@@ -385,8 +389,7 @@ fireGestureHandler(getByGestureTestId('card'))
 ## In a monorepo
 
 Metro needs exactly one copy of five packages. Two copies of Reanimated or
-gesture-handler load two native modules, and the second one's gestures never
-fire.
+RNGH load two native modules, and the gestures of the second copy never fire.
 
 Point Metro at one copy of each:
 
@@ -431,7 +434,7 @@ function Card() {
 }
 ```
 
-Tap the card. If the log does not appear, check the root view first.
+Tap the card. If the log doesn't appear, check the root view first.
 
 Next: [Composition](/composition) relates gestures to one another, and
 [Coexistence](/coexistence) makes them share a touch with a scroll view.
@@ -459,11 +462,11 @@ return (
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `pointers` | `number` | `1` | How many fingers must be down. A two-finger tap is the same intent with a different count. |
-| `maxDuration` | `number` | `500` | How long the finger may stay down, in ms. Past it the gesture **fails** rather than firing, which leaves the touch to a long press racing against it. |
-| `maxDistance` | `number` | `10` | How far the finger may travel, in points. Raising it makes the tap forgiving and makes it harder for a drag in the same view to win. |
-| `hitSlop` | `HitSlop` | — | Extra touchable area. An inline object is fine; the gesture is not rebuilt when the contents are unchanged. |
-| `enabled` | `boolean` | `true` | Prefer this over unmounting the detector — a disabled gesture keeps its identity and its relations. |
-| `onTap` | `(event, { cancelled }) => void` | — | **JS thread.** The tap ended. `cancelled` says how — see below. |
+| `maxDuration` | `number` | `500` | How long the finger may stay down, in ms. After that, the gesture **fails** and doesn't fire. A long press in a race can then take the touch. |
+| `maxDistance` | `number` | `10` | How far the finger may travel, in points. A larger value accepts a less precise tap, and makes it harder for a drag in the same view to win. |
+| `hitSlop` | `HitSlop` | — | Extra touchable area. An inline object is fine. Impulse doesn't rebuild the gesture when the contents are the same. |
+| `enabled` | `boolean` | `true` | Use this instead of unmounting the detector. A disabled gesture keeps its identity and its relations. |
+| `onTap` | `(event, { cancelled }) => void` | — | **JS thread.** The tap ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** The finger went down and the gesture is a candidate. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
@@ -472,18 +475,18 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## Callbacks and threads
 
-`onTap` is an ordinary function. Set React state in it directly — Impulse owns
+`onTap` is an ordinary function. Set React state in it directly. Impulse owns
 the boundary.
 
-`onBegin` and `onFinalize` are **worklets**. Mark them with `'worklet'`, and
-keep their identity stable, because a worklet is a direct gesture dependency.
+`onBegin` and `onFinalize` are **worklets**. Mark them with `'worklet'`. Keep
+their identity stable, because a worklet is a direct gesture dependency.
 See [Threads and callbacks](/threads).
 
 > **NOTE — Being a candidate is not winning**
 >
 > `onBegin` fires on touch-down. In a race with a long press or a drag, the
-> gesture may still fail afterwards. Use `onBegin` to show a pressed state, and
-> undo it in `onFinalize`, which runs on both paths.
+> gesture may still fail afterwards. Use `onBegin` to show a pressed state. Undo
+> it in `onFinalize`, which runs on both paths.
 
 ## The cancel path
 
@@ -496,20 +499,20 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
 A touch that moved past `maxDistance` or stayed down past `maxDuration` was
-never a tap at all. It does not reach `onTap` on either path — it reaches
-`onFinalize` with `success: false` and stops there.
+never a tap. It doesn't reach `onTap` on either path. It reaches `onFinalize`
+with `success: false` and stops there.
 
 ```tsx
 const tap = useTap({
@@ -534,8 +537,8 @@ interface TapEvent {
 }
 ```
 
-Prefer `absolute` when the view itself is being transformed by a gesture. A tap
-on a view that is mid-animation reports a moving `x`.
+Use `absolute` when a gesture transforms the view itself. A tap on a view in
+the middle of an animation reports a moving `x`.
 
 ## Result
 
@@ -559,24 +562,25 @@ const style = useAnimatedStyle(() => ({
 > **WARNING — `isActive` means something different in other hooks**
 >
 > `useTap` sets it at touch-down. `useLongPress` and `useDrag` set it at
-> recognition. Check each hook's page before driving UI from it.
+> recognition. Check the page of each hook before you use it in UI.
 
 ## Activation criteria
 
-`maxDuration` is RNGH's own default, restated so it cannot move underneath
-Impulse in an RNGH release.
+`maxDuration` is RNGH's own default. Impulse restates it, so an RNGH release
+can't move it.
 
-`maxDistance` is **Impulse's number, not RNGH's**. RNGH defers the slop to the
-platform, so the same tap is accepted on one operating system and rejected on
-the other. A fixed number is what a consumer can reason about. 10 points is
-roughly a finger's own jitter while pressing.
+`maxDistance` is **Impulse's number, not RNGH's**. RNGH leaves the slop to the
+platform, so one operating system accepts a tap and the other rejects the same
+tap. You can reason about a fixed number. 10 points is about the jitter of a
+finger while it presses.
 
-> **WARNING — Neither default has been measured**
+> **WARNING — Neither default is measured**
 >
-> The device sweep of 2026-09-19 did not test either value. It tested the race
-> between a tap and a double tap, which passed on both platforms — see
+> The device sweep of 2026-09-19 didn't test either value. It tested the race
+> between a tap and a double tap, and that race passed on both platforms. See
 > [`useDoubleTap`](/use-double-tap). Both defaults are design intentions.
-> `maxDistance` is shared with `useDoubleTap` on purpose, so moving it moves both.
+> `useDoubleTap` shares `maxDistance` on purpose, so a move of that value moves
+> both.
 
 ## Pairing with a double tap
 
@@ -594,8 +598,8 @@ const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
 release, so it wins every race and the double tap never fires. `exclusive` makes
 the single tap wait to learn whether a second tap is coming.
 
-The cost is latency: the single tap cannot report for `maxDelay` milliseconds.
-Lower [`maxDelay`](/use-double-tap) rather than building the pair by hand.
+The cost is latency: the single tap can't report for `maxDelay` milliseconds.
+Lower [`maxDelay`](/use-double-tap) instead of building the pair by hand.
 
 ## Web
 
@@ -608,7 +612,7 @@ emulation varies by browser. See [Web behaviour](/web).
 ## Accessibility
 
 A tap gesture is invisible to a screen reader and unreachable from a keyboard.
-This hook does not fix that, and it cannot.
+This hook doesn't fix that, and it can't.
 
 Whatever the tap does must be reachable another way:
 
@@ -620,10 +624,9 @@ Whatever the tap does must be reachable another way:
 
 > **TIP — A plain tap rarely needs this hook**
 >
-> If all you need is "run this when the user taps", `<Pressable>` already does it
-> and is accessible by default. Reach for `useTap` when you need the tap to
-> *compose* — to race a long press, defer to a scroll view, or drive a pressed
-> state on the UI thread.
+> If you only need to run an action on a tap, `<Pressable>` already does it and
+> is accessible by default. Use `useTap` when the tap must *compose*: race a
+> long press, defer to a scroll view, or drive a pressed state on the UI thread.
 
 ---
 
@@ -650,13 +653,13 @@ half**, and it has its own section below.
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `pointers` | `number` | `1` | Applies to **both** taps — a two-finger double tap is two taps of two fingers. |
+| `pointers` | `number` | `1` | Applies to **both** taps. A two-finger double tap is two taps of two fingers. |
 | `maxDuration` | `number` | `500` | How long each tap may hold the finger down, in ms. Per tap, not for the pair. |
 | `maxDelay` | `number` | `500` | The gap allowed between the two taps, in ms. **This is the latency a composed single tap pays.** |
-| `maxDistance` | `number` | `10` | How far the finger may travel **within** a tap. It does not limit how far the second tap lands from the first. |
+| `maxDistance` | `number` | `10` | How far the finger may travel **within** a tap. It doesn't limit how far the second tap lands from the first. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
-| `onDoubleTap` | `(event, { cancelled }) => void` | — | **JS thread.** The double tap ended. `cancelled` says how — see below. |
+| `onDoubleTap` | `(event, { cancelled }) => void` | — | **JS thread.** The double tap ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Fires once for the pair, on the first touch. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** The gesture is over, recognized or not. |
 
@@ -674,20 +677,19 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
-A single tap that was never followed by a second is **not** this path. It never
-activates, so it reaches `onFinalize` with `success: false` and never gets to
-`onDoubleTap` at all.
+A single tap with no second tap is **not** this path. It never activates. It
+reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
 
 ```tsx
 const double = useDoubleTap({
@@ -700,8 +702,8 @@ const double = useDoubleTap({
 
 ## Payload
 
-The same [`TapEvent`](/use-tap) that `useTap` receives — one payload rather than
-two identical ones.
+The same [`TapEvent`](/use-tap) that `useTap` receives: one payload, not two
+identical ones.
 
 ```ts
 interface TapEvent {
@@ -728,38 +730,37 @@ const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
 
 Two things must be right, and both fail quietly when they are not:
 
-1. **The mode is `exclusive`, not `race`.** `exclusive` tries members in order
-   and lets a later one activate only after every earlier one has failed, so the
-   single tap waits to learn whether a second is coming. A single tap recognizes
-   on the first release, so in a `race` it wins every time and the double tap
-   never fires at all.
+1. **The mode is `exclusive`, not `race`.** `exclusive` tries the members in
+   order. A later member activates only after every earlier member failed, so
+   the single tap waits for a possible second tap. A single tap recognizes on
+   the first release, so in a `race` it wins every time and the double tap
+   never fires.
 2. **The double tap comes first in the list.** Order is what `exclusive` reads.
 
 > **WARNING — The single tap pays `maxDelay` in latency**
 >
-> Once composed, an ordinary single tap on that view cannot report until the
+> Once composed, an ordinary single tap on that view can't report until the
 > `maxDelay` window closes without a second tap. At the default that is half a
 > second on every tap.
 >
-> **Lowering `maxDelay` is the first thing to reach for when a composed single tap
-> feels slow.**
+> **When a composed single tap feels slow, lower `maxDelay` first.**
 
-**A view that only needs a double tap does not need the composition.** Use this
-hook alone — there is nothing for it to wait on, and nothing pays the latency.
+**A view that only needs a double tap doesn't need the composition.** Use this
+hook alone. It waits on nothing, and nothing pays the latency.
 
 ## Activation criteria
 
-`maxDuration` and `maxDelay` are RNGH's own defaults, restated so they cannot
-move underneath Impulse in an RNGH release.
+`maxDuration` and `maxDelay` are RNGH's own defaults. Impulse restates them,
+so an RNGH release can't move them.
 
-`maxDistance` is Impulse's number, and it matches `useTap` on purpose — a double
-tap that is fussier than a single tap on the same view is a difference nobody
-asked for. Moving it moves both.
+`maxDistance` is Impulse's number, and it matches `useTap` on purpose. A
+double tap that accepts less travel than a single tap on the same view is a
+difference nobody asked for. A move of that value moves both.
 
 > **WARNING — `maxDelay: 500` is probably too generous**
 >
 > It is RNGH's number. The platforms themselves use something closer to 250–300 ms.
-> Impulse restates the upstream default rather than inventing a different
+> Impulse restates the upstream default instead of inventing a different
 > unmeasured guess.
 >
 > The device sweep of 2026-09-19 measured the boundary on an Android emulator.
@@ -770,10 +771,10 @@ asked for. Moving it moves both.
 > about 375 ms at 250.
 >
 > The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
-> physical device must confirm that number. Whether the latency feels acceptable
+> physical device must check that number. Whether the latency feels acceptable
 > is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
-> 500 and 250 so the trade — single-tap latency against double-tap tolerance —
-> can be felt.
+> 500 and 250, so you can feel the trade between single-tap latency and
+> double-tap tolerance.
 
 ## Result
 
@@ -785,20 +786,20 @@ double.isActive   // SharedValue<boolean>
 
 > **DANGER — `isActive` is not a pressed state here**
 >
-> It is `true` from the first finger down until the pair resolves — which means it
-> is `true` for **every ordinary single tap on the view**, and most of those end
-> in failure.
+> It is `true` from the first finger down until the pair resolves. So it is
+> `true` for **every ordinary single tap on the view**, and most of those end in
+> failure.
 >
-> Drive a pressed state from a composed `useTap` instead. Use this `isActive` only
-> for something that should show while a double tap is genuinely in progress.
+> Drive a pressed state from a composed `useTap` instead. Use this `isActive`
+> only for UI that must show while a double tap is in progress.
 
-`onBegin` has the same problem: it fires once per pair on the first touch, and
-most touches that reach it are single taps that will fail this gesture. It is a
-poor place to show anything a user would read as commitment.
+`onBegin` has the same problem. It fires once per pair, on the first touch, and
+most touches that reach it are single taps that fail this gesture. Don't show
+a committed state from it.
 
 ## Three taps and up are not modelled
 
-A triple tap is rare enough that a named intent would be dead API. Build it with
+A triple tap is rare, so a named intent would be unused API. Build it with
 [`useRawGesture`](/raw-gestures):
 
 ```tsx
@@ -811,10 +812,10 @@ const triple = useRawGesture(() => Gesture.Tap().numberOfTaps(3), [])
 
 Verified working. A double click behaves as a double tap.
 
-Two caveats:
+Two limits:
 
-- **The browser's own double-click handling is not suppressed** — text selection
-  and zoom still happen. This hook does not prevent them.
+- **This hook doesn't suppress the browser's own double-click handling.** Text
+  selection and zoom still happen.
 - `pointers` above 1 is unreliable, because a mouse reports one pointer and
   touch emulation varies by browser.
 
@@ -828,8 +829,7 @@ and it is **worse than a single tap on both counts**.
 > **DANGER — VoiceOver and TalkBack consume the double tap**
 >
 > Both screen readers use a double tap as their own activation gesture, so a
-> screen-reader user cannot reach this hook at all. Not "with difficulty" — not at
-> all.
+> screen-reader user can't reach this hook at all.
 
 Whatever the double tap does must be reachable another way: an explicit control,
 or `accessibilityActions` with `onAccessibilityAction` on the view the gesture is
@@ -855,21 +855,21 @@ return (
 )
 ```
 
-`onLongPress` fires **while the finger is still down**. That is the whole
-difference between a long press and a slow tap: a context menu opens under a
-finger that has not lifted, and the haptic fires then too.
+`onLongPress` fires **while the finger is still down**. That is the difference
+between a long press and a slow tap. A context menu opens while the finger is
+still down, and the haptic fires then too.
 
 ## Options
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `minDuration` | `number` | `500` | How long the press must be held, in ms. |
-| `maxDistance` | `number` | `10` | How far the finger may travel, in points. **Read the platform note below** — this does not mean the same thing everywhere. |
+| `maxDistance` | `number` | `10` | How far the finger may travel, in points. **Read the platform note below.** This doesn't mean the same thing on every platform. |
 | `pointers` | `number` | — | How many fingers. Unset leaves RNGH's default. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onLongPress` | `(event) => void` | — | **JS thread.** Recognized, finger still down. |
-| `onLongPressEnd` | `(event, { cancelled }) => void` | — | **JS thread.** A recognized press ended. `cancelled` says how — see below. |
+| `onLongPressEnd` | `(event, { cancelled }) => void` | — | **JS thread.** A recognized press ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** Over, recognized or not. |
 
@@ -888,8 +888,8 @@ interface LongPressEvent {
 }
 ```
 
-`duration` on `onLongPressEnd` is the length of the whole hold — what a
-hold-to-record affordance stops on.
+`duration` on `onLongPressEnd` is the length of the whole hold. A
+hold-to-record control stops on it.
 
 ## `isActive` is the held state
 
@@ -897,8 +897,8 @@ hold-to-record affordance stops on.
 hold.isActive   // SharedValue<boolean>
 ```
 
-It is `true` from the moment the press is **recognized** until the finger lifts
-— not from the moment the finger goes down.
+It is `true` from the moment the hook **recognizes** the press until the finger
+lifts. It isn't `true` from touch-down.
 
 > **WARNING — This is the opposite of `useTap`**
 >
@@ -918,17 +918,16 @@ It is `true` from the moment the press is **recognized** until the finger lifts
 > travels further than the defined distance and the handler hasn't yet activated,
 > it will fail."* So a recognized press should tolerate travel.
 >
-> **RNGH's web implementation does not do that.** It checks the distance on every
-> pointer move, and if the gesture is already active it **cancels** it.
+> **RNGH's web implementation doesn't do that.** It checks the distance on every
+> pointer move. If the gesture is already active, it **cancels** the gesture.
 >
-> So on web, moving the pointer past `maxDistance` while holding ends the press.
-> Verified in a browser and in RNGH's source. **Native is unverified** — RNGH's
-> documented behaviour says travel is allowed there, which would make this a real
-> platform split. See [Web behaviour](/web).
+> So on web, a pointer that moves past `maxDistance` during a hold ends the
+> press. We verified this in a browser and in RNGH's source. **Native is
+> unverified.** RNGH's documented behaviour says travel is allowed there, so this
+> may be a real platform split. See [Web behaviour](/web).
 
-If your affordance needs the finger to move after the press is recognized — a
-hold-then-drag — do not rely on `maxDistance` being generous. Raise it
-explicitly.
+If your control needs the finger to move after the recognized press (a
+hold-then-drag), don't rely on the default `maxDistance`. Raise it explicitly.
 
 ## The cancel path
 
@@ -941,21 +940,21 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
 For a long press, `cancelled` is also `true` when the finger moves past
-`maxDistance` while it is still down. That is the common one: `isActive` clears,
-so anything driven from it recovers, and before this argument existed anything
-held in React state did not.
+`maxDistance` while it is still down. That is the common case. `isActive`
+clears, so UI driven from it recovers. Before this argument existed, state
+held in React didn't recover.
 
 ```tsx
 const hold = useLongPress({
@@ -971,22 +970,22 @@ const hold = useLongPress({
 })
 ```
 
-A touch that never passed `minDuration` reaches neither path, so
-`onLongPressEnd` is still always preceded by `onLongPress`.
+A touch that never passed `minDuration` reaches neither path. So `onLongPress`
+always fires before `onLongPressEnd`.
 
-`onFinalize` is unchanged, and it is still the place to undo whatever `onBegin`
-set. It fires for every touch that reached the view, so its `success: false`
-covers both a touch that never became a long press and one that was cancelled.
-Use `cancelled` when you need to tell those apart.
+`onFinalize` is unchanged. It is still the place to undo what `onBegin` set.
+It fires for every touch that reached the view, so its `success: false` covers
+two cases: a touch that never became a long press, and a cancelled press. Use
+`cancelled` to tell those apart.
 
 ## Activation criteria
 
-`minDuration` and `maxDistance` are both RNGH's own numbers, restated so an RNGH
-release cannot move them underneath Impulse.
+`minDuration` and `maxDistance` are both RNGH's own numbers. Impulse restates
+them, so an RNGH release can't move them.
 
 `example/screens/LongPressScreen.tsx` switches between 500, 300, and 800 ms.
-300 starts firing on presses the user meant as taps; 800 feels like the app is
-ignoring them.
+At 300, the hook fires on presses meant as taps. At 800, the app seems to
+ignore the press.
 
 ## Pairing with a tap
 
@@ -1005,8 +1004,8 @@ Unlike the [tap and double tap](/use-double-tap) pair, `race` is correct here.
 ## Hold, then drag
 
 RNGH has no "activate after this one activates" relation, so this is two
-gestures and a gate rather than one option. Run them `alongside` each other and
-let the drag read the flag the press sets:
+gestures and a gate, not one option. Run them `alongside` each other. Let the
+drag read the flag that the press sets:
 
 ```tsx
 const hold = useLongPress({ alongside: dragRef })
@@ -1023,27 +1022,29 @@ const drag = useDrag({
 })
 ```
 
-`hold.isActive` is a shared value precisely so the drag's worklets can read it
+`hold.isActive` is a shared value, so the worklets of the drag can read it
 with no round trip.
 
-Two things have to be raised for this to work:
+Raise two values for this to work:
 
-- **the drag's `threshold`**, or the drag activates before the press ever does;
-- **this hook's `maxDistance`**, or on web the drag's own movement cancels the
-  press it is gated on. The defaults do not make this pattern work there.
+- **the `threshold` of the drag**. Otherwise the drag activates before the
+  press does.
+- **the `maxDistance` of this hook**. Otherwise, on web, the movement of the
+  drag cancels the press that gates it. The defaults don't make this pattern
+  work there.
 
 ## Web
 
-Verified working — a held mouse button recognizes.
+Verified working. A held mouse button recognizes.
 
-Two caveats: the browser's own context menu is **not** suppressed, so a
-right-button press or a held touch can open both; and `maxDistance` cancels an
+Two limits. This hook doesn't suppress the browser's own context menu, so a
+right-button press or a held touch can open both. And `maxDistance` cancels an
 active press, as above.
 
 ## Accessibility
 
 A long press is invisible to a screen reader and unreachable from a keyboard.
-This hook does not fix that.
+This hook doesn't fix that.
 
 > **TIP — This gesture has the best fallback in the library — use it**
 >
@@ -1076,26 +1077,26 @@ return (
 ```
 
 `x` and `y` are shared values, so the view follows the finger on the UI thread
-with no re-render. **They accumulate across gestures** — a second drag continues
+with no re-render. **They accumulate across gestures.** A second drag continues
 from where the first stopped.
 
 > **INFO — No style, and no animation**
 >
-> This hook returns numbers and stops there. Building the `transform` is your
-> call, and so is any spring back.
+> This hook returns numbers and stops there. You build the `transform`, and you
+> build any spring back.
 >
-> `@rootnative/inertia-gestures` ships a `useDrag` that does both — and it
-> **requires** `@rootnative/inertia` to do it. Reach for that one when a
-> `Motion.View` should follow a finger and spring home. Reach for this one when
-> the values are what you want, or when your app has no animation library at all.
+> `@rootnative/inertia-gestures` ships a `useDrag` that does both, and it
+> **requires** `@rootnative/inertia` to do it. Use that one when a
+> `Motion.View` must follow a finger and spring home. Use this one when you want
+> the values, or when your app has no animation library.
 >
-> The names collide. The products do not.
+> The names collide. The products don't.
 
 ## Options
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `axis` | `'x' \| 'y' \| 'both'` | `'both'` | The locked axis's value never changes. Also decides the activation criterion — see `threshold`. |
+| `axis` | `'x' \| 'y' \| 'both'` | `'both'` | The value of the locked axis never changes. Also decides the activation criterion. See `threshold`. |
 | `threshold` | `number` | `10` | How far the finger travels before the drag activates. Directional on one axis, radial on `'both'`. |
 | `failOffset` | `number` | — | Cross-axis movement that makes the drag **give up**. Ignored when `axis` is `'both'`. |
 | `bounds` | `DragBounds` | — | `{ left, right, top, bottom }`. Unbounded by default. |
@@ -1104,8 +1105,8 @@ from where the first stopped.
 | `pointers` | `number` | — | Unset leaves RNGH's one-to-ten range. Setting it fixes the count exactly. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
-| `onDragStart` | `(event) => void` | — | **JS thread.** Passed `threshold`; the drag now owns the touch. |
-| `onDragEnd` | `(event, { cancelled }) => void` | — | **JS thread.** The drag ended. `cancelled` says how — see below. |
+| `onDragStart` | `(event) => void` | — | **JS thread.** The finger passed `threshold`. The drag now owns the touch. |
+| `onDragEnd` | `(event, { cancelled }) => void` | — | **JS thread.** The drag ended. `cancelled` says how. See below. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
 | `onUpdate` | `(event) => void` | — | **Worklet.** Every frame the finger moves. |
 | `onFinalize` | `(event, success) => void` | — | **Worklet.** Over, activated or not. |
@@ -1115,7 +1116,7 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 > **NOTE — There is no JS-thread `onUpdate`, on purpose**
 >
-> A per-frame `scheduleOnRN` is a scheduling cost paid sixty times a second for a value
+> A per-frame `scheduleOnRN` costs a schedule sixty times a second, for a value
 > that is already on the thread that needs it. Read `x` and `y` from a
 > `useAnimatedStyle` instead.
 
@@ -1124,10 +1125,10 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 This is the option that decides whether a horizontal drag inside a vertical list
 works.
 
-On a single axis the threshold is **directional**: with `axis: 'x'`, vertical
+On a single axis the threshold is **directional**. With `axis: 'x'`, vertical
 movement never reaches the offset, so the drag never claims the touch and the
-scroll view keeps working. On `'both'` it is a radial distance, which has no
-such escape.
+scroll view keeps working. On `'both'` it is a radial distance, and that has
+no such escape.
 
 ```tsx
 // The scroll survives: only sideways movement wakes the drag.
@@ -1135,7 +1136,7 @@ const row = useDrag({ axis: 'x', threshold: 10, failOffset: 8 })
 ```
 
 `threshold` decides when the drag **wins**. `failOffset` decides when it **gives
-up** — set it when a mostly-diagonal move should go to the other gesture.
+up**. Set it when a mostly diagonal move must go to the other gesture.
 
 > **WARNING — The 10-point default has no feel result**
 >
@@ -1143,18 +1144,18 @@ up** — set it when a mostly-diagonal move should go to the other gesture.
 > moves. The device sweep of 2026-09-19 proved the mechanics on an Android
 > emulator and an iOS simulator: a horizontal row inside a vertical list opens,
 > and a vertical drag that starts on the row still scrolls the list. The drag also
-> does not jump by the threshold when it activates. Whether 10 points feels right
-> needs a finger on a physical device. `example/screens/DragScreen.tsx` is where
-> that gets answered.
+> doesn't jump by the threshold when it activates. Only a finger on a physical
+> device can tell whether 10 points feels right. `example/screens/DragScreen.tsx`
+> is the screen for that check.
 
 > **DANGER — A threshold does not decide who wins a contested touch**
 >
 > It decides who moves **first**. For a drag inside a scroll view, say which one
-> the touch belongs to as well — `deferTo` for a drag that is the fallback,
-> `blocks` for one that is the foreground affordance.
+> the touch belongs to as well: `deferTo` for a drag that is the fallback,
+> `blocks` for a drag that is the foreground control.
 >
-> And the scroll view must be gesture-handler's, or gesture-handler drops the
-> relation. Impulse warns in development when it catches it. See
+> And the scroll view must be RNGH's `LegacyScrollView`, or RNGH drops the
+> relation. Impulse warns in development when it catches this. See
 > [Coexistence](/coexistence).
 
 ## Payload
@@ -1172,16 +1173,16 @@ interface DragEvent {
 
 `position` accumulates across gestures. `translation` resets to zero at the
 start of each one and ignores `bounds` and `elastic`. Read `position` for where
-the thing being dragged actually sits.
+the dragged thing sits.
 
 ## `elastic` has no way home
 
-With `elastic` set, the finger pulls the value past an edge — and **Impulse
-leaves it there on release**. Moving it back is an animation, and Impulse owns no
+With `elastic` set, the finger pulls the value past an edge, and **Impulse
+leaves it there on release**. A move back is an animation, and Impulse owns no
 animation vocabulary.
 
-`settled` is the destination that animation needs, already clamped, so you do not
-re-derive it from bounds you just handed over:
+`settled` is the destination that animation needs, already clamped. You don't
+derive it again from the bounds you passed in:
 
 ```tsx
 const drag = useDrag({
@@ -1195,14 +1196,13 @@ const drag = useDrag({
 })
 ```
 
-Writing `drag.x.value` is how a release animation hands control back: the next
-gesture picks up wherever the animation left it, rather than snapping.
+A write to `drag.x.value` is how a release animation hands control back. The
+next gesture starts where the animation stopped, and doesn't snap.
 
 > **NOTE — Is four lines per drag the right tax?**
 >
-> Open question. It may turn out that the planned `@rootnative/impulse/inertia`
-> bridge should carry this. If it is awkward in a real app, that is worth
-> reporting.
+> This is an open question. The planned `@rootnative/impulse/inertia` bridge may
+> carry this. If it is awkward in a real app, report it.
 
 ## `isActive` is set at recognition
 
@@ -1210,11 +1210,11 @@ gesture picks up wherever the animation left it, rather than snapping.
 drag.isActive   // SharedValue<boolean>
 ```
 
-`true` once the drag has passed `threshold` — not at touch-down.
+`true` after the drag passed `threshold`, not at touch-down.
 
-Like [`useLongPress`](/use-long-press) and unlike [`useTap`](/use-tap). Use
-`onBegin` if you want a grabbed state at touch-down, and clear it in
-`onFinalize`, which runs on both paths.
+This matches [`useLongPress`](/use-long-press) and differs from
+[`useTap`](/use-tap). Use `onBegin` for a grabbed state at touch-down. Clear it
+in `onFinalize`, which runs on both paths.
 
 ## The cancel path
 
@@ -1227,25 +1227,25 @@ interface IntentEndInfo {
 }
 ```
 
-`cancelled` is `true` when the system took the gesture away instead of the user
-completing it — a competing gesture in a relation won, or the app went to the
-background. It is `false` for the ordinary ending.
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It is `false`
+for the ordinary ending.
 
-Read it before you act. A handler that navigates, submits, or counts should do
-nothing when it is `true`.
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
 
 A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there, so `cancelled` never announces the end of
-something that never started.
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
 
 A touch that never passed `threshold` reaches neither path. `onDragEnd` still
 means the drag activated.
 
 > **CAUTION — The velocity is not a throw on the cancelled path**
 >
-> The finger never lifted, so `velocity` describes the last movement rather than a
-> release. Springing on it flings a view the user never let go of. Return to
-> `settled` instead.
+> The finger never lifted, so `velocity` describes the last movement, not a
+> release. A spring on it flings a view that the finger never released. Return
+> to `settled` instead.
 
 ```tsx
 const drag = useDrag({
@@ -1259,7 +1259,7 @@ const drag = useDrag({
 ## Web
 
 Verified working. A mouse drag behaves the same as a touch drag, and `velocity`
-is reported in the same units.
+has the same units.
 
 A trackpad's momentum scroll is not a pan and never reaches this hook.
 `pointers` above 1 is unreliable on web.
@@ -1267,13 +1267,13 @@ A trackpad's momentum scroll is not a pan and never reaches this hook.
 ## Accessibility
 
 A drag is invisible to a screen reader and unreachable from a keyboard. This
-hook does not fix that.
+hook doesn't fix that.
 
 Whatever the drag adjusts must be reachable another way:
 
 - a pair of buttons for a slider
 - a visible action for a swipeable row
-- `accessibilityActions` with `onAccessibilityAction` — `increment` and
+- `accessibilityActions` with `onAccessibilityAction`: `increment` and
   `decrement` for a value, `magicTap` or a named action for a dismissal
 
 **A drag-only affordance is a bug, not a trade-off.**
@@ -1306,30 +1306,30 @@ return (
 
 ## `usePan` reports movement. `useDrag` owns a position
 
-That is the whole difference between the two hooks, and it is the only thing
-you need to decide between them.
+That is the difference between the two hooks, and it is the only thing you
+need to choose between them.
 
 | | `useDrag` | `usePan` |
 | --- | --- | --- |
-| Holds the value | Yes — `drag.x` is where the thing sits | No — the consumer holds it |
+| Holds the value | Yes. `drag.x` is where the thing sits | No. You hold it |
 | Across gestures | Accumulates | Resets to zero at every gesture |
-| `bounds` and `elastic` | Yes | No. Impulse clamps nothing it does not own |
+| `bounds` and `elastic` | Yes | No. Impulse clamps nothing it doesn't own |
 | Per-frame delta | — | `change`, the reason this hook exists |
 
-Reach for [`useDrag`](/use-drag) to move a view. Reach for this one to pan a
-camera, scrub a value, or feed a number Impulse has no business clamping.
+Use [`useDrag`](/use-drag) to move a view. Use this one to pan a camera, scrub
+a value, or feed a number that Impulse must not clamp.
 
 ## Options
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `axis` | `'x' \| 'y' \| 'both'` | `'both'` | The locked axis reports zero. Also decides the activation criterion — see `threshold`. |
+| `axis` | `'x' \| 'y' \| 'both'` | `'both'` | The locked axis reports zero. Also decides the activation criterion. See `threshold`. |
 | `threshold` | `number` | `10` | How far the finger travels before the pan activates. Directional on one axis, radial on `'both'`. |
 | `failOffset` | `number` | — | Cross-axis movement that makes the pan **give up**. Ignored when `axis` is `'both'`. |
 | `pointers` | `number` | — | Unset leaves RNGH's one-to-ten range. Setting it fixes the count exactly. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
-| `onPanStart` | `(event) => void` | — | **JS thread.** Passed `threshold`; the pan now owns the touch. |
+| `onPanStart` | `(event) => void` | — | **JS thread.** The finger passed `threshold`. The pan now owns the touch. |
 | `onPanEnd` | `(event, { cancelled }) => void` | — | **JS thread.** The pan ended. `cancelled` says how. |
 | `onBegin` | `(event) => void` | — | **Worklet.** Touch down, candidate only. |
 | `onUpdate` | `(event) => void` | — | **Worklet.** Every frame the finger moves. Where `change` is read. |
@@ -1352,8 +1352,8 @@ interface PanEvent {
 
 ## `change` is the field to read
 
-A value the consumer owns is advanced by **adding** `change`, not by
-re-deriving it from a translation:
+Advance a value you own by **adding** `change`. Don't derive it again from a
+translation:
 
 ```tsx
 const pan = usePan({
@@ -1364,18 +1364,17 @@ const pan = usePan({
 })
 ```
 
-`change` is zero outside `onUpdate` — there is no previous frame at the start
-and no next one at the end.
+`change` is zero outside `onUpdate`. There is no previous frame at the start,
+and no next frame at the end.
 
 > **INFO — The first frame does not carry the threshold**
 >
 > RNGH's own `changeX` reports the **whole translation** on the first update,
-> which includes the 10 points the finger spent before the pan existed. A
-> consumer accumulating that jumps ten points before anything moves.
+> which includes the 10 points the finger travelled before the pan activated. A
+> value that adds that up jumps ten points before anything moves.
 >
-> `usePan` computes the delta itself for exactly that reason, so the first
-> `change` is the movement since activation. `translation` is measured from the
-> same point.
+> `usePan` computes the delta itself for that reason, so the first `change` is
+> the movement since activation. `translation` is measured from the same point.
 
 ## `x` and `y` are movement, not a position
 
@@ -1384,42 +1383,43 @@ pan.x   // SharedValue<number>
 pan.y   // SharedValue<number>
 ```
 
-Zero at the start of **every** gesture, so a second pan does not continue from
+Zero at the start of **every** gesture, so a second pan doesn't continue from
 where the first stopped. They keep their final number after the gesture ends,
 so a release animation has something to animate from.
 
-Writing them is allowed and is how a release animation hands control back. The
-next gesture zeroes them regardless, so it only decides how they get there.
+You can write them. That is how a release animation hands control back. The
+next gesture zeroes them in all cases, so the write only decides how they get
+there.
 
 ## `threshold` is what makes a pan share a view
 
-On a single axis the threshold is **directional**: with `axis: 'x'`, vertical
+On a single axis the threshold is **directional**. With `axis: 'x'`, vertical
 movement never reaches the offset, so the pan never claims the touch and a
-vertical scroll view keeps working. On `'both'` it is a radial distance, which
-has no such escape.
+vertical scroll view keeps working. On `'both'` it is a radial distance, and
+that has no such escape.
 
 > **WARNING — The 10-point default is unmeasured**
 >
 > The device sweep of 2026-09-20 drove `usePan` on both platforms. It proved
-> `change` and `pointers`, and it did not test the threshold.
-> `example/screens/PanScreen.tsx` is where that gets answered.
+> `change` and `pointers`, and it didn't test the threshold.
+> `example/screens/PanScreen.tsx` is the screen for that check.
 
 > **DANGER — A threshold does not decide who wins a contested touch**
 >
-> It decides who moves **first**. Say which gesture the touch belongs to as well
-> — `deferTo` for a pan that is the fallback, `blocks` for one that is the
-> foreground affordance, `alongside` for a pan that shares the touch with a
-> pinch. See [Coexistence](/coexistence).
+> It decides who moves **first**. Say which gesture the touch belongs to as
+> well: `deferTo` for a pan that is the fallback, `blocks` for a pan that is the
+> foreground control, `alongside` for a pan that shares the touch with a pinch.
+> See [Coexistence](/coexistence).
 
 ## The cancel path
 
-`onPanEnd` fires for both endings, and `cancelled` says which. `true` is the
-system taking the pan away — a competing gesture won, or the app went to the
+`onPanEnd` fires for both endings, and `cancelled` says which. `true` means
+the system took the pan away: a competing gesture won, or the app went to the
 background.
 
-The finger never lifted on that path, so `velocity` describes the last movement
-rather than a release. Springing on it flings something the user never let go
-of.
+The finger never lifted on that path, so `velocity` describes the last
+movement, not a release. A spring on it flings a view that the finger never
+released.
 
 A touch that never passed `threshold` reaches neither path. It goes to
 `onFinalize` with `success: false` and stops there.
@@ -1427,7 +1427,7 @@ A touch that never passed `threshold` reaches neither path. It goes to
 ## Web
 
 RNGH recognizes pan from pointer events, so a mouse drag behaves the same as a
-touch drag and `velocity` is reported in the same units.
+touch drag and `velocity` has the same units.
 
 A trackpad's momentum scroll is not a pan and never reaches this hook.
 `pointers` above 1 is unreliable on web.
@@ -1435,7 +1435,7 @@ A trackpad's momentum scroll is not a pan and never reaches this hook.
 ## Accessibility
 
 A pan is invisible to a screen reader and unreachable from a keyboard. This
-hook does not fix that.
+hook doesn't fix that.
 
 Whatever the pan moves must be reachable another way:
 
@@ -1469,15 +1469,15 @@ return (
 )
 ```
 
-A swipe is a pan that is **judged at release**. The finger moves, `x` and `y`
-report it so the view can follow, and on release the travel and the speed along
-the dominant axis decide whether it counted.
+A swipe is a pan that is **judged at release**. While the finger moves, `x`
+and `y` report it, so the view can follow. On release, the travel and the
+speed along the dominant axis decide whether the swipe counted.
 
 ## Options
 
 | Option | Type | Default | What it does |
 | --- | --- | --- | --- |
-| `directions` | `SwipeDirection[]` | all four | Which directions may commit — **and the activation criterion**. See below. |
+| `directions` | `SwipeDirection[]` | all four | Which directions may commit, **and the activation criterion**. See below. |
 | `threshold` | `number` | `10` | How far the finger travels before the swipe **activates** and starts reporting. |
 | `commitDistance` | `number` | `80` | How far a release must have travelled to **count**. |
 | `commitSpeed` | `number` | `800` | How fast a release must be moving to count. The flick. |
@@ -1496,13 +1496,13 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## `directions` is the coexistence setting, not only a filter
 
-This is the part that is easy to read as a filter and is not one.
+It is easy to read this option as a filter. It isn't one.
 
 | `directions` | Activation criterion | Shares a view with a vertical list? |
 | --- | --- | --- |
 | all horizontal | directional on x | Yes, with no relation declared |
 | all vertical | directional on y | Yes, against a horizontal pager |
-| mixed | radial | No — declare `deferTo` or `blocks` |
+| mixed | radial | No. Declare `deferTo` or `blocks` |
 
 ```tsx
 // The list still scrolls: vertical movement never reaches the x offset.
@@ -1510,13 +1510,12 @@ const card = useSwipe({ directions: ['left', 'right'], onSwipe: dismiss })
 ```
 
 Narrow `directions` even when the extra directions would never fire. It is the
-cheapest coexistence fix there is.
+cheapest coexistence fix.
 
 ## Two thresholds, and they mean different things
 
-`threshold` is when the swipe **takes the touch** and `x` and `y` start
-reporting. `commitDistance` and `commitSpeed` are what the **release** is
-measured against.
+`threshold` is when the swipe **takes the touch** and `x` and `y` start to
+report. `commitDistance` and `commitSpeed` are the tests for the **release**.
 
 A swipe that activates and stops short is a successful gesture with no
 direction. It reaches `onSwipeEnd` with `direction: null`, and never reaches
@@ -1529,10 +1528,10 @@ Either commit test is enough on its own: far enough, or fast enough.
 > Too low and a card leaves on a nudge. Too high and a deliberate flick does
 > nothing. `commitDistance` passed the device sweep of 2026-09-19 on an Android
 > emulator and an iOS simulator: a long swipe committed, and a short, slow one
-> did not. `commitSpeed` is not tested. The iOS simulator delivers about 304
+> didn't. `commitSpeed` is not tested. The iOS simulator delivers about 304
 > points per second, and the Android emulator stops near 690 before it merges the
 > input events. A physical device is necessary.
-> `example/screens/SwipeScreen.tsx` is where that gets answered.
+> `example/screens/SwipeScreen.tsx` is the screen for that check.
 
 ## Payload
 
@@ -1548,21 +1547,21 @@ interface SwipeEvent {
 }
 ```
 
-`onSwipe` receives a `CommittedSwipeEvent` — the same payload with `direction`
-narrowed to a real direction, which saves that callback a null check for a case
-it cannot be in.
+`onSwipe` receives a `CommittedSwipeEvent`: the same payload, with `direction`
+narrowed to a real direction. That saves the callback a null check for a case
+that can't happen.
 
 `distance` and `speed` are measured **from the activation point**, so the
-`threshold` travel does not count towards `commitDistance`.
+`threshold` travel doesn't count towards `commitDistance`.
 
 ## The dominant axis decides, alone
 
-The dominant axis is the one the finger travelled furthest along. Only that
-axis is tested — a release is one swipe, not two.
+The dominant axis is the axis along which the finger travelled furthest.
+Impulse tests only that axis. A release is one swipe, not two.
 
-A dominant axis whose direction is not allowed does **not** fall back to the
-other axis. A release that went mostly down is not a left swipe, however far
-sideways it also drifted.
+If the direction on the dominant axis isn't allowed, Impulse does **not** fall
+back to the other axis. A release that went mostly down is not a left swipe,
+however far it also drifted sideways.
 
 ## `onSwipe` and `onSwipeEnd` do different jobs
 
@@ -1580,35 +1579,35 @@ const swipe = useSwipe({
 })
 ```
 
-`onSwipe` says to act. `onSwipeEnd` says to put the view back — or to send it
+`onSwipe` says to act. `onSwipeEnd` says to put the view back, or to send it
 off the screen.
 
 ## `x` and `y` are movement, not a position
 
 Zero at the start of every gesture, like [`usePan`](/use-pan). They keep their
-final number after the gesture ends, because **Impulse does not put them
-back** — that is an animation, and Impulse owns no animation vocabulary.
+final number after the gesture ends, because **Impulse doesn't put them
+back**. That is an animation, and Impulse owns no animation vocabulary.
 
 > **INFO — No style, and no animation**
 >
 > `@rootnative/inertia-gestures` ships a `useSwipe` that owns the snap-back and
-> the commit exit, and it **requires** `@rootnative/inertia` to do it. Reach for
-> that one when a `Motion.View` should follow a finger and spring home. Reach for
-> this one when the numbers are what you want.
+> the commit exit, and it **requires** `@rootnative/inertia` to do it. Use that
+> one when a `Motion.View` must follow a finger and spring home. Use this one
+> when you want the numbers.
 
 ## The cancel path
 
-A cancelled gesture **never commits**. The finger did not lift, so the velocity
-describes the last movement rather than a release, and acting on it would
-commit a swipe the user never finished.
+A cancelled gesture **never commits**. The finger didn't lift, so the velocity
+describes the last movement, not a release. An action on it would commit a
+swipe that the finger never finished.
 
-`onSwipe` does not fire. `onSwipeEnd` fires with `direction: null` and
+`onSwipe` doesn't fire. `onSwipeEnd` fires with `direction: null` and
 `cancelled: true`.
 
 ## Web
 
 RNGH recognizes pan from pointer events, so a mouse drag commits the same way a
-touch does, and `speed` is reported in the same units.
+touch does, and `speed` has the same units.
 
 A trackpad's two-finger swipe is a scroll, not a pan, and never reaches this
 hook.
@@ -1654,9 +1653,9 @@ gesture, so a viewer built on it snaps back to its original size the moment the
 fingers lift and land again.
 
 `usePinch` multiplies that factor into the scale it already holds. That is the
-stored start and the multiplication every consumer otherwise writes, and it is
-what lets `min` and `max` be the zoom range of the **viewer** rather than of
-one gesture.
+stored start and the multiplication that you would otherwise write. It is
+what lets `min` and `max` be the zoom range of the **viewer**, not of one
+gesture.
 
 | | Holds | Across gestures |
 | --- | --- | --- |
@@ -1664,7 +1663,7 @@ one gesture.
 | RNGH's `scale` | nothing | Restarts at `1` |
 
 `gestureScale` in the payload is RNGH's own factor, kept for the cases that
-want the raw gesture rather than the value.
+want the raw gesture, not the value.
 
 ## Options
 
@@ -1673,7 +1672,7 @@ want the raw gesture rather than the value.
 | `initial` | `number` | `1` | The scale before any pinch. Read once, at mount. |
 | `min` | `number` | — | The smallest scale. Unset is unbounded. |
 | `max` | `number` | — | The largest scale. Unset is unbounded. |
-| `elastic` | `number` | `0` | How much of the pull past an end reaches `scale`. `0` stops dead; `1` ignores the end. |
+| `elastic` | `number` | `0` | How much of the pull past an end reaches `scale`. `0` stops at the end. `1` ignores the end. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onPinchStart` | `(event) => void` | — | **JS thread.** The pinch now owns the touch. |
@@ -1700,10 +1699,10 @@ interface PinchEvent {
 
 ## `focal` is the field a zoom viewer cannot skip
 
-Scaling about the view's centre looks correct in a screenshot and slides the
-content out from under the fingers in the hand. The zoom has to happen about
-the point between them, and that is what `focal` reports — relative to the
-view, so it goes straight into a transform:
+A zoom about the centre of the view looks correct in a screenshot, and slides
+the content out from under the fingers in the hand. The zoom has to happen
+about the point between the fingers. That is what `focal` reports, relative to
+the view, so it goes straight into a transform:
 
 ```tsx
 const style = useAnimatedStyle(() => {
@@ -1721,17 +1720,18 @@ const style = useAnimatedStyle(() => {
 })
 ```
 
-Translate the focal point to the origin, scale, translate back.
+Translate the focal point to the origin. Scale. Translate back.
 
-`focal` keeps the last gesture's point after the fingers lift, so a release
-animation scales about the same place the pinch did rather than snapping to the
-origin. It is read from `onStart` as well as every update, so `onPinchStart`
-reports where the fingers are rather than where the previous gesture left them.
+`focal` keeps the point of the last gesture after the fingers lift. So a
+release animation scales about the same place as the pinch, and doesn't snap
+to the origin. Impulse reads it at `onStart` and at every update, so
+`onPinchStart` reports where the fingers are now, not where the previous
+gesture left them.
 
 ## `min`, `max` and `elastic`
 
-With the default `elastic` of `0` the scale stops dead at an end. With
-`elastic` set, the fingers pull it past and Impulse **leaves it there**:
+With the default `elastic` of `0`, the scale stops at an end. With `elastic`
+set, the fingers pull it past the end and Impulse **leaves it there**:
 
 ```tsx
 const pinch = usePinch({
@@ -1744,9 +1744,9 @@ const pinch = usePinch({
 })
 ```
 
-`settled` is the nearest scale inside the range — the destination that spring
-needs. Impulse does not travel it, because moving a value over time is an
-animation and this library owns no animation vocabulary. See
+`settled` is the nearest scale inside the range: the destination that the
+spring needs. Impulse doesn't travel it, because a value that moves over time
+is an animation, and this library owns no animation vocabulary. See
 [the design principles](/).
 
 ## There are no activation criteria
@@ -1756,15 +1756,15 @@ finger moves, and it exposes no threshold, so Impulse has none to pass on.
 
 > **DANGER — A pinch cannot be separated from a pan by a threshold**
 >
-> Every other continuous intent has one. This one does not, so the **relation is
+> Every other continuous intent has one. This one doesn't, so the **relation is
 > the only thing** that decides how a pinch and a pan share a view. Say it:
 >
 > ```tsx
 > const { gesture } = useGestures([pinch, pan], { mode: 'simultaneous' })
 > ```
 >
-> `alongside` is the same statement for a gesture this screen does not own — a
-> scroll view, or a gesture from another library. See
+> `alongside` is the same statement for a gesture that this screen doesn't own:
+> a scroll view, or a gesture from another library. See
 > [Coexistence](/coexistence).
 
 ## Writing `scale` is how control comes back
@@ -1774,37 +1774,37 @@ pinch.scale // SharedValue<number>
 ```
 
 A reset button, a zoom-out control, or a release spring writes it directly. The
-next pinch continues from whatever it holds, so writing it decides where the
-next gesture starts as well.
+next pinch continues from the value it holds, so a write also decides where
+the next gesture starts.
 
 ## The cancel path
 
-`onPinchEnd` fires for both endings, and `cancelled` says which. `true` is the
-system taking the pinch away — a competing gesture won, or the app went to the
-background.
+`onPinchEnd` fires for both endings, and `cancelled` says which. `true` means
+the system took the pinch away: a competing gesture won, or the app went to
+the background.
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement rather than a release. Read `settled` on both paths: an elastic
-overshoot has to go home whether the user finished or not.
+movement, not a release. Read `settled` on both paths: an elastic overshoot
+has to go home on both endings.
 
 A touch that never became a pinch reaches neither path. It goes to
 `onFinalize` with `success: false` and stops there.
 
 ## Web
 
-RNGH recognizes pinch from pointer events, so it needs **two pointers** — a
+RNGH recognizes pinch from pointer events, so it needs **two pointers**: a
 touchscreen, or a device that reports them.
 
 A trackpad's pinch arrives as a `wheel` event with `ctrlKey`. That is not a
-pointer pair, so it never reaches this hook and a desktop browser with a
-trackpad alone cannot zoom. Give it a control that writes `scale` directly,
-which the accessibility fallback needs anyway. The browser's own page zoom is
-unaffected either way.
+pointer pair, so it never reaches this hook. A desktop browser with only a
+trackpad can't zoom. Give it a control that writes `scale` directly. The
+accessibility fallback needs that control anyway. The browser's own page zoom
+is unaffected in both cases.
 
 ## Accessibility
 
 A pinch is invisible to a screen reader and unreachable from a keyboard. This
-hook does not fix that.
+hook doesn't fix that.
 
 Whatever the pinch scales must be reachable another way:
 
@@ -1838,8 +1838,8 @@ return (
 
 ## Degrees, not radians
 
-This is the **one place** Impulse changes a unit rather than passing RNGH's
-through, and it is deliberate.
+This is the **one place** where Impulse changes a unit instead of passing
+RNGH's unit through, and it is on purpose.
 
 | | Impulse | RNGH |
 | --- | --- | --- |
@@ -1847,11 +1847,11 @@ through, and it is deliberate.
 | `velocity` | degrees per second | radians per second |
 | A range | `min: -45` | `min: -Math.PI / 4` |
 
-A range written as `-45` is a range a person wrote. `-Math.PI / 4` is one they
-derived, and deriving it per project is the work this library exists to remove.
-A React Native style takes either unit — `` `${angle}deg` `` and
-`` `${angle}rad` `` are both valid — so the choice costs nothing at the call
-site.
+A range written as `-45` is a range a person wrote. `-Math.PI / 4` is a range
+a person derived, and that derivation in each project is the work this library
+exists to remove. A React Native style takes either unit (`` `${angle}deg` ``
+and `` `${angle}rad` `` are both valid), so the choice costs nothing at the
+call site.
 
 Positive is clockwise, which is what the `rotate` transform also treats as
 positive.
@@ -1863,8 +1863,8 @@ gesture, so a control built on it springs back to upright the moment the
 fingers lift and land again.
 
 `useRotate` adds that value to the angle it already holds. `gestureAngle` in
-the payload is the per-gesture number, converted, for the cases that want the
-raw turn rather than the total.
+the payload is the per-gesture number, converted to degrees, for the cases that
+want the raw turn, not the total.
 
 ## Options
 
@@ -1873,7 +1873,7 @@ raw turn rather than the total.
 | `initial` | `number` | `0` | The angle before any rotation, in degrees. Read once, at mount. |
 | `min` | `number` | — | The smallest angle. Unset is unbounded. |
 | `max` | `number` | — | The largest angle. Unset is unbounded. |
-| `elastic` | `number` | `0` | How much of the turn past an end reaches `angle`. `0` stops dead; `1` ignores the end. |
+| `elastic` | `number` | `0` | How much of the turn past an end reaches `angle`. `0` stops at the end. `1` ignores the end. |
 | `hitSlop` | `HitSlop` | — | Extra touchable area. |
 | `enabled` | `boolean` | `true` | Keeps identity and relations while off. |
 | `onRotateStart` | `(event) => void` | — | **JS thread.** The rotation now owns the touch. |
@@ -1902,10 +1902,10 @@ interface RotateEvent {
 
 A second revolution reports **720**, not `0`.
 
-That is what a dial counting turns needs, and it is not what a photo editor
-needs. Impulse does not guess which you are building: set `min` and `max` for a
-control with travel, or take the remainder yourself for one that should read
-`10` rather than `370`.
+A dial that counts turns needs that, and a photo editor doesn't. Impulse
+doesn't guess which one you build. Set `min` and `max` for a control with
+travel. Take the remainder yourself for a control that must read `10`, not
+`370`.
 
 ```tsx
 const shown = ((rotate.angle.value % 360) + 360) % 360
@@ -1913,9 +1913,9 @@ const shown = ((rotate.angle.value % 360) + 360) % 360
 
 ## `anchor` is the point the turn happens about
 
-Rotating about the view's own centre turns the content **under** the fingers
-rather than with them. `anchor` is RNGH's anchor — the centre between the
-fingers, relative to the view — and it is the rotation counterpart of
+A rotation about the centre of the view turns the content **under** the
+fingers, not with them. `anchor` is RNGH's anchor: the centre between the
+fingers, relative to the view. It is the rotation counterpart of
 [`usePinch`'s `focal`](/use-pinch#focal-is-the-field-a-zoom-viewer-cannot-skip):
 
 ```tsx
@@ -1934,15 +1934,15 @@ const style = useAnimatedStyle(() => {
 })
 ```
 
-It is read at `onStart` as well as at every update, so `onRotateStart` reports
-where the fingers are rather than where the previous gesture left them, and it
-keeps its last value after they lift so a release animation turns about the
+Impulse reads it at `onStart` and at every update, so `onRotateStart` reports
+where the fingers are now, not where the previous gesture left them. It keeps
+its last value after the fingers lift, so a release animation turns about the
 same point.
 
 ## `min`, `max` and `elastic`
 
-Identical in behaviour to [`usePinch`](/use-pinch#min-max-and-elastic), on an
-additive value rather than a multiplicative one:
+The behaviour is the same as in [`usePinch`](/use-pinch#min-max-and-elastic),
+on an additive value instead of a multiplicative one:
 
 ```tsx
 const rotate = useRotate({
@@ -1955,8 +1955,8 @@ const rotate = useRotate({
 })
 ```
 
-`settled` is the nearest angle inside the range. Impulse does not travel it,
-because moving a value over time is an animation and this library owns no
+`settled` is the nearest angle inside the range. Impulse doesn't travel it,
+because a value that moves over time is an animation, and this library owns no
 animation vocabulary.
 
 ## There are no activation criteria
@@ -1973,36 +1973,37 @@ turn, and it exposes no threshold.
 > const { gesture } = useGestures([rotate, pinch], { mode: 'simultaneous' })
 > ```
 >
-> `alongside` is the same statement for a gesture this screen does not own. See
-> [Coexistence](/coexistence).
+> `alongside` is the same statement for a gesture that this screen doesn't own.
+> See [Coexistence](/coexistence).
 
 ## The cancel path
 
-`onRotateEnd` fires for both endings, and `cancelled` says which. `true` is the
-system taking the rotation away — a competing gesture won, or the app went to
+`onRotateEnd` fires for both endings, and `cancelled` says which. `true` means
+the system took the rotation away: a competing gesture won, or the app went to
 the background.
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement rather than a release. Read `settled` on both paths: an elastic
-overshoot has to go home whether the user finished or not.
+movement, not a release. Read `settled` on both paths: an elastic overshoot
+has to go home on both endings.
 
 A touch that never became a rotation reaches neither path. It goes to
 `onFinalize` with `success: false` and stops there.
 
 ## Web
 
-RNGH recognizes rotation from pointer events, so it needs **two pointers** — a
+RNGH recognizes rotation from pointer events, so it needs **two pointers**: a
 touchscreen, or a device that reports them. A trackpad's rotation is not a
-pointer pair and never reaches this hook, so a desktop browser with a trackpad
-alone cannot turn anything.
+pointer pair and never reaches this hook. A desktop browser with only a
+trackpad can't turn anything.
 
-Give it a control that writes `angle` directly, which the accessibility
-fallback needs anyway. Same limit as [`usePinch`](/use-pinch#web).
+Give it a control that writes `angle` directly. The accessibility fallback
+needs that control anyway. The limit is the same as in
+[`usePinch`](/use-pinch#web).
 
 ## Accessibility
 
 A rotation is invisible to a screen reader and unreachable from a keyboard.
-This hook does not fix that.
+This hook doesn't fix that.
 
 Whatever the rotation turns must be reachable another way:
 
@@ -2051,8 +2052,7 @@ const { gesture } = useGestures(
 )
 ```
 
-Precedence reads left to right, and depth is a choice rather than a
-consequence.
+Precedence reads left to right, and depth is a choice, not a consequence.
 
 ## The three modes
 
@@ -2060,7 +2060,7 @@ consequence.
 | --- | --- | --- |
 | `race` | The first member to activate wins and cancels the rest. | Mutually exclusive readings of one touch. |
 | `simultaneous` | Every member recognizes independently. | A drag and a long press on one card. |
-| `exclusive` | Members are tried in order. A later one activates only after every earlier one has failed. | A tap that must wait for a double tap. |
+| `exclusive` | Impulse tries the members in order. A later member activates only after every earlier member failed. | A tap that must wait for a double tap. |
 
 Order matters for `exclusive` only. `race` and `simultaneous` ignore it.
 
@@ -2080,27 +2080,27 @@ single tap wait to learn whether a second tap is coming.
 
 > **WARNING — The price is latency**
 >
-> A composed single tap cannot report for `maxDelay` milliseconds — 500 ms by
+> A composed single tap can't report for `maxDelay` milliseconds, 500 ms by
 > default. Every ordinary tap pays it. See the `useDoubleTap` page for the
 > trade.
 
 ## Members
 
-A member is anything carrying a gesture:
+A member is anything that carries a gesture:
 
-- any Impulse hook result — `tap`, `drag`, `useGestures(…)`
+- any Impulse hook result: `tap`, `drag`, `useGestures(…)`
 - a bare RNGH gesture from [`@rootnative/impulse/gesture-handler`](/gesture-handler)
 
 Pass the hook result itself, not `result.gesture`. Both work, but the result
-is memoised, so it is stable to depend on.
+is memoised, so you can depend on it.
 
 ## Coexistence options do not belong here
 
-`useGestures` does not accept `alongside`, `blocks`, or `deferTo`. Put them on
+`useGestures` doesn't accept `alongside`, `blocks`, or `deferTo`. Put them on
 the member hooks.
 
 ```tsx
-// Right — the relation sits on the member that has it.
+// Right. The relation sits on the member that has it.
 const drag = useDrag({ axis: 'y', deferTo: scrollRef })
 const { gesture } = useGestures([tap, drag], { mode: 'simultaneous' })
 ```
@@ -2108,10 +2108,10 @@ const { gesture } = useGestures([tap, drag], { mode: 'simultaneous' })
 > **NOTE — This is a limitation, not a preference**
 >
 > RNGH's three external-gesture relations are methods on a single gesture. A
-> composed gesture does not have them. Impulse could apply a relation to each
-> member instead, but that means mutating gesture objects another hook already
-> built and memoised, which breaks the rule that a gesture is configured exactly
-> once. So the options stay on the members.
+> composed gesture doesn't have them. Impulse could apply a relation to each
+> member instead. But that would mutate gesture objects that another hook
+> already built and memoised, and that breaks the rule that a gesture is
+> configured exactly once. So the options stay on the members.
 >
 > Tell us if that is awkward in a real app. It is recorded as an open question,
 > not a settled one.
@@ -2123,25 +2123,25 @@ Read [Coexistence](/coexistence) for what the three options do.
 Both are development-only and print at most once.
 
 **An empty list.** The composition recognizes nothing, so the
-`<GestureDetector>` holding it is inert. Build the list conditionally around
-the hook call rather than passing no members.
+`<GestureDetector>` that holds it is inert. Build the list conditionally
+around the hook call. Don't pass an empty list.
 
-**An unknown mode.** Unreachable from TypeScript, reachable from JavaScript.
-Impulse falls back to `race` and names the valid modes, because a misspelled
-mode would otherwise fail as "the gesture does not work".
+**An unknown mode.** TypeScript can't reach it. JavaScript can. Impulse falls
+back to `race` and names the valid modes. Otherwise a misspelled mode would
+fail as "the gesture doesn't work".
 
 ## Accessibility
 
-A composition is as reachable as its members, which is to say a screen reader
-and a keyboard see none of it. Each member hook names its own fallback, and a
-composition needs the union of them.
+A composition is as reachable as its members: a screen reader and a keyboard
+see none of it. Each member hook names its own fallback, and a composition
+needs the union of them.
 
 ---
 
 # Coexistence
 
-Coexistence is how your gesture shares a touch with a gesture Impulse does not
-own — most often a scroll view it lives inside.
+Coexistence is how your gesture shares a touch with a gesture that Impulse
+doesn't own, most often the scroll view it lives inside.
 
 Every hook takes three options:
 
@@ -2159,14 +2159,13 @@ const hold = useLongPress({ alongside: drag.ref })        // both recognize
 | `blocks` | **This** gesture wins. The named gesture cannot activate until this one fails. | `blocksExternalGesture` |
 | `deferTo` | The **named** gesture wins. This one activates only after that one fails. | `requireExternalGestureToFail` |
 
-Each option maps to exactly one RNGH relation. The name says what happens
-rather than what it calls.
+Each option maps to exactly one RNGH relation. The name says what happens, not
+what it calls.
 
 > **DANGER — `blocks` and `deferTo` are the same relation, read from opposite ends**
 >
-> That is why RNGH's names for them are so easy to swap by accident, and why
-> picking wrongly between the three is the single thing consumers get wrong most
-> often.
+> That is why RNGH's names for them are easy to swap by accident. A wrong choice
+> between the three is the most common mistake.
 >
 > Ask one question: **which gesture should win?** If it is yours, use `blocks`.
 > If it is theirs, use `deferTo`.
@@ -2191,9 +2190,10 @@ const drag = useDrag({
 })
 ```
 
-Naming **the same** gesture in two of them is not. RNGH applies both and never
-complains, so you get two contradictory rules about one pair and the platform
-recognizer decides. Impulse warns once, in development, and names the fix.
+A name for **the same** gesture in two of them is not. RNGH applies both and
+never complains. You get two contradictory rules about one pair, and the
+platform recognizer decides. Impulse warns once, in development, and names the
+fix.
 
 ## Name the `ref`, not the gesture
 
@@ -2204,17 +2204,17 @@ const drag = useDrag({ axis: 'x' })
 const hold = useLongPress({ alongside: drag.ref })
 ```
 
-Passing `drag.gesture` also works, because RNGH accepts a gesture object. Do
-not. A gesture is replaced when its own dependencies change, and the relation
-captures whichever object it was handed. The `ref` is created once and never
-replaced, and RNGH reads it when it resolves relations, so a relation written
-against `drag.ref` keeps pointing at the live gesture.
+`drag.gesture` also works, because RNGH accepts a gesture object. Don't use
+it. Impulse replaces a gesture when its own dependencies change, and the
+relation captures the object it received. Impulse creates the `ref` once and
+never replaces it. RNGH reads the ref when it resolves relations, so a
+relation against `drag.ref` always points at the live gesture.
 
 > **NOTE — The ref is empty during the first render**
 >
-> It is populated when `<GestureDetector>` mounts the gesture, not when the hook
-> runs. Reading `.current` during render gives `undefined` on the first pass.
-> This does not affect relations, which are resolved later.
+> `<GestureDetector>` fills it when it mounts the gesture, not when the hook
+> runs. A read of `.current` during render gives `undefined` on the first pass.
+> This doesn't affect relations, because RNGH resolves them later.
 
 ## One or many
 
@@ -2224,22 +2224,22 @@ Every option takes a reference or an array of them:
 const drag = useDrag({ axis: 'y', deferTo: [scrollRef, pagerRef] })
 ```
 
-Write the array inline. Impulse compares its contents rather than its
-identity, so a new array with the same members does not rebuild the gesture.
+Write the array inline. Impulse compares its contents, not its identity, so a
+new array with the same members doesn't rebuild the gesture.
 
 ## The ref must belong to a gesture
 
-This is the trap that costs the most time, because gesture-handler fails
-**silently** on it.
+This is the trap that costs the most time, because RNGH fails **silently** on
+it.
 
 A relation target has to carry a `handlerTag`. RNGH resolves every relation ref
-through `ref.current?.handlerTag`, and drops anything that returns nothing. It
-reports neither a warning nor an error — the relation simply is not installed,
-and nothing at runtime tells the two apart.
+through `ref.current?.handlerTag`, and drops a ref that returns nothing. It
+reports no warning and no error. RNGH doesn't install the relation, and
+nothing at runtime tells the two cases apart.
 
 **Impulse warns once, in development, when it catches this.** The warning names
 the hook, the option, and the fix. It fires after mount, because a ref is empty
-until then, and it stays quiet for a ref that has not been filled — see
+until then. It stays quiet for a ref that is still empty. See
 [the limit below](#what-the-warning-cannot-catch).
 
 **React Native's `ScrollView` has no `handlerTag`.**
@@ -2252,8 +2252,7 @@ const scrollRef = useRef<ScrollViewInstance>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Use gesture-handler's `LegacyScrollView` instead. Its wrapper puts the tag on
-the ref:
+Use RNGH's `LegacyScrollView` instead. Its wrapper puts the tag on the ref:
 
 ```tsx
 // Works. The ref carries a handlerTag.
@@ -2263,11 +2262,11 @@ const scrollRef = useRef<LegacyScrollView>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Do not use the `ScrollView` of the same subpath. That is Gesture Handler 3's
+Don't use the `ScrollView` of the same subpath. That is Gesture Handler 3's
 own `ScrollView`, and its wrapper gives the ref to React Native's component, so
 the ref has no tag. The same holds for `FlatList`: use `LegacyFlatList`. Both
 come from [`@rootnative/impulse/gesture-handler`](/gesture-handler), so this
-does not add an import of gesture-handler to your app.
+doesn't add an RNGH import to your app.
 
 Gesture Handler 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
 together with the gesture builder that Impulse uses, so your editor can show
@@ -2275,9 +2274,9 @@ them struck through. They work in Gesture Handler 3.
 
 > **WARNING — This is not a web-only problem**
 >
-> The resolution happens in RNGH's shared code, so it behaves the same on iOS,
-> Android, and web. A relation against React Native's scroll view, or against
-> Gesture Handler 3's own, is a no-op on every platform.
+> RNGH resolves relations in its shared code, so the behaviour is the same on
+> iOS, Android, and web. A relation against React Native's scroll view, or
+> against Gesture Handler 3's own `ScrollView`, does nothing on every platform.
 
 Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
 none of this.
@@ -2292,15 +2291,15 @@ The check reads the ref after the gesture mounts. Three outcomes:
 | A mounted component with no handler tag | **Warns.** This is the `ScrollView` case above. |
 | Nothing yet | Silent, on purpose. |
 
-The third row is the limit. A target that mounts in a **later** commit than the
-gesture — behind a loading flag, say — has an empty ref when the check runs, and
-nothing re-checks it. That case stays quiet even when the ref is wrong.
+The third row is the limit. A target that mounts in a **later** commit than
+the gesture (behind a loading flag, for example) has an empty ref when the
+check runs, and nothing checks it again. That case stays quiet even when the
+ref is wrong.
 
-Silence is the right answer there rather than a guess: gesture-handler
-re-resolves relations when a handler mounts late, so a correct late-mounting
-relation does get installed, and a warning would be reporting a defect that is
-not there. A warning that fires on correct code is worse than no warning, because
-it is the one consumers learn to ignore.
+Silence is the right answer there, not a guess. RNGH resolves relations again
+when a handler mounts late, so a correct late-mounting relation is installed.
+A warning there would report a defect that doesn't exist. A warning that fires
+on correct code is worse than no warning, because you learn to ignore it.
 
 ## A component ref needs a cast
 
@@ -2316,28 +2315,28 @@ const drag = useDrag({
 })
 ```
 
-RNGH types a relation target as a ref to a component **type**, which is not
-what `ref={}` ever produces. So a real `ScrollView` ref does not satisfy it.
+RNGH types a relation target as a ref to a component **type**, and `ref={}`
+never produces that type. So a real `ScrollView` ref doesn't satisfy it.
 
-Impulse mirrors RNGH's type exactly and on purpose. Widening it to accept an
+Impulse copies RNGH's type exactly, on purpose. A wider type that accepts an
 instance ref would remove the compile-time check that catches an upstream
 change to the relation signature.
 
 > **WARNING — This is a known gap, not a decision**
 >
-> For a library whose premise is absorbing RNGH's sharp edges, passing this one
-> through is the wrong answer. It is recorded as open. The fix is either a wider
-> type here or a corrected `GestureRef` upstream.
+> A library that exists to absorb RNGH's traps must not pass this one through.
+> It is recorded as open. The fix is a wider type here, or a corrected
+> `GestureRef` upstream.
 
 ## Coexistence and composition are different things
 
-**Coexistence** relates your gesture to one it does not own, and the options
+**Coexistence** relates your gesture to one it doesn't own, and the options
 live on the hook.
 
 **Composition** relates gestures you do own, and it goes through
 [`useGestures`](/composition).
 
-`useGestures` does not accept coexistence options. Put them on the members.
+`useGestures` doesn't accept coexistence options. Put them on the members.
 
 ---
 
@@ -2356,12 +2355,12 @@ happened**.
 
 ## Why the split is in the name
 
-A frame-by-frame stream and a semantic event are different things. A consumer
-who has to ask "which thread is this?" will eventually guess wrong, and a wrong
-guess fails on the UI thread with an unhelpful message.
+A frame-by-frame stream and a semantic event are different things. If you have
+to ask "which thread is this?", you will guess wrong one day. A wrong guess
+fails on the UI thread with an unhelpful message.
 
-The rejected alternative was a `runOnJS: true` flag per hook. That makes the
-thread invisible at the call site and pushes the question into the docs.
+We rejected a `runOnJS: true` flag per hook. That flag makes the thread
+invisible at the call site and pushes the question into the docs.
 
 ## Intent callbacks: Impulse owns the boundary
 
@@ -2392,19 +2391,18 @@ runs on the UI thread, so it can write a shared value every frame without a
 round trip.
 
 If you forget the directive, Impulse warns once in development. The warning
-names the hook and the callback. Without it, the first touch that reaches the
-phase throws `Tried to synchronously call a Remote Function. Called
-"anonymous"`, which names neither.
+names the hook and the callback. Without that warning, the first touch that
+reaches the phase throws `Tried to synchronously call a Remote Function.
+Called "anonymous"`, and that message names neither.
 
 > **DANGER — Never close over JS-thread state in a worklet**
 >
 > Read a shared value, or cross back with `scheduleOnRN` from
-> `react-native-worklets`. A captured plain variable goes stale or crashes, and it
-> does so on the UI thread where the message tells you almost nothing.
+> `react-native-worklets`. A captured plain variable goes stale or crashes. It
+> does so on the UI thread, where the message tells you almost nothing.
 >
-> Do not reach for `runOnJS` from `react-native-reanimated`. Reanimated 4
-> re-exports that name from `react-native-worklets` and marks the re-export
-> deprecated.
+> Don't use `runOnJS` from `react-native-reanimated`. Reanimated 4 re-exports
+> that name from `react-native-worklets` and marks the re-export deprecated.
 
 ## A worklet captures the whole result
 
@@ -2421,44 +2419,43 @@ const style = useAnimatedStyle(() => ({
 ```
 
 `react-native-worklets` copies a captured object field by field, through
-`Object.entries`. An RNGH gesture cannot cross the thread boundary, so a plain
+`Object.entries`. An RNGH gesture can't cross the thread boundary, so a plain
 result would throw `[Worklets] Cannot copy value of type 'PanGesture'` at
-render — from the pattern every page on this site shows.
+render, from the pattern that every page on this site shows.
 
-Every intent result therefore hides `gesture` and `ref` from enumeration. Both
-are still properties and still read normally, so
+So every intent result hides `gesture` and `ref` from enumeration. Both are
+still properties, and you read them as usual, so
 `<GestureDetector gesture={drag.gesture}>` and every coexistence option are
-unaffected. The copy skips them and the shared values go across, which is all a
-worklet wanted.
+unaffected. The copy skips them, and the shared values go across, which is all
+a worklet needs.
 
 > **NOTE — What this changes for you**
 >
-> Nothing you write. One thing you may observe: `gesture` and `ref` do not appear
-> in `Object.keys`, in a spread, in `JSON.stringify`, or in a logged result. Read
-> them by name.
+> Nothing in the code you write. One thing you may see: `gesture` and `ref`
+> don't appear in `Object.keys`, in a spread, in `JSON.stringify`, or in a
+> logged result. Read them by name.
 
 ## The asymmetry that keeps gestures stable
 
-This is the part that looks like an implementation detail and is not.
+This part looks like an implementation detail, and it isn't.
 
 **A JS-thread callback is never a gesture dependency.** Impulse routes it
-through a stable identity, so writing it inline is free:
+through a stable identity, so an inline callback is free:
 
 ```tsx
 // Safe. This does not rebuild the gesture on every render.
 const tap = useTap({ onTap: () => setCount(count + 1) })
 ```
 
-Without that, an inline callback changes the gesture's identity every render,
-`<GestureDetector>` re-attaches the gesture, and a re-attach in the middle of a
-drag drops the drag.
+Without that, an inline callback would change the identity of the gesture on
+every render. `<GestureDetector>` would then re-attach the gesture, and a
+re-attach in the middle of a drag drops the drag.
 
-**A worklet callback is always a gesture dependency.** It has to be. A worklet
-is captured as written, so swapping its body underneath would leave the UI
-thread running the version it was serialized with — silently, with no error and
-no stale-closure warning.
+**A worklet callback is always a gesture dependency.** It has to be. Worklets
+capture a function as written. A swap of its body would leave the UI thread
+with the serialized version, with no error and no stale-closure warning.
 
-So the two are handled in opposite ways, on purpose:
+So Impulse handles the two in opposite ways, on purpose:
 
 | Callback | Inline is free | Why |
 | --- | --- | --- |
@@ -2467,13 +2464,14 @@ So the two are handled in opposite ways, on purpose:
 
 > **NOTE — Keep worklet callbacks stable yourself**
 >
-> If you pass a phase callback, define it outside the component or wrap it so its
-> identity is stable. An inline worklet rebuilds the gesture on every render.
+> If you pass a phase callback, define it outside the component, or wrap it so
+> that its identity is stable. An inline worklet rebuilds the gesture on every
+> render.
 
-One exception worth knowing: adding or removing an intent callback **does**
-rebuild the gesture. RNGH decides which thread a gesture's callbacks run on by
-inspecting the ones it was given, so `onTap` appearing or disappearing has to
-change the gesture. Calling a different function does not.
+One exception: when you add or remove an intent callback, Impulse **does**
+rebuild the gesture. RNGH inspects the callbacks it receives to decide which
+thread they run on, so a change in whether `onTap` exists has to change the
+gesture. A different function in the same slot doesn't.
 
 ## `isActive` is a shared value
 
@@ -2486,35 +2484,35 @@ const style = useAnimatedStyle(() => ({
 ```
 
 It is a shared value so a pressed state runs on the UI thread with no
-re-render. Reading `.value` during render works, but tells you only what was
-true at the last commit.
+re-render. A read of `.value` during render works, but it tells you only what
+was true at the last commit.
 
 > **WARNING — `isActive` does not mean the same thing in every hook**
 >
-> `useTap` and `useDoubleTap` set it at `onBegin` — while the finger is down.
+> `useTap` and `useDoubleTap` set it at `onBegin`, while the finger is down.
 > `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`
-> set it at recognition — once the gesture actually started.
+> set it at recognition, once the gesture started.
 >
 > `useDoubleTap`'s `isActive` is also `true` for every ordinary single tap on
 > the view, so it is not a pressed state. See
 > [`useDoubleTap`](/use-double-tap).
 >
-> Both readings are right for their own hook: a tap's whole life is the touch,
-> and a long press that flagged every touch would flag nothing useful. Check the
-> hook's own page before you drive UI from it.
+> Both readings are right for their own hook. The whole life of a tap is the
+> touch, and a long press that flagged every touch would flag nothing useful.
+> Check the page of the hook before you use it in UI.
 
 ## Escape hatch
 
-[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary for
-you. There you build the gesture, so RNGH decides per callback by whether it
-carries the `'worklet'` directive.
+[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary
+for you. There you build the gesture, so RNGH decides per callback, by the
+presence of the `'worklet'` directive.
 
 ---
 
 # Raw gestures
 
 `useRawGesture` is the mechanism-level escape hatch. Use it for a recognizer
-Impulse does not model, or a configuration it does not expose.
+that Impulse doesn't model, or a configuration that Impulse doesn't expose.
 
 ```tsx
 import { useRawGesture } from '@rootnative/impulse'
@@ -2538,8 +2536,8 @@ accepts.
 
 ## What Impulse still gives you
 
-- **Gesture identity across renders**, so an inline option cannot re-attach the
-  gesture mid-drag.
+- **Gesture identity across renders**, so an inline option can't re-attach the
+  gesture in the middle of a drag.
 - **`alongside` / `blocks` / `deferTo` resolution**, so the three RNGH
   relations are still chosen by outcome rather than by method name.
 - **A `ref`** other hooks can name in their own coexistence options.
@@ -2548,15 +2546,15 @@ accepts.
 
 **The dependency list.** `build` runs only when `deps` change, and a stale
 capture is a stale gesture. A worklet callback belongs in `deps`. A JS-thread
-callback does not — give it a stable identity first and depend on that.
+callback doesn't. Give it a stable identity first, and depend on that.
 
-**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here. RNGH
-decides per callback, by whether it carries the `'worklet'` directive, and
+**The thread.** Impulse does **not** insert a `scheduleOnRN` boundary here.
+RNGH decides per callback, by the presence of the `'worklet'` directive. It
 warns in development when a gesture mixes the two. The intent hooks can own
-that boundary because they know what each callback means. This one does not.
+that boundary, because they know what each callback means. This hook doesn't.
 
-**The payload.** You get RNGH's flat event — `translationX`, `velocityY`,
-`absoluteX` — not an intent-shaped one.
+**The payload.** You get RNGH's flat event (`translationX`, `velocityY`,
+`absoluteX`), not an intent-shaped one.
 
 ## Do not call relation methods in the builder
 
@@ -2571,8 +2569,8 @@ useRawGesture(
 useRawGesture(() => Gesture.Fling(), [], { deferTo: scrollRef })
 ```
 
-Pass them in `options`. RNGH's relation methods append to a gesture's config
-rather than replacing it, so a relation applied in the builder **and** in the
+Pass them in `options`. RNGH's relation methods append to the config of a
+gesture, and don't replace it. So a relation in the builder **and** in the
 options installs the same reference twice. Impulse applies them exactly once,
 inside the same memo that builds the gesture.
 
@@ -2580,19 +2578,18 @@ See [Coexistence](/coexistence) for what the three options mean.
 
 ## Accessibility
 
-Nothing here is reachable by a screen reader or a keyboard, and Impulse cannot
-name a fallback for a gesture it did not design. Whatever this gesture does
-must be doable another way — an `accessibilityActions` entry, or a visible
+Nothing here is reachable by a screen reader or a keyboard, and Impulse can't
+name a fallback for a gesture it didn't design. Whatever this gesture does
+must be reachable another way: an `accessibilityActions` entry, or a visible
 control.
 
 ## When to reach for it
 
-Reach for an intent hook first. `useRawGesture` gives up intent-shaped
-payloads and the owned thread boundary, which are two of the three reasons
-Impulse exists.
+Use an intent hook first. `useRawGesture` gives up intent-shaped payloads and
+the owned thread boundary, which are two of the three reasons Impulse exists.
 
-If you find yourself building the same raw gesture in more than one project,
-that is a gap in Impulse. Report it.
+If you build the same raw gesture in more than one project, that is a gap in
+Impulse. Report it.
 
 ---
 
@@ -2606,9 +2603,8 @@ names:
 import { Directions, Gesture, State } from '@rootnative/impulse/gesture-handler'
 ```
 
-The point is that `@rootnative/impulse` stays your only gesture import. You do
-not add a second dependency to your imports to reach a mechanism Impulse does
-not model.
+So `@rootnative/impulse` stays your only gesture import. You don't add a
+second import to reach a mechanism that Impulse doesn't model.
 
 ## These are pure re-exports
 
@@ -2617,11 +2613,11 @@ not model.
 
 > **WARNING — None of Impulse's guarantees apply to what you build with it**
 >
-> Stable gesture identity, thread-explicit callbacks, and intent-shaped payloads
-> are all things Impulse's hooks do. A bare RNGH gesture has none of them.
+> The hooks of Impulse give you stable gesture identity, thread-explicit
+> callbacks, and intent-shaped payloads. A bare RNGH gesture has none of them.
 >
-> To keep identity and coexistence handling while building the gesture yourself,
-> use [`useRawGesture`](/raw-gestures) instead of a bare `useMemo`.
+> To keep identity and coexistence while you build the gesture yourself, use
+> [`useRawGesture`](/raw-gestures) instead of a bare `useMemo`.
 
 ## `GestureDetector` comes from the root entry
 
@@ -2629,8 +2625,8 @@ not model.
 import { GestureDetector } from '@rootnative/impulse'
 ```
 
-Every hook's result has to be handed to it, so it is exported from the package
-entry. Reaching for it is not a reason to import from this subpath.
+You pass the result of every hook to it, so the package entry exports it. You
+don't need this subpath to get it.
 
 ## Composing a raw gesture with Impulse hooks
 
@@ -2646,64 +2642,64 @@ const tap = useTap({ onTap: select })
 const { gesture } = useGestures([tap, fling], { mode: 'race' })
 ```
 
-Prefer [`useRawGesture`](/raw-gestures) over the hand-rolled `useMemo` above.
-It does the memoisation for you and accepts the coexistence options.
+Use [`useRawGesture`](/raw-gestures) instead of the hand-written `useMemo`
+above. It does the memoisation for you and accepts the coexistence options.
 
 ---
 
 # Web behaviour
 
 Web is a platform, not a footnote. RNGH's web implementation differs from its
-native one, and discovering that per project is the failure mode this page
-exists to prevent.
+native one. This page exists so that you don't discover that in each project.
 
 > **NOTE — What "verified" means here**
 >
-> A verified row was run in a desktop browser against the example app. Rows
-> marked **unverified** have not been checked and are not claims.
+> We ran each verified row in a desktop browser against the example app. We
+> didn't check the rows marked **unverified**, and they are not claims.
 
 ## Status by intent
 
 | Intent | Activation criteria honoured | Behaviour in a browser |
 | --- | --- | --- |
-| `useTap` | Yes — verified in RNGH's source | **Works** |
-| `useDoubleTap` | Yes — verified in RNGH's source | **Works** |
-| `useLongPress` | Yes — verified in RNGH's source | **Works**, with two caveats below |
-| `useDrag` | Yes — verified in RNGH's source | **Works** |
-| `usePan` | Yes — verified in RNGH's source | **Unverified** |
-| `useSwipe` | Yes — verified in RNGH's source | **Unverified** |
-| `usePinch` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
-| `useRotate` | No criteria to honour | **Unverified**, and a trackpad cannot drive it — see below |
+| `useTap` | Yes, verified in RNGH's source | **Works** |
+| `useDoubleTap` | Yes, verified in RNGH's source | **Works** |
+| `useLongPress` | Yes, verified in RNGH's source | **Works**, with two limits below |
+| `useDrag` | Yes, verified in RNGH's source | **Works** |
+| `usePan` | Yes, verified in RNGH's source | **Unverified** |
+| `useSwipe` | Yes, verified in RNGH's source | **Unverified** |
+| `usePinch` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
+| `useRotate` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
 
-The first four intents recognize correctly under a mouse on web. The last four
-have not been run in a browser, so their rows are not claims.
+The first four intents recognize correctly under a mouse on web. We didn't run
+the last four in a browser, so their rows are not claims.
 
 ## A mouse cannot drive a two-finger intent
 
 RNGH recognizes pinch and rotation from pointer events, so both need **two
-pointers** — a touchscreen, or a device that reports them. One mouse is one
+pointers**: a touchscreen, or a device that reports them. One mouse is one
 pointer, so neither hook fires under it at all.
 
-A trackpad does not close the gap. Its pinch arrives as a `wheel` event with
-`ctrlKey`, and its rotation as a platform gesture event; neither is a pointer
-pair, so neither reaches these hooks. A desktop browser with a trackpad alone
-therefore cannot zoom or turn.
+A trackpad doesn't close the gap. Its pinch arrives as a `wheel` event with
+`ctrlKey`, and its rotation arrives as a platform gesture event. Neither is a
+pointer pair, so neither reaches these hooks. So a desktop browser with only a
+trackpad can't zoom or turn.
 
-Give both a control that writes `scale` or `angle` directly, which
-[the](/use-pinch#accessibility) [accessibility fallbacks](/use-rotate#accessibility)
-need anyway. The browser's own page zoom is unaffected either way.
+Give both a control that writes `scale` or `angle` directly. The accessibility
+fallbacks of [`usePinch`](/use-pinch#accessibility) and
+[`useRotate`](/use-rotate#accessibility) need that control anyway. The
+browser's own page zoom is unaffected in both cases.
 
-This is read from RNGH's web implementation rather than measured, which is why
+We read this in RNGH's web implementation and didn't measure it. That is why
 the two rows above still say unverified.
 
 ## The cancel path reports on the JS thread
 
-Found during the web pass, and **not a web-specific problem**. It behaves the
-same on a device.
+We found this during the web pass, and it is **not a web-specific problem**.
+It behaves the same on a device.
 
-Hold a `useLongPress` past `minDuration`, then move the pointer more than
-`maxDistance` — 10 points by default — without releasing. The press is
-cancelled, and `onLongPressEnd` reports it:
+Hold a `useLongPress` past `minDuration`. Then move the pointer more than
+`maxDistance` (10 points by default) without a release. RNGH cancels the
+press, and `onLongPressEnd` reports it:
 
 ```tsx
 const hold = useLongPress({
@@ -2714,18 +2710,17 @@ const hold = useLongPress({
 })
 ```
 
-Every end callback works this way — `onTap`, `onDoubleTap`, `onLongPressEnd`,
+Every end callback works this way: `onTap`, `onDoubleTap`, `onLongPressEnd`,
 and `onDragEnd`. Each fires on both endings, and `cancelled` says which. See
 [the cancel path](/use-long-press#the-cancel-path) for the full contract.
 
-Before this argument existed, a cancel was reported only by `onFinalize`, which
-is a worklet — so a screen holding its phase in React state had to write
-`'worklet'` plus `scheduleOnRN` by hand. That was the ceremony Impulse exists to
-remove, and it is gone.
+Before this argument existed, only `onFinalize` reported a cancel, and
+`onFinalize` is a worklet. So a screen that held its phase in React state had
+to write `'worklet'` plus `scheduleOnRN` by hand. That is the ceremony that
+Impulse exists to remove, and it is gone.
 
 `onFinalize` is unchanged. It fires for every touch that reached the view,
-recognized or not, which is what makes it the right place to undo whatever
-`onBegin` set.
+recognized or not. That makes it the right place to undo what `onBegin` set.
 
 ## `useLongPress` cancels on travel, against RNGH's own contract
 
@@ -2733,38 +2728,38 @@ RNGH documents `maxDist` as bounding the wait only — *"if the finger travels
 further than the defined distance **and the handler hasn't yet activated**, it
 will fail"*. A recognized press should tolerate travel.
 
-Its web implementation does not do that. `checkDistanceFail()` runs on every
-pointer move, and when the gesture is already active it calls `cancel()`.
+Its web implementation doesn't do that. `checkDistanceFail()` runs on every
+pointer move, and when the gesture is already active, it calls `cancel()`.
 
-So on web, moving past `maxDistance` while holding ends the press. **Native is
-unverified**, and RNGH's documentation says travel is allowed there, so this may
-be a genuine platform split.
+So on web, a move past `maxDistance` during a hold ends the press. **Native is
+unverified.** RNGH's documentation says travel is allowed there, so this may
+be a real platform split.
 
-The practical cost: **hold-then-drag does not work on web at the default
-`maxDistance`.** The drag's own movement cancels the press it is gated on. Raise
-`maxDistance` explicitly for that pattern rather than relying on the documented
+The practical cost: **hold-then-drag doesn't work on web at the default
+`maxDistance`.** The movement of the drag cancels the press that gates it.
+Raise `maxDistance` explicitly for that pattern. Don't rely on the documented
 behaviour.
 
 ## Coexistence on web
 
 A relation needs a ref that carries a `handlerTag`, and that rule comes from
-RNGH's shared code rather than its platform code. A relation against React
-Native's `ScrollView`, or Gesture Handler 3's own, is therefore a no-op on web
-**and** on native.
+RNGH's shared code, not its platform code. So a relation against React
+Native's `ScrollView`, or Gesture Handler 3's own `ScrollView`, does nothing
+on web **and** on native.
 
 See [Coexistence](/coexistence) for the working form.
 
 ## Known unknowns
 
-These are open questions, recorded so the list is honest rather than empty.
+These are open questions. We record them so the list is honest, not empty.
 
-- **Touch screens and trackpads.** The pass above used a mouse. A trackpad and
-  a touch screen have not been checked.
+- **Touch screens and trackpads.** The pass above used a mouse. We didn't
+  check a trackpad or a touch screen.
 - **The browser's own gestures.** Text selection, press-and-hold context menus,
-  and pull-to-refresh all compete for the same input. No intent has been
-  checked against them.
-- **Mobile browsers.** Nothing has been checked on iOS Safari or Android
-  Chrome, which are the browsers most likely to differ.
+  and pull-to-refresh all compete for the same input. We checked no intent
+  against them.
+- **Mobile browsers.** We checked nothing on iOS Safari or Android Chrome, and
+  those are the browsers most likely to differ.
 - **The jsdom test per intent.** Principle 8 asks for one per intent. None
   exists.
 
@@ -2774,14 +2769,14 @@ These are open questions, recorded so the list is honest rather than empty.
 pnpm run example:web
 ```
 
-Then open each screen and record what happens. Write what you saw. An intent
-you did not test is unverified, not working.
+Then open each screen. Record what happens. An intent that you didn't test is
+unverified, not working.
 
 ---
 
 # Testing
 
-Impulse ships its own Jest wiring, so a consumer needs one line.
+Impulse ships its own Jest wiring, so you need one line.
 
 ```js
 // jest.config.js
@@ -2790,9 +2785,9 @@ module.exports = {
 }
 ```
 
-Setup and the `@react-native/jest-preset` devDependency it needs are on the
-[Installation](/installation) page. This page is about what you can and cannot
-assert once it runs.
+The setup, and the `@react-native/jest-preset` devDependency it needs, are on
+the [Installation](/installation) page. This page is about what you can and
+can't assert once it runs.
 
 ## Render inside the root view
 
@@ -2813,7 +2808,7 @@ A test that only calls `renderHook` needs no wrapper, because it renders no
 
 ## Driving a gesture
 
-Use gesture-handler's own helpers. Do not simulate raw touch events by hand.
+Use RNGH's own helpers. Don't simulate raw touch events by hand.
 
 Tag the gesture so the helper can find it:
 
@@ -2830,12 +2825,12 @@ import {
 fireGestureHandler(getByGestureTestId('card'))
 ```
 
-Every hook accepts `testId`, and it is forwarded to RNGH's `withTestId`.
+Every hook accepts `testId`, and forwards it to RNGH's `withTestId`.
 
 ## Asserting configuration
 
-A hook's activation criteria are on the gesture object, so they can be asserted
-without rendering anything:
+The activation criteria of a hook are on the gesture object, so you can assert
+them without a render:
 
 ```tsx
 const { result } = renderHook(() => useTap())
@@ -2845,40 +2840,39 @@ expect(result.current.gesture.config.maxDist).toBe(10)
 ```
 
 This is how Impulse pins its own defaults, and it is the most precise check
-available — it asks what the gesture was configured with rather than what the
-mock did with it.
+available. It asks what configuration the gesture received, not what the mock
+did with it.
 
 ## What the mock can and cannot do
 
-The preset mocks Reanimated and `react-native-worklets` deliberately thinly.
-Neither real module runs under Jest: Reanimated loads
+The preset mocks Reanimated and `react-native-worklets`, and the mocks are
+thin on purpose. Neither real module runs under Jest: Reanimated loads
 `react-native-worklets`, and worklets needs its native module.
 
 Impulse crosses to the JS thread with `scheduleOnRN` from
-`react-native-worklets`, so both mocks are load-bearing. Remove either one and
-every intent test fails at import.
+`react-native-worklets`, so both mocks are necessary. If you remove either
+one, every intent test fails at import.
 
 | | |
 | --- | --- |
 | ✅ | Assert a shared value's `.value` after driving a gesture |
-| ✅ | Assert that a JS-thread callback fired — the mock's `scheduleOnRN` calls it synchronously |
+| ✅ | Assert that a JS-thread callback fired: the mock's `scheduleOnRN` calls it synchronously |
 | ✅ | Assert a gesture's configuration |
-| ❌ | Frame-level timing — nothing schedules or animates |
+| ❌ | Frame-level timing. Nothing schedules or animates |
 
-`useAnimatedStyle`, the `Animated.*` components, and the animation functions are
-**deliberately absent** from the mock. Impulse renders none of them and starts no
-animation. If your own test needs them, add them in your own setup.
+The mock **leaves out** `useAnimatedStyle`, the `Animated.*` components, and
+the animation functions, on purpose. Impulse renders none of them and starts
+no animation. If your own test needs them, add them in your own setup.
 
 ## Three things the mock cannot see
 
-Each of these needs testing another way. None of them is a gap in your test
-suite that more Jest will close.
+Each of these needs a check another way. More Jest won't close any of them.
 
 ### 1. Gesture identity
 
-A gesture whose identity changes is re-attached by `<GestureDetector>`, and a
-re-attach mid-drag drops the drag. The mock cannot see this at all, so assert it
-directly:
+`<GestureDetector>` re-attaches a gesture whose identity changes, and a
+re-attach in the middle of a drag drops the drag. The mock can't see this, so
+assert it directly:
 
 ```tsx
 const first = result.current.gesture
@@ -2887,41 +2881,42 @@ expect(result.current.gesture).toBe(first)
 ```
 
 Impulse pins this in `gestureIdentity.test.tsx` across an inline callback, an
-inline coexistence array, a handler appearing and disappearing, and a
-composition — plus the worklet case in the other direction, where identity
-**must** change.
+inline coexistence array, a handler that appears and disappears, and a
+composition. It also pins the worklet case in the other direction, where
+identity **must** change.
 
 If you build gestures with [`useRawGesture`](/raw-gestures), this is the test to
 copy. You own the dependency list there.
 
 ### 2. Frame-level correctness and platform activation
 
-A test runner cannot tell you whether a horizontal drag inside a vertical
+A test runner can't tell you whether a horizontal drag inside a vertical
 `ScrollView` feels right, or whether a 10-point threshold is the right number.
 
 That is what the example app is for, and **a device pass is a release
-requirement, not a nicety.**
+requirement, not an option.**
 
 ### 3. A gesture that fails before it activates
 
 > **DANGER — This one produces tests that pass for the wrong reason**
 >
-> `fireGestureHandler` fills every gesture's state sequence from
+> `fireGestureHandler` fills the state sequence of every gesture from
 > `[BEGAN, ACTIVE, END]`. It injects an ACTIVE event with its own default payload
-> **before** any FAILED you give it, so `onStart` always runs.
+> **before** any FAILED that you give it, so `onStart` always runs.
 >
 > A long press released after 50 ms still reaches `onLongPress` under the mock. A
 > drag that never passed its threshold still starts.
 
-So `useDrag`'s `threshold` and `useLongPress`'s `minDuration` cannot be asserted
-behaviourally. Assert them against the gesture's **config** instead, as above.
+So you can't assert `useDrag`'s `threshold` and `useLongPress`'s `minDuration`
+by behaviour. Assert them against the **config** of the gesture instead, as
+above.
 
 Any intent whose JS-thread callback fires at `onStart` inherits this.
 
 ## Pure functions
 
 Payload normalizers and relation resolution are plain functions. Test them
-directly, with no rendering — it is faster and the failure points at the right
+directly, with no render. That is faster, and the failure points at the right
 line.
 
 ## Web
@@ -2930,21 +2925,20 @@ Web behaviour gets its own jsdom Jest project, mirroring the native/web split.
 
 > **NOTE — Not built yet**
 >
-> Principle 8 asks for a jsdom test per intent. None exists. The
-> [web survey](/web) was done by hand in a browser, and its findings are not
-> pinned by any test.
+> Principle 8 asks for a jsdom test per intent. None exists. We did the
+> [web survey](/web) by hand in a browser, and no test pins its findings.
 
 ---
 
 # AI agents and `llms.txt`
 
-A coding agent writing against Impulse has two failure modes: inventing a hook
-that does not exist, and describing a version that is not the one installed.
-These files exist to close both.
+A coding agent that writes against Impulse has two failure modes: it invents a
+hook that doesn't exist, or it describes a version that isn't the installed
+one. These files exist to close both.
 
 | File | What it is |
 | --- | --- |
-| [`/llms.txt`](pathname:///impulse/llms.txt) | A concise overview — the surface, the defaults, and the traps. Hand-written. |
+| [`/llms.txt`](pathname:///impulse/llms.txt) | A concise overview: the surface, the defaults, and the traps. Hand-written. |
 | [`/llms-full.txt`](pathname:///impulse/llms-full.txt) | Every page on this site, in sidebar order. Generated. |
 
 ## Prefer the installed copy
@@ -2955,17 +2949,17 @@ These files exist to close both.
 node_modules/@rootnative/impulse/llms.txt
 ```
 
-**That copy is the exact API of the version in the project.** Prefer it over
-anything hosted. This site describes whatever was released last, which may not
-be what an app has installed — and during alpha those differ often.
+**That copy is the exact API of the version in the project.** Use it instead
+of anything hosted. This site describes the last release, and that may not be
+the version an app installed. During alpha those differ often.
 
 The package also ships its own `src`, so an agent can read the real
-implementation rather than infer it.
+implementation instead of inferring it.
 
 ## What the overview leads with
 
-Not the feature list. The things that fail silently, because those are what an
-agent cannot discover by reading its own output:
+Not the feature list. The things that fail silently, because an agent can't
+discover those from its own output:
 
 - `useHover` and `useEdgeSwipe` are **designed and not written**. They appear
   in the design documents. They are not importable.
@@ -2973,15 +2967,15 @@ agent cannot discover by reading its own output:
   place Impulse changes a unit, and an agent that passes `Math.PI / 4` as a
   bound writes a range 40 times too wide.
 - `usePan` and `useDrag` are different hooks, and an agent that treats them as
-  synonyms writes the wrong one. `useDrag` owns a position that accumulates and
-  is clamped by `bounds`; `usePan` owns nothing and reports a per-frame
-  `change` the consumer adds up.
-- A relation against React Native's `ScrollView`, or Gesture Handler 3's own
-  `ScrollView`, is dropped by gesture-handler, because the ref carries no
-  `handlerTag`. Use `LegacyScrollView` or `LegacyFlatList` from
+  synonyms writes the wrong one. `useDrag` owns a position that accumulates,
+  and `bounds` clamps it. `usePan` owns nothing and reports a per-frame
+  `change` that you add up.
+- RNGH drops a relation against React Native's `ScrollView`, or Gesture
+  Handler 3's own `ScrollView`, because the ref carries no `handlerTag`. Use
+  `LegacyScrollView` or `LegacyFlatList` from
   `@rootnative/impulse/gesture-handler`. Impulse warns once in development
-  when the ref is filled by the time the gesture mounts, and cannot see the
-  case where it is filled later.
+  when the ref is filled before the gesture mounts. It can't see the case
+  where the ref is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire. In
   development on iOS and Android, and in Jest, Gesture Handler 3 throws an
   error that names the root view. On web and in a release build the console
@@ -2999,7 +2993,7 @@ pnpm run build:llms
 copies it into the package and builds `llms-full.txt` from the pages, in the
 order `docs/sidebars.ts` gives.
 
-Re-run it after editing any page or changing the public API. CI fails on a
+Run it again after you edit a page or change the public API. CI fails on a
 dirty diff over the generated files, and `check:artifact` fails if `llms.txt`
 is missing from the published tarball.
 
@@ -3028,8 +3022,7 @@ site reads as a promise.
 
 ## Designed, not written
 
-**Do not import these.** They are decisions that have been made, not features
-that exist.
+**Don't import these.** They are decisions, not features that exist.
 
 `useHover` · `useEdgeSwipe`
 
@@ -3037,7 +3030,7 @@ that exist.
 
 ### 1 — The composition and coexistence core
 
-The genuinely hard part, built first, because every intent depends on it.
+The hard part, built first, because every intent depends on it.
 
 **The code is complete. The mechanical half of the gate passes. The feel half
 has no result.**
@@ -3056,9 +3049,9 @@ on both platforms:
 - The race resolves. Below `maxDelay`, two taps gave one double tap and no
   single tap. Above it, two taps gave two single taps and no double tap.
 
-**The sweep does not measure feel**, and no physical device has run it. So
-each activation-criteria default on this site is still a design intention, and
-each page says what the sweep proved and what it did not.
+**The sweep doesn't measure feel**, and no physical device ran it. So each
+activation-criteria default on this site is still a design intention, and
+each page says what the sweep proved and what it didn't.
 
 ### 2 — The intent set
 
@@ -3066,18 +3059,17 @@ Eight of ten intents exist. Each one needs a screen, a docs page, and a device
 pass. The device sweep drove all eight on at least one platform. None of them
 has a feel result.
 
-- **Written, tested, documented, and on a screen** — `useTap`, `useDoubleTap`,
+- **Written, tested, documented, and on a screen:** `useTap`, `useDoubleTap`,
   `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, `useRotate`.
-- **Designed only** — `useHover`, `useEdgeSwipe`.
+- **Designed only:** `useHover`, `useEdgeSwipe`.
 
 ### 3 — The Inertia bridge
 
-`@rootnative/impulse/inertia` — adapting a release payload into
-[`@rootnative/inertia`](https://rootnative.github.io/inertia/)'s release
-transitions.
+`@rootnative/impulse/inertia` adapts a release payload into the release
+transitions of [`@rootnative/inertia`](https://rootnative.github.io/inertia/).
 
 It will be an **optional** subpath. Impulse will never require an animation
-library, which is the whole reason it is a separate package.
+library. That is the reason it is a separate package.
 
 > _Gate:_ a swipe-to-dismiss row and a pinch-to-zoom viewer built from Impulse
 > plus Inertia, with no gesture-handler or Reanimated import in the consumer
@@ -3085,40 +3077,40 @@ library, which is the whole reason it is a separate package.
 
 ## Known gaps
 
-Honest rather than empty. The ones a consumer can hit:
+The gaps you can hit:
 
-- **A relation against React Native's `ScrollView`, or Gesture Handler 3's, is
-  dropped.** The ref carries no `handlerTag`, so gesture-handler installs
-  nothing. Impulse warns once in development when it can see it, which is when
-  the ref is filled by the time the gesture mounts. A target that mounts later
-  stays silent. Use gesture-handler's `LegacyScrollView`. See
+- **RNGH drops a relation against React Native's `ScrollView`, or Gesture
+  Handler 3's `ScrollView`.** The ref carries no `handlerTag`, so RNGH
+  installs nothing. Impulse warns once in development when it can see the
+  problem, which is when the ref is filled before the gesture mounts. A target
+  that mounts later stays silent. Use RNGH's `LegacyScrollView`. See
   [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently on web and in a release
   build.** In development on iOS and Android, Gesture Handler 3 throws an error
   that names the root view. Impulse adds no warning of its own, because RNGH
-  does not export the context that would let it detect one.
-- **A cancel is reported, but the velocity that comes with it is not a
+  doesn't export the context that would let it detect a missing root view.
+- **Impulse reports a cancel, but the velocity that comes with it is not a
   throw.** Every end callback fires on both paths and carries `cancelled`. The
-  finger never lifted on the cancelled one, so springing on `velocity` flings a
-  view the user never released. See [Web behaviour](/web).
+  finger never lifted on the cancelled path, so a spring on `velocity` flings
+  a view that the finger never released. See [Web behaviour](/web).
 - **A relation target needs a cast.** RNGH types it as a ref to a component
-  *type*, which is not what `ref={}` produces.
+  *type*, and `ref={}` doesn't produce that type.
 - **`useLongPress`'s `maxDistance` cancels an active press on web**, against
-  RNGH's own documented contract. Hold-then-drag does not work there at the
+  RNGH's own documented contract. Hold-then-drag doesn't work there at the
   default.
 - **No activation default has a feel result.** The device sweep proved that
   some defaults work: the drag threshold, `useSwipe`'s `commitDistance` of 80
-  points, and `maxDelay` at 500 ms and 250 ms. It did not prove that any of
+  points, and `maxDelay` at 500 ms and 250 ms. It didn't prove that any of
   them feels right. `useSwipe`'s `commitSpeed` of 800 points per second is not
   tested, because neither harness can make a swipe that is short enough and
-  fast enough. `usePinch` and `useRotate` add no default — neither RNGH
-  recognizer exposes a threshold — so their coexistence rests entirely on a
-  relation.
+  fast enough. `usePinch` and `useRotate` add no default, because neither RNGH
+  recognizer exposes a threshold. So their coexistence rests on a relation
+  alone.
 - **`usePinch`'s `elastic` has no recommended value.** `useDrag` defaults it to
-  `0` and the example screen invented `0.35`. The resistance is also computed
-  on the scale rather than on its logarithm, so pulling below `min` resists
-  differently from pulling above `max` by the same factor. Only a hand can
-  tell whether that reads as wrong.
+  `0` and the example screen invented `0.35`. Impulse also computes the
+  resistance on the scale, not on its logarithm. So a pull below `min` resists
+  differently from a pull above `max` by the same factor. Only a hand can tell
+  whether that feels wrong.
 - **Web is surveyed by hand, not by tests.** No jsdom test exists for any
   intent.
 
@@ -3127,21 +3119,19 @@ Honest rather than empty. The ones a consumer can hit:
 These are not "later". They are decisions.
 
 - **Components.** No `<Swipeable>`, no drawer, no carousel. A component makes
-  layout and styling decisions a gesture library has no business making.
+  layout and styling decisions that a gesture library must not make.
 - **An animation vocabulary.** No springs, no transitions, no easing. Hooks
   return values; the consumer animates them.
 - **A design system.** No haptics policy, no platform-conditional feel.
 - **Solving keyboard accessibility for gestures.** Impulse names the fallback on
-  every intent page. It does not invent a keyboard gesture model.
+  every intent page. It doesn't invent a keyboard gesture model.
 
 ## Before `1.0.0`
 
-The API has to be validated against **one component library and one independent
-application**, neither of which has to be ours — and the example app does not
-count.
+We must validate the API against **one component library and one independent
+application**. Neither has to be ours, and the example app doesn't count.
 
-An API co-designed with its only consumer cannot surface the assumptions the two
-share, and shared assumptions are exactly what a major version lock makes
-permanent.
+An API co-designed with its only consumer can't show the assumptions the two
+share. A major version lock makes shared assumptions permanent.
 
 `1.0.0` is the API stability lock, not a quality signal.

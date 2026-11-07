@@ -19,12 +19,12 @@ happened**.
 
 ## Why the split is in the name
 
-A frame-by-frame stream and a semantic event are different things. A consumer
-who has to ask "which thread is this?" will eventually guess wrong, and a wrong
-guess fails on the UI thread with an unhelpful message.
+A frame-by-frame stream and a semantic event are different things. If you have
+to ask "which thread is this?", you will guess wrong one day. A wrong guess
+fails on the UI thread with an unhelpful message.
 
-The rejected alternative was a `runOnJS: true` flag per hook. That makes the
-thread invisible at the call site and pushes the question into the docs.
+We rejected a `runOnJS: true` flag per hook. That flag makes the thread
+invisible at the call site and pushes the question into the docs.
 
 ## Intent callbacks: Impulse owns the boundary
 
@@ -55,19 +55,18 @@ runs on the UI thread, so it can write a shared value every frame without a
 round trip.
 
 If you forget the directive, Impulse warns once in development. The warning
-names the hook and the callback. Without it, the first touch that reaches the
-phase throws `Tried to synchronously call a Remote Function. Called
-"anonymous"`, which names neither.
+names the hook and the callback. Without that warning, the first touch that
+reaches the phase throws `Tried to synchronously call a Remote Function.
+Called "anonymous"`, and that message names neither.
 
 :::danger Never close over JS-thread state in a worklet
 
 Read a shared value, or cross back with `scheduleOnRN` from
-`react-native-worklets`. A captured plain variable goes stale or crashes, and it
-does so on the UI thread where the message tells you almost nothing.
+`react-native-worklets`. A captured plain variable goes stale or crashes. It
+does so on the UI thread, where the message tells you almost nothing.
 
-Do not reach for `runOnJS` from `react-native-reanimated`. Reanimated 4
-re-exports that name from `react-native-worklets` and marks the re-export
-deprecated.
+Don't use `runOnJS` from `react-native-reanimated`. Reanimated 4 re-exports
+that name from `react-native-worklets` and marks the re-export deprecated.
 
 :::
 
@@ -86,46 +85,45 @@ const style = useAnimatedStyle(() => ({
 ```
 
 `react-native-worklets` copies a captured object field by field, through
-`Object.entries`. An RNGH gesture cannot cross the thread boundary, so a plain
+`Object.entries`. An RNGH gesture can't cross the thread boundary, so a plain
 result would throw `[Worklets] Cannot copy value of type 'PanGesture'` at
-render — from the pattern every page on this site shows.
+render, from the pattern that every page on this site shows.
 
-Every intent result therefore hides `gesture` and `ref` from enumeration. Both
-are still properties and still read normally, so
+So every intent result hides `gesture` and `ref` from enumeration. Both are
+still properties, and you read them as usual, so
 `<GestureDetector gesture={drag.gesture}>` and every coexistence option are
-unaffected. The copy skips them and the shared values go across, which is all a
-worklet wanted.
+unaffected. The copy skips them, and the shared values go across, which is all
+a worklet needs.
 
 :::note What this changes for you
 
-Nothing you write. One thing you may observe: `gesture` and `ref` do not appear
-in `Object.keys`, in a spread, in `JSON.stringify`, or in a logged result. Read
-them by name.
+Nothing in the code you write. One thing you may see: `gesture` and `ref`
+don't appear in `Object.keys`, in a spread, in `JSON.stringify`, or in a
+logged result. Read them by name.
 
 :::
 
 ## The asymmetry that keeps gestures stable
 
-This is the part that looks like an implementation detail and is not.
+This part looks like an implementation detail, and it isn't.
 
 **A JS-thread callback is never a gesture dependency.** Impulse routes it
-through a stable identity, so writing it inline is free:
+through a stable identity, so an inline callback is free:
 
 ```tsx
 // Safe. This does not rebuild the gesture on every render.
 const tap = useTap({ onTap: () => setCount(count + 1) })
 ```
 
-Without that, an inline callback changes the gesture's identity every render,
-`<GestureDetector>` re-attaches the gesture, and a re-attach in the middle of a
-drag drops the drag.
+Without that, an inline callback would change the identity of the gesture on
+every render. `<GestureDetector>` would then re-attach the gesture, and a
+re-attach in the middle of a drag drops the drag.
 
-**A worklet callback is always a gesture dependency.** It has to be. A worklet
-is captured as written, so swapping its body underneath would leave the UI
-thread running the version it was serialized with — silently, with no error and
-no stale-closure warning.
+**A worklet callback is always a gesture dependency.** It has to be. Worklets
+capture a function as written. A swap of its body would leave the UI thread
+with the serialized version, with no error and no stale-closure warning.
 
-So the two are handled in opposite ways, on purpose:
+So Impulse handles the two in opposite ways, on purpose:
 
 | Callback | Inline is free | Why |
 | --- | --- | --- |
@@ -134,15 +132,16 @@ So the two are handled in opposite ways, on purpose:
 
 :::note Keep worklet callbacks stable yourself
 
-If you pass a phase callback, define it outside the component or wrap it so its
-identity is stable. An inline worklet rebuilds the gesture on every render.
+If you pass a phase callback, define it outside the component, or wrap it so
+that its identity is stable. An inline worklet rebuilds the gesture on every
+render.
 
 :::
 
-One exception worth knowing: adding or removing an intent callback **does**
-rebuild the gesture. RNGH decides which thread a gesture's callbacks run on by
-inspecting the ones it was given, so `onTap` appearing or disappearing has to
-change the gesture. Calling a different function does not.
+One exception: when you add or remove an intent callback, Impulse **does**
+rebuild the gesture. RNGH inspects the callbacks it receives to decide which
+thread they run on, so a change in whether `onTap` exists has to change the
+gesture. A different function in the same slot doesn't.
 
 ## `isActive` is a shared value
 
@@ -155,27 +154,27 @@ const style = useAnimatedStyle(() => ({
 ```
 
 It is a shared value so a pressed state runs on the UI thread with no
-re-render. Reading `.value` during render works, but tells you only what was
-true at the last commit.
+re-render. A read of `.value` during render works, but it tells you only what
+was true at the last commit.
 
 :::warning `isActive` does not mean the same thing in every hook
 
-`useTap` and `useDoubleTap` set it at `onBegin` — while the finger is down.
+`useTap` and `useDoubleTap` set it at `onBegin`, while the finger is down.
 `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`
-set it at recognition — once the gesture actually started.
+set it at recognition, once the gesture started.
 
 `useDoubleTap`'s `isActive` is also `true` for every ordinary single tap on
 the view, so it is not a pressed state. See
 [`useDoubleTap`](/use-double-tap).
 
-Both readings are right for their own hook: a tap's whole life is the touch,
-and a long press that flagged every touch would flag nothing useful. Check the
-hook's own page before you drive UI from it.
+Both readings are right for their own hook. The whole life of a tap is the
+touch, and a long press that flagged every touch would flag nothing useful.
+Check the page of the hook before you use it in UI.
 
 :::
 
 ## Escape hatch
 
-[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary for
-you. There you build the gesture, so RNGH decides per callback by whether it
-carries the `'worklet'` directive.
+[`useRawGesture`](/raw-gestures) does **not** insert a `scheduleOnRN` boundary
+for you. There you build the gesture, so RNGH decides per callback, by the
+presence of the `'worklet'` directive.
