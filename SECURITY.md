@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Impulse is pre-`1.0.0`. Only the latest release receives security fixes.
+Only the latest release gets security fixes.
 
 | Version                             | Supported |
 | ----------------------------------- | --------- |
