@@ -42,37 +42,13 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onDoubleTap` fires on both endings, and `cancelled` says which. `true` means
+the system took the double tap away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 A single tap with no second tap is **not** this path. It never activates. It
 reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
-
-```tsx
-const double = useDoubleTap({
-  onDoubleTap: (event, { cancelled }) => {
-    if (cancelled) return
-    zoomIn(event)
-  },
-})
-```
 
 ## Payload
 

@@ -159,16 +159,16 @@ the next gesture starts.
 
 ## The cancel path
 
-`onPinchEnd` fires for both endings, and `cancelled` says which. `true` means
-the system took the pinch away: a competing gesture won, or the app went to
-the background.
+`onPinchEnd` fires on both endings, and `cancelled` says which. `true` means
+the system took the pinch away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement, not a release. Read `settled` on both paths: an elastic overshoot
-has to go home on both endings.
+movement, not a release. Read `settled` on both paths: an elastic overshoot has
+to go home on both endings.
 
-A touch that never became a pinch reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never became a pinch reaches neither path.
 
 ## Web
 

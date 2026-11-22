@@ -176,25 +176,10 @@ in `onFinalize`, which runs on both paths.
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onDragEnd` fires on both endings, and `cancelled` says which. `true` means the
+system took the drag away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 A touch that never passed `threshold` reaches neither path. `onDragEnd` still
 means the drag activated.

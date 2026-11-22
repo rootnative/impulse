@@ -100,30 +100,14 @@ hold-then-drag), don't rely on the default `maxDistance`. Raise it explicitly.
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onLongPressEnd` fires on both endings, and `cancelled` says which. `true`
+means the system took the press away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 For a long press, `cancelled` is also `true` when the finger moves past
 `maxDistance` while it is still down. That is the common case. `isActive`
-clears, so UI driven from it recovers. Before this argument existed, state
-held in React didn't recover.
+clears, so UI driven from it recovers.
 
 ```tsx
 const hold = useLongPress({
@@ -141,11 +125,6 @@ const hold = useLongPress({
 
 A touch that never passed `minDuration` reaches neither path. So `onLongPress`
 always fires before `onLongPressEnd`.
-
-`onFinalize` is unchanged. It is still the place to undo what `onBegin` set.
-It fires for every touch that reached the view, so its `success: false` covers
-two cases: a touch that never became a long press, and a cancelled press. Use
-`cancelled` to tell those apart.
 
 ## Activation criteria
 

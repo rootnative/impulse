@@ -38,6 +38,49 @@ const tap = useTap({
 
 You write an ordinary function. Impulse inserts the `scheduleOnRN` boundary.
 
+## The cancel path
+
+Every end callback fires on **both** endings: `onTap`, `onDoubleTap`,
+`onLongPressEnd`, `onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and
+`onRotateEnd`. The second argument says which:
+
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
+
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It's `false`
+for the ordinary ending.
+
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
+
+```tsx
+const tap = useTap({
+  onTap: (event, { cancelled }) => {
+    if (cancelled) return
+    select(item.id)
+  },
+})
+```
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
+
+`onFinalize` is still the place to undo what `onBegin` set. It fires for every
+touch that reached the view, so its `success: false` covers two cases: a touch
+that never activated, and a cancelled gesture. Use `cancelled` to tell those
+apart.
+
+On the cancelled path, the finger never lifted. So the `velocity` of a drag,
+pan, swipe, pinch or rotation describes the last movement, not a release. A
+spring or a commit on it acts on a release that never happened.
+
+Each intent page says what else its cancel path does.
+
 ## Phase callbacks: you own the worklet
 
 ```tsx

@@ -490,38 +490,14 @@ See [Threads and callbacks](/threads).
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onTap` fires on both endings, and `cancelled` says which. `true` means the
+system took the tap away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 A touch that moved past `maxDistance` or stayed down past `maxDuration` was
 never a tap. It doesn't reach `onTap` on either path. It reaches `onFinalize`
 with `success: false` and stops there.
-
-```tsx
-const tap = useTap({
-  onTap: (event, { cancelled }) => {
-    if (cancelled) return
-    select(item.id)
-  },
-})
-```
 
 ## Payload
 
@@ -668,37 +644,13 @@ Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onDoubleTap` fires on both endings, and `cancelled` says which. `true` means
+the system took the double tap away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 A single tap with no second tap is **not** this path. It never activates. It
 reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
-
-```tsx
-const double = useDoubleTap({
-  onDoubleTap: (event, { cancelled }) => {
-    if (cancelled) return
-    zoomIn(event)
-  },
-})
-```
 
 ## Payload
 
@@ -931,30 +883,14 @@ hold-then-drag), don't rely on the default `maxDistance`. Raise it explicitly.
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onLongPressEnd` fires on both endings, and `cancelled` says which. `true`
+means the system took the press away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 For a long press, `cancelled` is also `true` when the finger moves past
 `maxDistance` while it is still down. That is the common case. `isActive`
-clears, so UI driven from it recovers. Before this argument existed, state
-held in React didn't recover.
+clears, so UI driven from it recovers.
 
 ```tsx
 const hold = useLongPress({
@@ -972,11 +908,6 @@ const hold = useLongPress({
 
 A touch that never passed `minDuration` reaches neither path. So `onLongPress`
 always fires before `onLongPressEnd`.
-
-`onFinalize` is unchanged. It is still the place to undo what `onBegin` set.
-It fires for every touch that reached the view, so its `success: false` covers
-two cases: a touch that never became a long press, and a cancelled press. Use
-`cancelled` to tell those apart.
 
 ## Activation criteria
 
@@ -1218,25 +1149,10 @@ in `onFinalize`, which runs on both paths.
 
 ## The cancel path
 
-Every end callback fires on **both** endings, and the second argument says
-which:
-
-```ts
-interface IntentEndInfo {
-  cancelled: boolean
-}
-```
-
-`cancelled` is `true` when the system took the gesture away: a competing
-gesture in a relation won, or the app went to the background. It is `false`
-for the ordinary ending.
-
-Read it before you act. A handler that navigates, submits, or counts must do
-nothing when `cancelled` is `true`.
-
-A gesture that never activated reaches neither ending. It goes to `onFinalize`
-with `success: false` and stops there. So `cancelled` never reports the end of
-a gesture that never started.
+`onDragEnd` fires on both endings, and `cancelled` says which. `true` means the
+system took the drag away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 A touch that never passed `threshold` reaches neither path. `onDragEnd` still
 means the drag activated.
@@ -1413,16 +1329,16 @@ that has no such escape.
 
 ## The cancel path
 
-`onPanEnd` fires for both endings, and `cancelled` says which. `true` means
-the system took the pan away: a competing gesture won, or the app went to the
-background.
+`onPanEnd` fires on both endings, and `cancelled` says which. `true` means the
+system took the pan away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The finger never lifted on that path, so `velocity` describes the last
 movement, not a release. A spring on it flings a view that the finger never
 released.
 
-A touch that never passed `threshold` reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never passed `threshold` reaches neither path.
 
 ## Web
 
@@ -1597,7 +1513,12 @@ back**. That is an animation, and Impulse owns no animation vocabulary.
 
 ## The cancel path
 
-A cancelled gesture **never commits**. The finger didn't lift, so the velocity
+`onSwipeEnd` fires on both endings, and `cancelled` says which. `true` means
+the system took the swipe away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
+
+A cancelled swipe **never commits**. The finger didn't lift, so the velocity
 describes the last movement, not a release. An action on it would commit a
 swipe that the finger never finished.
 
@@ -1779,16 +1700,16 @@ the next gesture starts.
 
 ## The cancel path
 
-`onPinchEnd` fires for both endings, and `cancelled` says which. `true` means
-the system took the pinch away: a competing gesture won, or the app went to
-the background.
+`onPinchEnd` fires on both endings, and `cancelled` says which. `true` means
+the system took the pinch away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement, not a release. Read `settled` on both paths: an elastic overshoot
-has to go home on both endings.
+movement, not a release. Read `settled` on both paths: an elastic overshoot has
+to go home on both endings.
 
-A touch that never became a pinch reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never became a pinch reaches neither path.
 
 ## Web
 
@@ -1978,16 +1899,16 @@ turn, and it exposes no threshold.
 
 ## The cancel path
 
-`onRotateEnd` fires for both endings, and `cancelled` says which. `true` means
+`onRotateEnd` fires on both endings, and `cancelled` says which. `true` means
 the system took the rotation away: a competing gesture won, or the app went to
-the background.
+the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement, not a release. Read `settled` on both paths: an elastic overshoot
-has to go home on both endings.
+movement, not a release. Read `settled` on both paths: an elastic overshoot has
+to go home on both endings.
 
-A touch that never became a rotation reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never became a rotation reaches neither path.
 
 ## Web
 
@@ -2374,6 +2295,49 @@ const tap = useTap({
 
 You write an ordinary function. Impulse inserts the `scheduleOnRN` boundary.
 
+## The cancel path
+
+Every end callback fires on **both** endings: `onTap`, `onDoubleTap`,
+`onLongPressEnd`, `onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and
+`onRotateEnd`. The second argument says which:
+
+```ts
+interface IntentEndInfo {
+  cancelled: boolean
+}
+```
+
+`cancelled` is `true` when the system took the gesture away: a competing
+gesture in a relation won, or the app went to the background. It's `false`
+for the ordinary ending.
+
+Read it before you act. A handler that navigates, submits, or counts must do
+nothing when `cancelled` is `true`.
+
+```tsx
+const tap = useTap({
+  onTap: (event, { cancelled }) => {
+    if (cancelled) return
+    select(item.id)
+  },
+})
+```
+
+A gesture that never activated reaches neither ending. It goes to `onFinalize`
+with `success: false` and stops there. So `cancelled` never reports the end of
+a gesture that never started.
+
+`onFinalize` is still the place to undo what `onBegin` set. It fires for every
+touch that reached the view, so its `success: false` covers two cases: a touch
+that never activated, and a cancelled gesture. Use `cancelled` to tell those
+apart.
+
+On the cancelled path, the finger never lifted. So the `velocity` of a drag,
+pan, swipe, pinch or rotation describes the last movement, not a release. A
+spring or a commit on it acts on a release that never happened.
+
+Each intent page says what else its cancel path does.
+
 ## Phase callbacks: you own the worklet
 
 ```tsx
@@ -2713,7 +2677,7 @@ const hold = useLongPress({
 Every end callback works this way: `onTap`, `onDoubleTap`, `onLongPressEnd`,
 `onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and `onRotateEnd`. Each
 fires on both endings, and `cancelled` says which. See
-[the cancel path](/use-long-press#the-cancel-path) for the full contract.
+[the cancel path](/threads#the-cancel-path) for the full contract.
 
 Before this argument existed, only `onFinalize` reported a cancel, and
 `onFinalize` is a worklet. So a screen that held its phase in React state had

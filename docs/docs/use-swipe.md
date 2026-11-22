@@ -158,7 +158,12 @@ when you want the numbers.
 
 ## The cancel path
 
-A cancelled gesture **never commits**. The finger didn't lift, so the velocity
+`onSwipeEnd` fires on both endings, and `cancelled` says which. `true` means
+the system took the swipe away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
+
+A cancelled swipe **never commits**. The finger didn't lift, so the velocity
 describes the last movement, not a release. An action on it would commit a
 swipe that the finger never finished.
 

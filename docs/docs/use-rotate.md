@@ -168,16 +168,16 @@ See [Coexistence](/coexistence).
 
 ## The cancel path
 
-`onRotateEnd` fires for both endings, and `cancelled` says which. `true` means
+`onRotateEnd` fires on both endings, and `cancelled` says which. `true` means
 the system took the rotation away: a competing gesture won, or the app went to
-the background.
+the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The fingers never lifted on that path, so `velocity` describes the last
-movement, not a release. Read `settled` on both paths: an elastic overshoot
-has to go home on both endings.
+movement, not a release. Read `settled` on both paths: an elastic overshoot has
+to go home on both endings.
 
-A touch that never became a rotation reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never became a rotation reaches neither path.
 
 ## Web
 

@@ -143,16 +143,16 @@ See [Coexistence](/coexistence).
 
 ## The cancel path
 
-`onPanEnd` fires for both endings, and `cancelled` says which. `true` means
-the system took the pan away: a competing gesture won, or the app went to the
-background.
+`onPanEnd` fires on both endings, and `cancelled` says which. `true` means the
+system took the pan away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
 
 The finger never lifted on that path, so `velocity` describes the last
 movement, not a release. A spring on it flings a view that the finger never
 released.
 
-A touch that never passed `threshold` reaches neither path. It goes to
-`onFinalize` with `success: false` and stops there.
+A touch that never passed `threshold` reaches neither path.
 
 ## Web
 

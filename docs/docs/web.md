@@ -72,7 +72,7 @@ const hold = useLongPress({
 Every end callback works this way: `onTap`, `onDoubleTap`, `onLongPressEnd`,
 `onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and `onRotateEnd`. Each
 fires on both endings, and `cancelled` says which. See
-[the cancel path](/use-long-press#the-cancel-path) for the full contract.
+[the cancel path](/threads#the-cancel-path) for the full contract.
 
 Before this argument existed, only `onFinalize` reported a cancel, and
 `onFinalize` is a worklet. So a screen that held its phase in React state had
