@@ -6,6 +6,16 @@ All notable changes to `@rootnative/impulse` are documented here. The format fol
 
 `0.0.0-alpha.2` is on npm, cut from the `core@0.0.0-alpha.2` tag. This section holds every change since it.
 
+### Documentation
+
+- **`SECURITY.md` no longer says that nothing is published.**
+- **The README says what happens when the finger moves during a long press.** It said that the finger may travel freely after recognition. That is the contract of RNGH. On the web, a move past `maxDistance` during a hold cancels the press, and native isn't checked.
+- **The intent callbacks are listed in full.** The Threads page listed 6 of the 14 intent callbacks. The web page, the README and the `IntentEndInfo` doc comment named 4 of the 8 end callbacks that take `IntentEndInfo`.
+- **The AI page gives the right size for a bound in radians.** It said that `Math.PI / 4`, read as degrees, gives a range 40 times too wide. It gives a range about 57 times too narrow.
+- **The install page lists the subpaths of all eight intents, and the README says that eight intents ship.**
+- **The full cancel-path contract is on the Threads and callbacks page.** Each intent page keeps a short version and the facts of its own intent.
+- **Some links into the docs changed.** Eleven headings now use contractions, such as "What Impulse doesn't do", so their anchors changed. A link to an old anchor opens the page at the top.
+
 ## [0.0.0-alpha.2] - 2026-11-01
 
 The third alpha, and the first on the Expo SDK 58 band. It moves the peers to React Native 0.88 and Gesture Handler 3, keeps the builder API, and corrects the install docs. An Expo SDK 57 app stays on `0.0.0-alpha.1`.
