@@ -13,7 +13,7 @@ ergonomic wrapper around
 (RNGH).
 
 Impulse supports iOS and Android, and web is partial: four of the eight intents
-are verified in a browser. Electron, macOS, and Windows are not tested. See
+are checked in a browser. Electron, macOS, and Windows are not tested. See
 [Platforms](/installation#platforms).
 
 You write a gesture as an intent. You don't assemble it from a builder chain,
@@ -116,7 +116,7 @@ for what happens rather than for the method it calls. The
 | There is no swipe direction, no double tap, no pinch about a focal point. Each one is `Pan` plus maths you write again per project. | One hook per intent. The intent is the primary surface, and the mechanism is the escape hatch. |
 | Every semantic callback needs `runOnJS`, and a mistake fails on the UI thread with an unhelpful message. | The callback name states its thread. `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onDragEnd`, and `onLongPress` run on JS, and Impulse owns the boundary. |
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
-| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
+| A gesture-only control is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
 ## What Impulse doesn't do
 

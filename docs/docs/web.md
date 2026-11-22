@@ -9,10 +9,10 @@ description: What each Impulse intent does on react-native-web, and what has not
 Web is a platform, not a footnote. RNGH's web implementation differs from its
 native one. This page exists so that you don't discover that in each project.
 
-:::note What "verified" means here
+:::note What "checked" means here
 
-We ran each verified row in a desktop browser against the example app. We
-didn't check the rows marked **unverified**, and they are not claims.
+We ran each checked row in a desktop browser against the example app. We
+didn't check the rows marked **not checked**, and they aren't claims.
 
 :::
 
@@ -20,14 +20,14 @@ didn't check the rows marked **unverified**, and they are not claims.
 
 | Intent | Activation criteria honoured | Behaviour in a browser |
 | --- | --- | --- |
-| `useTap` | Yes, verified in RNGH's source | **Works** |
-| `useDoubleTap` | Yes, verified in RNGH's source | **Works** |
-| `useLongPress` | Yes, verified in RNGH's source | **Works**, with two limits below |
-| `useDrag` | Yes, verified in RNGH's source | **Works** |
-| `usePan` | Yes, verified in RNGH's source | **Unverified** |
-| `useSwipe` | Yes, verified in RNGH's source | **Unverified** |
-| `usePinch` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
-| `useRotate` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
+| `useTap` | Yes, checked in RNGH's source | **Works** |
+| `useDoubleTap` | Yes, checked in RNGH's source | **Works** |
+| `useLongPress` | Yes, checked in RNGH's source | **Works**, with two limits below |
+| `useDrag` | Yes, checked in RNGH's source | **Works** |
+| `usePan` | Yes, checked in RNGH's source | **Not checked** |
+| `useSwipe` | Yes, checked in RNGH's source | **Not checked** |
+| `usePinch` | No criteria to honour | **Not checked**, and a trackpad can't drive it. See below |
+| `useRotate` | No criteria to honour | **Not checked**, and a trackpad can't drive it. See below |
 
 The first four intents recognize correctly under a mouse on web. We didn't run
 the last four in a browser, so their rows are not claims.
@@ -49,7 +49,7 @@ fallbacks of [`usePinch`](/use-pinch#accessibility) and
 browser's own page zoom is unaffected in both cases.
 
 We read this in RNGH's web implementation and didn't measure it. That is why
-the two rows above still say unverified.
+the two rows above still say not checked.
 
 ## The cancel path reports on the JS thread
 
@@ -91,8 +91,8 @@ will fail"*. A recognized press should tolerate travel.
 Its web implementation doesn't do that. `checkDistanceFail()` runs on every
 pointer move, and when the gesture is already active, it calls `cancel()`.
 
-So on web, a move past `maxDistance` during a hold ends the press. **Native is
-unverified.** RNGH's documentation says travel is allowed there, so this may
+So on web, a move past `maxDistance` during a hold ends the press. **Native isn't
+checked.** RNGH's documentation says travel is allowed there, so this may
 be a real platform split.
 
 The practical cost: **hold-then-drag doesn't work on web at the default
@@ -129,5 +129,5 @@ These are open questions. We record them so the list is honest, not empty.
 pnpm run example:web
 ```
 
-Then open each screen. Record what happens. An intent that you didn't test is
-unverified, not working.
+Then open each screen. Record what happens. An intent that you didn't test counts as
+not checked, not as working.

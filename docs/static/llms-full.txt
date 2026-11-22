@@ -15,7 +15,7 @@ ergonomic wrapper around
 (RNGH).
 
 Impulse supports iOS and Android, and web is partial: four of the eight intents
-are verified in a browser. Electron, macOS, and Windows are not tested. See
+are checked in a browser. Electron, macOS, and Windows are not tested. See
 [Platforms](/installation#platforms).
 
 You write a gesture as an intent. You don't assemble it from a builder chain,
@@ -114,7 +114,7 @@ for what happens rather than for the method it calls. The
 | There is no swipe direction, no double tap, no pinch about a focal point. Each one is `Pan` plus maths you write again per project. | One hook per intent. The intent is the primary surface, and the mechanism is the escape hatch. |
 | Every semantic callback needs `runOnJS`, and a mistake fails on the UI thread with an unhelpful message. | The callback name states its thread. `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onDragEnd`, and `onLongPress` run on JS, and Impulse owns the boundary. |
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
-| A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
+| A gesture-only control is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
 ## What Impulse doesn't do
 
@@ -196,7 +196,7 @@ we checked on each platform.
 | --- | --- |
 | iOS | **Supported (alpha).** An XCUITest sweep on an iOS simulator drove every intent. No physical device ran it. |
 | Android | **Supported (alpha).** An injected-touch sweep on an Android emulator drove every intent. No physical device ran it. |
-| Web | **Partial.** `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser. `usePan`, `useSwipe`, `usePinch`, and `useRotate` are not verified. No automated test covers web. |
+| Web | **Partial.** `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser. `usePan`, `useSwipe`, `usePinch`, and `useRotate` aren't checked. No automated test covers web. |
 | macOS, Windows | **Not tested.** |
 | Electron | **Not tested.** Expo has no Electron target. |
 
@@ -603,7 +603,7 @@ Lower [`maxDelay`](/use-double-tap) instead of building the pair by hand.
 
 ## Web
 
-Verified working. RNGH recognizes a tap from pointer events, and a
+Checked: it works. RNGH recognizes a tap from pointer events, and a
 single-finger tap behaves as it does on native.
 
 `pointers` above 1 is unreliable on web: a mouse reports one pointer, and touch
@@ -620,7 +620,7 @@ Whatever the tap does must be reachable another way:
 - declare it with `accessibilityActions` and `onAccessibilityAction` on the view
   the gesture is attached to.
 
-**A tap-only affordance is a bug, not a trade-off.**
+**A tap-only control is a bug, not a trade-off.**
 
 > **TIP — A plain tap rarely needs this hook**
 >
@@ -810,7 +810,7 @@ const triple = useRawGesture(() => Gesture.Tap().numberOfTaps(3), [])
 
 ## Web
 
-Verified working. A double click behaves as a double tap.
+Checked: it works. A double click behaves as a double tap.
 
 Two limits:
 
@@ -835,7 +835,7 @@ Whatever the double tap does must be reachable another way: an explicit control,
 or `accessibilityActions` with `onAccessibilityAction` on the view the gesture is
 attached to.
 
-**A double-tap-only affordance is a bug, not a trade-off.**
+**A double-tap-only control is a bug, not a trade-off.**
 
 ---
 
@@ -912,7 +912,7 @@ lifts. It isn't `true` from touch-down.
 
 ## `maxDistance` differs by platform
 
-> **DANGER — Verified divergence between web and RNGH's own contract**
+> **DANGER — Checked: the web breaks RNGH's own contract**
 >
 > **RNGH documents** `maxDist` as applying only before activation: *"If the finger
 > travels further than the defined distance and the handler hasn't yet activated,
@@ -922,8 +922,8 @@ lifts. It isn't `true` from touch-down.
 > pointer move. If the gesture is already active, it **cancels** the gesture.
 >
 > So on web, a pointer that moves past `maxDistance` during a hold ends the
-> press. We verified this in a browser and in RNGH's source. **Native is
-> unverified.** RNGH's documented behaviour says travel is allowed there, so this
+> press. We checked this in a browser and in RNGH's source. **Native isn't
+> checked.** RNGH's documented behaviour says travel is allowed there, so this
 > may be a real platform split. See [Web behaviour](/web).
 
 If your control needs the finger to move after the recognized press (a
@@ -1035,7 +1035,7 @@ Raise two values for this to work:
 
 ## Web
 
-Verified working. A held mouse button recognizes.
+Checked: it works. A held mouse button recognizes.
 
 Two limits. This hook doesn't suppress the browser's own context menu, so a
 right-button press or a held touch can open both. And `maxDistance` cancels an
@@ -1052,7 +1052,7 @@ This hook doesn't fix that.
 > every assistive technology. `accessibilityActions` with `onAccessibilityAction`
 > names the same action explicitly.
 
-**A long-press-only affordance is a bug, not a trade-off.**
+**A long-press-only control is a bug, not a trade-off.**
 
 ---
 
@@ -1258,7 +1258,7 @@ const drag = useDrag({
 
 ## Web
 
-Verified working. A mouse drag behaves the same as a touch drag, and `velocity`
+Checked: it works. A mouse drag behaves the same as a touch drag, and `velocity`
 has the same units.
 
 A trackpad's momentum scroll is not a pan and never reaches this hook.
@@ -1276,7 +1276,7 @@ Whatever the drag adjusts must be reachable another way:
 - `accessibilityActions` with `onAccessibilityAction`: `increment` and
   `decrement` for a value, `magicTap` or a named action for a dismissal
 
-**A drag-only affordance is a bug, not a trade-off.**
+**A drag-only control is a bug, not a trade-off.**
 
 ---
 
@@ -1443,7 +1443,7 @@ Whatever the pan moves must be reachable another way:
 - a reset control for a panned canvas
 - `accessibilityActions` with `onAccessibilityAction`
 
-**A pan-only affordance is a bug, not a trade-off.**
+**A pan-only control is a bug, not a trade-off.**
 
 ---
 
@@ -2011,7 +2011,7 @@ Whatever the rotation turns must be reachable another way:
 - a control that returns it to zero
 - `accessibilityActions` with `onAccessibilityAction`
 
-**A rotate-only affordance is a bug, not a trade-off.**
+**A rotate-only control is a bug, not a trade-off.**
 
 ---
 
@@ -2652,23 +2652,23 @@ above. It does the memoisation for you and accepts the coexistence options.
 Web is a platform, not a footnote. RNGH's web implementation differs from its
 native one. This page exists so that you don't discover that in each project.
 
-> **NOTE — What "verified" means here**
+> **NOTE — What "checked" means here**
 >
-> We ran each verified row in a desktop browser against the example app. We
-> didn't check the rows marked **unverified**, and they are not claims.
+> We ran each checked row in a desktop browser against the example app. We
+> didn't check the rows marked **not checked**, and they aren't claims.
 
 ## Status by intent
 
 | Intent | Activation criteria honoured | Behaviour in a browser |
 | --- | --- | --- |
-| `useTap` | Yes, verified in RNGH's source | **Works** |
-| `useDoubleTap` | Yes, verified in RNGH's source | **Works** |
-| `useLongPress` | Yes, verified in RNGH's source | **Works**, with two limits below |
-| `useDrag` | Yes, verified in RNGH's source | **Works** |
-| `usePan` | Yes, verified in RNGH's source | **Unverified** |
-| `useSwipe` | Yes, verified in RNGH's source | **Unverified** |
-| `usePinch` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
-| `useRotate` | No criteria to honour | **Unverified**, and a trackpad can't drive it. See below |
+| `useTap` | Yes, checked in RNGH's source | **Works** |
+| `useDoubleTap` | Yes, checked in RNGH's source | **Works** |
+| `useLongPress` | Yes, checked in RNGH's source | **Works**, with two limits below |
+| `useDrag` | Yes, checked in RNGH's source | **Works** |
+| `usePan` | Yes, checked in RNGH's source | **Not checked** |
+| `useSwipe` | Yes, checked in RNGH's source | **Not checked** |
+| `usePinch` | No criteria to honour | **Not checked**, and a trackpad can't drive it. See below |
+| `useRotate` | No criteria to honour | **Not checked**, and a trackpad can't drive it. See below |
 
 The first four intents recognize correctly under a mouse on web. We didn't run
 the last four in a browser, so their rows are not claims.
@@ -2690,7 +2690,7 @@ fallbacks of [`usePinch`](/use-pinch#accessibility) and
 browser's own page zoom is unaffected in both cases.
 
 We read this in RNGH's web implementation and didn't measure it. That is why
-the two rows above still say unverified.
+the two rows above still say not checked.
 
 ## The cancel path reports on the JS thread
 
@@ -2732,8 +2732,8 @@ will fail"*. A recognized press should tolerate travel.
 Its web implementation doesn't do that. `checkDistanceFail()` runs on every
 pointer move, and when the gesture is already active, it calls `cancel()`.
 
-So on web, a move past `maxDistance` during a hold ends the press. **Native is
-unverified.** RNGH's documentation says travel is allowed there, so this may
+So on web, a move past `maxDistance` during a hold ends the press. **Native isn't
+checked.** RNGH's documentation says travel is allowed there, so this may
 be a real platform split.
 
 The practical cost: **hold-then-drag doesn't work on web at the default
@@ -2770,8 +2770,8 @@ These are open questions. We record them so the list is honest, not empty.
 pnpm run example:web
 ```
 
-Then open each screen. Record what happens. An intent that you didn't test is
-unverified, not working.
+Then open each screen. Record what happens. An intent that you didn't test counts as
+not checked, not as working.
 
 ---
 
@@ -3039,7 +3039,7 @@ has no result.**
 
 > _Gate:_ a horizontal `useDrag` inside a vertical `ScrollView` works on iOS and
 > Android hardware, and a `useTap` / `useDoubleTap` race resolves correctly.
-> Verified on a device, not in Jest.
+> Checked on a device, not in Jest.
 
 **A device sweep ran on 2026-09-19 and 2026-09-20**, on an Android emulator
 with injected touches and on an iOS simulator with XCUITest. Both checks passed

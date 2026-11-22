@@ -79,7 +79,7 @@ touch would flag nothing useful. For a pressed state, compose a
 
 ## `maxDistance` differs by platform
 
-:::danger Verified divergence between web and RNGH's own contract
+:::danger Checked: the web breaks RNGH's own contract
 
 **RNGH documents** `maxDist` as applying only before activation: *"If the finger
 travels further than the defined distance and the handler hasn't yet activated,
@@ -89,8 +89,8 @@ it will fail."* So a recognized press should tolerate travel.
 pointer move. If the gesture is already active, it **cancels** the gesture.
 
 So on web, a pointer that moves past `maxDistance` during a hold ends the
-press. We verified this in a browser and in RNGH's source. **Native is
-unverified.** RNGH's documented behaviour says travel is allowed there, so this
+press. We checked this in a browser and in RNGH's source. **Native isn't
+checked.** RNGH's documented behaviour says travel is allowed there, so this
 may be a real platform split. See [Web behaviour](/web).
 
 :::
@@ -204,7 +204,7 @@ Raise two values for this to work:
 
 ## Web
 
-Verified working. A held mouse button recognizes.
+Checked: it works. A held mouse button recognizes.
 
 Two limits. This hook doesn't suppress the browser's own context menu, so a
 right-button press or a held touch can open both. And `maxDistance` cancels an
@@ -223,4 +223,4 @@ names the same action explicitly.
 
 :::
 
-**A long-press-only affordance is a bug, not a trade-off.**
+**A long-press-only control is a bug, not a trade-off.**

@@ -218,7 +218,7 @@ const drag = useDrag({
 
 ## Web
 
-Verified working. A mouse drag behaves the same as a touch drag, and `velocity`
+Checked: it works. A mouse drag behaves the same as a touch drag, and `velocity`
 has the same units.
 
 A trackpad's momentum scroll is not a pan and never reaches this hook.
@@ -236,4 +236,4 @@ Whatever the drag adjusts must be reachable another way:
 - `accessibilityActions` with `onAccessibilityAction`: `increment` and
   `decrement` for a value, `magicTap` or a named action for a dismissal
 
-**A drag-only affordance is a bug, not a trade-off.**
+**A drag-only control is a bug, not a trade-off.**

@@ -173,4 +173,4 @@ Whatever the pan moves must be reachable another way:
 - a reset control for a panned canvas
 - `accessibilityActions` with `onAccessibilityAction`
 
-**A pan-only affordance is a bug, not a trade-off.**
+**A pan-only control is a bug, not a trade-off.**

@@ -42,7 +42,7 @@ has no result.**
 
 > _Gate:_ a horizontal `useDrag` inside a vertical `ScrollView` works on iOS and
 > Android hardware, and a `useTap` / `useDoubleTap` race resolves correctly.
-> Verified on a device, not in Jest.
+> Checked on a device, not in Jest.
 
 **A device sweep ran on 2026-09-19 and 2026-09-20**, on an Android emulator
 with injected touches and on an iOS simulator with XCUITest. Both checks passed

@@ -201,4 +201,4 @@ Whatever the rotation turns must be reachable another way:
 - a control that returns it to zero
 - `accessibilityActions` with `onAccessibilityAction`
 
-**A rotate-only affordance is a bug, not a trade-off.**
+**A rotate-only control is a bug, not a trade-off.**

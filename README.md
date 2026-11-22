@@ -73,10 +73,10 @@
 | [`useDoubleTap`](https://rootnative.github.io/impulse/use-double-tap/) | Two taps, paired with a single tap | Works under a mouse |
 | [`useLongPress`](https://rootnative.github.io/impulse/use-long-press/) | A press held past a duration, while the finger is down | Works under a mouse |
 | [`useDrag`](https://rootnative.github.io/impulse/use-drag/) | An `x` and a `y` that follow the finger, with bounds and elastic | Works under a mouse |
-| [`usePan`](https://rootnative.github.io/impulse/use-pan/) | The movement of each frame. Your screen owns the position. | Not verified |
-| [`useSwipe`](https://rootnative.github.io/impulse/use-swipe/) | A pan judged at release: which way, and how hard | Not verified |
-| [`usePinch`](https://rootnative.github.io/impulse/use-pinch/) | A two-finger pinch that owns its scale | Not verified |
-| [`useRotate`](https://rootnative.github.io/impulse/use-rotate/) | A two-finger rotation that owns its angle, in degrees | Not verified |
+| [`usePan`](https://rootnative.github.io/impulse/use-pan/) | The movement of each frame. Your screen owns the position. | Not checked |
+| [`useSwipe`](https://rootnative.github.io/impulse/use-swipe/) | A pan judged at release: which way, and how hard | Not checked |
+| [`usePinch`](https://rootnative.github.io/impulse/use-pinch/) | A two-finger pinch that owns its scale | Not checked |
+| [`useRotate`](https://rootnative.github.io/impulse/use-rotate/) | A two-finger rotation that owns its angle, in degrees | Not checked |
 | `useHover`, `useEdgeSwipe` | Designed, not written | — |
 
 ## 📱 Try it

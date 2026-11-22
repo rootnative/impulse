@@ -172,7 +172,7 @@ Lower [`maxDelay`](/use-double-tap) instead of building the pair by hand.
 
 ## Web
 
-Verified working. RNGH recognizes a tap from pointer events, and a
+Checked: it works. RNGH recognizes a tap from pointer events, and a
 single-finger tap behaves as it does on native.
 
 `pointers` above 1 is unreliable on web: a mouse reports one pointer, and touch
@@ -189,7 +189,7 @@ Whatever the tap does must be reachable another way:
 - declare it with `accessibilityActions` and `onAccessibilityAction` on the view
   the gesture is attached to.
 
-**A tap-only affordance is a bug, not a trade-off.**
+**A tap-only control is a bug, not a trade-off.**
 
 :::tip A plain tap rarely needs this hook
 

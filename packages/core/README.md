@@ -24,7 +24,7 @@ In an Expo app, `npx expo install` picks the peer versions that match your SDK, 
 
 **Peer dependencies:** `react >=19.3.0`, `react-native >=0.88.0 <0.89.0`, `react-native-gesture-handler >=3.3.0 <4.0.0`, `react-native-reanimated >=4.7.0 <4.8.0`, `react-native-worklets >=0.13.0 <0.14.0`. This is the Expo SDK 58 band; an Expo SDK 57 app uses `0.0.0-alpha.1`.
 
-**Platforms:** iOS and Android are supported (alpha). Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and the other four intents are not verified. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested. See [Platforms](https://rootnative.github.io/impulse/installation#platforms).
+**Platforms:** iOS and Android are supported (alpha). Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and the other four intents aren't checked. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested. See [Platforms](https://rootnative.github.io/impulse/installation#platforms).
 
 Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires. In development on iOS and Android, RNGH 3 throws an error that names the root view. On web and in a release build, nothing happens and nothing logs.
 
@@ -84,7 +84,7 @@ The payload is shaped by intent, not passed through: `{ x, y, absolute: { x, y }
 
 The device sweep of 2026-09-19 didn't test either default.
 
-**Accessibility.** A tap gesture is invisible to a screen reader and unreachable from a keyboard, and this hook doesn't fix that. Whatever the tap does must be reachable another way: the same action on a `<Pressable>`, or `accessibilityActions` on the view. A tap-only affordance is a bug, not a trade-off.
+**Accessibility.** A tap gesture is invisible to a screen reader and unreachable from a keyboard, and this hook doesn't fix that. Whatever the tap does must be reachable another way: the same action on a `<Pressable>`, or `accessibilityActions` on the view. A tap-only control is a bug, not a trade-off.
 
 **Web.** A single-finger tap behaves as it does on native. `pointers` above 1 is unreliable, because a mouse reports one pointer and touch emulation varies by browser.
 
@@ -138,7 +138,7 @@ const hold = useLongPress({
 | Option | Default | Note |
 | --- | --- | --- |
 | `minDuration` | `500` ms | RNGH's own default, restated. Below about 200 ms you can't tell it from a held tap. |
-| `maxDistance` | `10` points | RNGH's own default. RNGH documents it as a bound on the **wait**, not the hold. On the web, a move past it during a hold cancels the press. Native is unverified. See [`maxDistance` differs by platform](https://rootnative.github.io/impulse/use-long-press#maxdistance-differs-by-platform). |
+| `maxDistance` | `10` points | RNGH's own default. RNGH documents it as a bound on the **wait**, not the hold. On the web, a move past it during a hold cancels the press. Native isn't checked. See [`maxDistance` differs by platform](https://rootnative.github.io/impulse/use-long-press#maxdistance-differs-by-platform). |
 
 **Hold, then drag.** RNGH has no "activate after this one activates" relation, so it is two gestures and a gate. Run them `alongside` each other. Let the worklets of the drag read `hold.isActive`. Raise the `threshold` of the drag too, or the drag activates before the press does.
 

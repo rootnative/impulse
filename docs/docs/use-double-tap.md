@@ -190,7 +190,7 @@ const triple = useRawGesture(() => Gesture.Tap().numberOfTaps(3), [])
 
 ## Web
 
-Verified working. A double click behaves as a double tap.
+Checked: it works. A double click behaves as a double tap.
 
 Two limits:
 
@@ -217,4 +217,4 @@ Whatever the double tap does must be reachable another way: an explicit control,
 or `accessibilityActions` with `onAccessibilityAction` on the view the gesture is
 attached to.
 
-**A double-tap-only affordance is a bug, not a trade-off.**
+**A double-tap-only control is a bug, not a trade-off.**
