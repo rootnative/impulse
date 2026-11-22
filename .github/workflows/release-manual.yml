@@ -20,8 +20,7 @@ name: Release (manual)
 # creates the GitHub Release, and redeploys the docs.
 #
 # `check:versions` fails when the CHANGELOG has no section for the new version,
-# so a forgotten release note stops the run before anything is pushed. The
-# full sequence, and what to do when a step fails, is in RELEASING.md.
+# so a forgotten release note stops the run before anything is pushed.
 on:
   workflow_dispatch:
     inputs:
@@ -242,7 +241,7 @@ jobs:
           echo "  1. Is '.github/workflows/release-manual.yml' registered as a trusted publisher for @rootnative/impulse on npmjs.com? npm binds to the exact filename."
           echo "  2. Does the job still have 'id-token: write'?"
           echo "  3. Did the step run plain 'npm publish'? The publisher is stage-only on npmjs.com and rejects it. This workflow must call 'npm stage publish'."
-          echo "If the release commit and tag were already pushed, see 'When a run fails' in RELEASING.md."
+          echo "If the release commit and tag were already pushed: keep the commit, delete the tag with 'git push --delete origin core@<version>', and run again with the same custom_version."
 
       - name: Create the GitHub Release
         if: ${{ !inputs.dry_run }}
@@ -275,7 +274,7 @@ jobs:
             if [ "$JOB_STATUS" != "success" ]; then
               echo "### Release \`${VERSION:-?}\` failed"
               echo ""
-              echo "See 'When a run fails' in RELEASING.md for what was released and what to do."
+              echo "A failure before the push released nothing. If the stage failed, the release commit and the tag are on main: delete the tag, and run again with the same custom_version."
             elif [ "$DRY" = "true" ]; then
               echo "### Dry run — nothing was pushed or published"
               echo ""

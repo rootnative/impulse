@@ -137,7 +137,7 @@ if (extras.length > 0) {
     `packages/: ${extras.join(', ')} ${extras.length === 1 ? 'is' : 'are'} public ` +
       `alongside core. This repository ships one package. Adding a second one is a ` +
       `release-shape decision — decide whether it versions with core or on its own, ` +
-      `record it in RELEASING.md, and teach this script the answer. Do not copy ` +
+      `record the decision, and teach this script the answer. Do not copy ` +
       `Inertia's lockstep: that coupling is what Impulse exists to avoid.`,
   )
 }
