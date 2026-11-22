@@ -98,34 +98,6 @@ may be a real platform split. See [Web behaviour](/web).
 If your control needs the finger to move after the recognized press (a
 hold-then-drag), don't rely on the default `maxDistance`. Raise it explicitly.
 
-## The cancel path
-
-`onLongPressEnd` fires on both endings, and `cancelled` says which. `true`
-means the system took the press away: a competing gesture won, or the app went
-to the background. Read it before you act. The full contract is in [The cancel
-path](/threads#the-cancel-path).
-
-For a long press, `cancelled` is also `true` when the finger moves past
-`maxDistance` while it is still down. That is the common case. `isActive`
-clears, so UI driven from it recovers.
-
-```tsx
-const hold = useLongPress({
-  onLongPress: () => setPhase('held'),
-  onLongPressEnd: (event, { cancelled }) => {
-    if (cancelled) {
-      setPhase('cancelled')
-      return
-    }
-    setPhase('released')
-    stopRecording(event.duration)
-  },
-})
-```
-
-A touch that never passed `minDuration` reaches neither path. So `onLongPress`
-always fires before `onLongPressEnd`.
-
 ## Activation criteria
 
 `minDuration` and `maxDistance` are both RNGH's own numbers. Impulse restates
@@ -180,6 +152,34 @@ Raise two values for this to work:
 - **the `maxDistance` of this hook**. Otherwise, on web, the movement of the
   drag cancels the press that gates it. The defaults don't make this pattern
   work there.
+
+## The cancel path
+
+`onLongPressEnd` fires on both endings, and `cancelled` says which. `true`
+means the system took the press away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
+
+For a long press, `cancelled` is also `true` when the finger moves past
+`maxDistance` while it is still down. That is the common case. `isActive`
+clears, so UI driven from it recovers.
+
+```tsx
+const hold = useLongPress({
+  onLongPress: () => setPhase('held'),
+  onLongPressEnd: (event, { cancelled }) => {
+    if (cancelled) {
+      setPhase('cancelled')
+      return
+    }
+    setPhase('released')
+    stopRecording(event.duration)
+  },
+})
+```
+
+A touch that never passed `minDuration` reaches neither path. So `onLongPress`
+always fires before `onLongPressEnd`.
 
 ## Web
 

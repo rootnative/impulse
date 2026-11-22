@@ -127,6 +127,16 @@ spring needs. Impulse doesn't travel it, because a value that moves over time
 is an animation, and this library owns no animation vocabulary. See
 [the design principles](/).
 
+## Writing `scale` is how control comes back
+
+```ts
+pinch.scale // SharedValue<number>
+```
+
+A reset button, a zoom-out control, or a release spring writes it directly. The
+next pinch continues from the value it holds, so a write also decides where
+the next gesture starts.
+
 ## There are no activation criteria
 
 There is nothing to set. RNGH's pinch takes the touch as soon as a second
@@ -146,16 +156,6 @@ a scroll view, or a gesture from another library. See
 [Coexistence](/coexistence).
 
 :::
-
-## Writing `scale` is how control comes back
-
-```ts
-pinch.scale // SharedValue<number>
-```
-
-A reset button, a zoom-out control, or a release spring writes it directly. The
-next pinch continues from the value it holds, so a write also decides where
-the next gesture starts.
 
 ## The cancel path
 

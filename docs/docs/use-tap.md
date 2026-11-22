@@ -53,17 +53,6 @@ it in `onFinalize`, which runs on both paths.
 
 :::
 
-## The cancel path
-
-`onTap` fires on both endings, and `cancelled` says which. `true` means the
-system took the tap away: a competing gesture won, or the app went to the
-background. Read it before you act. The full contract is in [The cancel
-path](/threads#the-cancel-path).
-
-A touch that moved past `maxDistance` or stayed down past `maxDuration` was
-never a tap. It doesn't reach `onTap` on either path. It reaches `onFinalize`
-with `success: false` and stops there.
-
 ## Payload
 
 Both tap hooks share one `TapEvent`, because they recognize the same touch and
@@ -145,6 +134,17 @@ the single tap wait to learn whether a second tap is coming.
 
 The cost is latency: the single tap can't report for `maxDelay` milliseconds.
 Lower [`maxDelay`](/use-double-tap) instead of building the pair by hand.
+
+## The cancel path
+
+`onTap` fires on both endings, and `cancelled` says which. `true` means the
+system took the tap away: a competing gesture won, or the app went to the
+background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
+
+A touch that moved past `maxDistance` or stayed down past `maxDuration` was
+never a tap. It doesn't reach `onTap` on either path. It reaches `onFinalize`
+with `success: false` and stops there.
 
 ## Web
 

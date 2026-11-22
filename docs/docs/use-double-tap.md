@@ -40,16 +40,6 @@ half**, and it has its own section below.
 Every hook also takes `alongside`, `blocks`, `deferTo`, and `testId`. See
 [Coexistence](/coexistence).
 
-## The cancel path
-
-`onDoubleTap` fires on both endings, and `cancelled` says which. `true` means
-the system took the double tap away: a competing gesture won, or the app went
-to the background. Read it before you act. The full contract is in [The cancel
-path](/threads#the-cancel-path).
-
-A single tap with no second tap is **not** this path. It never activates. It
-reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
-
 ## Payload
 
 The same [`TapEvent`](/use-tap) that `useTap` receives: one payload, not two
@@ -66,69 +56,6 @@ interface TapEvent {
 
 **The payload describes the second tap**, which is the one you mean when you ask
 where the double tap happened.
-
-## Pairing with a single tap
-
-This is the composition that makes both work.
-
-```tsx
-const double = useDoubleTap({ maxDelay: 250, onDoubleTap: zoomIn })
-const tap = useTap({ onTap: select })
-
-const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
-```
-
-Two things must be right, and both fail quietly when they are not:
-
-1. **The mode is `exclusive`, not `race`.** `exclusive` tries the members in
-   order. A later member activates only after every earlier member failed, so
-   the single tap waits for a possible second tap. A single tap recognizes on
-   the first release, so in a `race` it wins every time and the double tap
-   never fires.
-2. **The double tap comes first in the list.** Order is what `exclusive` reads.
-
-:::warning The single tap pays `maxDelay` in latency
-
-Once composed, an ordinary single tap on that view can't report until the
-`maxDelay` window closes without a second tap. At the default that is half a
-second on every tap.
-
-**When a composed single tap feels slow, lower `maxDelay` first.**
-
-:::
-
-**A view that only needs a double tap doesn't need the composition.** Use this
-hook alone. It waits on nothing, and nothing pays the latency.
-
-## Activation criteria
-
-`maxDuration` and `maxDelay` are RNGH's own defaults. Impulse restates them,
-so an RNGH release can't move them.
-
-`maxDistance` is Impulse's number, and it matches `useTap` on purpose. A
-double tap that accepts less travel than a single tap on the same view is a
-difference nobody asked for. A move of that value moves both.
-
-:::warning `maxDelay: 500` is probably too generous
-
-It is RNGH's number. The platforms themselves use something closer to 250–300 ms.
-Impulse restates the upstream default instead of inventing a different
-unmeasured guess.
-
-The device sweep of 2026-09-19 measured the boundary on an Android emulator.
-Two taps closer together than `maxDelay` gave one double tap and no single tap.
-Two taps further apart gave two single taps and no double tap. **A deliberate
-double tap still registered at 250 ms**, on the emulator and on an iOS
-simulator. The single-tap latency on the emulator was about 610 ms at 500 and
-about 375 ms at 250.
-
-The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
-physical device must check that number. Whether the latency feels acceptable
-is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
-500 and 250, so you can feel the trade between single-tap latency and
-double-tap tolerance.
-
-:::
 
 ## Result
 
@@ -163,6 +90,79 @@ import { Gesture } from '@rootnative/impulse/gesture-handler'
 
 const triple = useRawGesture(() => Gesture.Tap().numberOfTaps(3), [])
 ```
+
+## Activation criteria
+
+`maxDuration` and `maxDelay` are RNGH's own defaults. Impulse restates them,
+so an RNGH release can't move them.
+
+`maxDistance` is Impulse's number, and it matches `useTap` on purpose. A
+double tap that accepts less travel than a single tap on the same view is a
+difference nobody asked for. A move of that value moves both.
+
+:::warning `maxDelay: 500` is probably too generous
+
+It is RNGH's number. The platforms themselves use something closer to 250–300 ms.
+Impulse restates the upstream default instead of inventing a different
+unmeasured guess.
+
+The device sweep of 2026-09-19 measured the boundary on an Android emulator.
+Two taps closer together than `maxDelay` gave one double tap and no single tap.
+Two taps further apart gave two single taps and no double tap. **A deliberate
+double tap still registered at 250 ms**, on the emulator and on an iOS
+simulator. The single-tap latency on the emulator was about 610 ms at 500 and
+about 375 ms at 250.
+
+The emulator moved both boundaries about 110 ms past the `maxDelay` value. A
+physical device must check that number. Whether the latency feels acceptable
+is still unmeasured. `example/screens/DoubleTapScreen.tsx` switches between
+500 and 250, so you can feel the trade between single-tap latency and
+double-tap tolerance.
+
+:::
+
+## Pairing with a single tap
+
+This is the composition that makes both work.
+
+```tsx
+const double = useDoubleTap({ maxDelay: 250, onDoubleTap: zoomIn })
+const tap = useTap({ onTap: select })
+
+const { gesture } = useGestures([double, tap], { mode: 'exclusive' })
+```
+
+Two things must be right, and both fail quietly when they are not:
+
+1. **The mode is `exclusive`, not `race`.** `exclusive` tries the members in
+   order. A later member activates only after every earlier member failed, so
+   the single tap waits for a possible second tap. A single tap recognizes on
+   the first release, so in a `race` it wins every time and the double tap
+   never fires.
+2. **The double tap comes first in the list.** Order is what `exclusive` reads.
+
+:::warning The single tap pays `maxDelay` in latency
+
+Once composed, an ordinary single tap on that view can't report until the
+`maxDelay` window closes without a second tap. At the default that is half a
+second on every tap.
+
+**When a composed single tap feels slow, lower `maxDelay` first.**
+
+:::
+
+**A view that only needs a double tap doesn't need the composition.** Use this
+hook alone. It waits on nothing, and nothing pays the latency.
+
+## The cancel path
+
+`onDoubleTap` fires on both endings, and `cancelled` says which. `true` means
+the system took the double tap away: a competing gesture won, or the app went
+to the background. Read it before you act. The full contract is in [The cancel
+path](/threads#the-cancel-path).
+
+A single tap with no second tap is **not** this path. It never activates. It
+reaches `onFinalize` with `success: false` and never reaches `onDoubleTap`.
 
 ## Web
 
