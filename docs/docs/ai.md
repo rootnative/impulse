@@ -38,8 +38,9 @@ discover those from its own output:
 - `useHover` and `useEdgeSwipe` are **designed and not written**. They appear
   in the design documents. They are not importable.
 - `useRotate` reports **degrees**, not the radians RNGH reports. It is the one
-  place Impulse changes a unit, and an agent that passes `Math.PI / 4` as a
-  bound writes a range 40 times too wide.
+  place Impulse changes a unit. An agent that passes `Math.PI / 4` as a bound
+  means 45 degrees, but Impulse reads 0.785 degrees: a range about 57 times
+  too narrow.
 - `usePan` and `useDrag` are different hooks, and an agent that treats them as
   synonyms writes the wrong one. `useDrag` owns a position that accumulates,
   and `bounds` clamps it. `usePan` owns nothing and reports a per-frame

@@ -133,12 +133,12 @@ const hold = useLongPress({
 
 `isActive` is the **held** state, not a pressed state. It turns true at recognition, not at touch-down, so an ordinary tap on the view never changes it. The payload carries `duration`: about `minDuration` at `onLongPress`, and the whole hold at `onLongPressEnd`. A hold-to-record control stops on that value.
 
-**Every end callback takes a second argument.** `onTap`, `onDoubleTap`, `onLongPressEnd`, and `onDragEnd` each fire on both endings, and `cancelled` says which. It is `true` when the system took the gesture away. Check it before you navigate, submit, or count. Without it, only `onFinalize` reports a cancel, and `onFinalize` is a worklet. So a component that holds its phase in React state would cross the thread boundary by hand.
+**Every end callback takes a second argument.** `onTap`, `onDoubleTap`, `onLongPressEnd`, `onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd`, and `onRotateEnd` each fire on both endings, and `cancelled` says which. It is `true` when the system took the gesture away. Check it before you navigate, submit, or count. Without it, only `onFinalize` reports a cancel, and `onFinalize` is a worklet. So a component that holds its phase in React state would cross the thread boundary by hand.
 
 | Option | Default | Note |
 | --- | --- | --- |
 | `minDuration` | `500` ms | RNGH's own default, restated. Below about 200 ms you can't tell it from a held tap. |
-| `maxDistance` | `10` points | RNGH's own default. It bounds the **wait**, not the hold. The finger may travel freely after recognition. |
+| `maxDistance` | `10` points | RNGH's own default. RNGH documents it as a bound on the **wait**, not the hold. On the web, a move past it during a hold cancels the press. Native is unverified. See [`maxDistance` differs by platform](https://rootnative.github.io/impulse/use-long-press#maxdistance-differs-by-platform). |
 
 **Hold, then drag.** RNGH has no "activate after this one activates" relation, so it is two gestures and a gate. Run them `alongside` each other. Let the worklets of the drag read `hold.isActive`. Raise the `threshold` of the drag too, or the drag activates before the press does.
 

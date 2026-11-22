@@ -9,8 +9,6 @@ Only the latest release gets security fixes.
 | `@rootnative/impulse`, latest release | Yes       |
 | Older releases                      | No        |
 
-Nothing is published yet, so there is no supported release today.
-
 ## Report a vulnerability
 
 Do not open a public issue for a security problem.

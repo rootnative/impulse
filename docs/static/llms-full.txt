@@ -2348,7 +2348,7 @@ which**.
 | Kind | Names | Thread |
 | --- | --- | --- |
 | Phase | `onBegin`, `onUpdate`, `onFinalize` | UI thread. They are worklets. |
-| Intent | `onTap`, `onDoubleTap`, `onLongPress`, `onLongPressEnd`, `onDragStart`, `onDragEnd` | JS thread. |
+| Intent | `onTap`, `onDoubleTap`, `onLongPress`, `onLongPressEnd`, `onDragStart`, `onDragEnd`, `onPanStart`, `onPanEnd`, `onSwipe`, `onSwipeEnd`, `onPinchStart`, `onPinchEnd`, `onRotateStart`, `onRotateEnd` | JS thread. |
 
 A phase name says **when** in the gesture you are. An intent name says **what
 happened**.
@@ -2711,7 +2711,8 @@ const hold = useLongPress({
 ```
 
 Every end callback works this way: `onTap`, `onDoubleTap`, `onLongPressEnd`,
-and `onDragEnd`. Each fires on both endings, and `cancelled` says which. See
+`onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and `onRotateEnd`. Each
+fires on both endings, and `cancelled` says which. See
 [the cancel path](/use-long-press#the-cancel-path) for the full contract.
 
 Before this argument existed, only `onFinalize` reported a cancel, and
@@ -2964,8 +2965,9 @@ discover those from its own output:
 - `useHover` and `useEdgeSwipe` are **designed and not written**. They appear
   in the design documents. They are not importable.
 - `useRotate` reports **degrees**, not the radians RNGH reports. It is the one
-  place Impulse changes a unit, and an agent that passes `Math.PI / 4` as a
-  bound writes a range 40 times too wide.
+  place Impulse changes a unit. An agent that passes `Math.PI / 4` as a bound
+  means 45 degrees, but Impulse reads 0.785 degrees: a range about 57 times
+  too narrow.
 - `usePan` and `useDrag` are different hooks, and an agent that treats them as
   synonyms writes the wrong one. `useDrag` owns a position that accumulates,
   and `bounds` clamps it. `usePan` owns nothing and reports a per-frame

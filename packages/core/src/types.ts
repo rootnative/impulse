@@ -197,8 +197,8 @@ export interface IntentResult<G extends GestureType> {
  * How a gesture ended, handed to every intent's end callback as its second
  * argument.
  *
- * The end callbacks — `onTap`, `onDoubleTap`, `onLongPressEnd`, `onDragEnd` —
- * fire on both paths: a gesture the user completed, and one the system took
+ * The end callbacks — `onTap`, `onDoubleTap`, `onLongPressEnd`, `onDragEnd`,
+ * `onPanEnd`, `onSwipeEnd`, `onPinchEnd`, `onRotateEnd` — fire on both paths: a gesture the user completed, and one the system took
  * away. This says which. Without it, a cancel is reported only by
  * `onFinalize`, which is a worklet, so a consumer holding phase in React
  * state has to write `'worklet'` plus `scheduleOnRN` by hand.

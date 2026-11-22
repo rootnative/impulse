@@ -12,7 +12,7 @@ which**.
 | Kind | Names | Thread |
 | --- | --- | --- |
 | Phase | `onBegin`, `onUpdate`, `onFinalize` | UI thread. They are worklets. |
-| Intent | `onTap`, `onDoubleTap`, `onLongPress`, `onLongPressEnd`, `onDragStart`, `onDragEnd` | JS thread. |
+| Intent | `onTap`, `onDoubleTap`, `onLongPress`, `onLongPressEnd`, `onDragStart`, `onDragEnd`, `onPanStart`, `onPanEnd`, `onSwipe`, `onSwipeEnd`, `onPinchStart`, `onPinchEnd`, `onRotateStart`, `onRotateEnd` | JS thread. |
 
 A phase name says **when** in the gesture you are. An intent name says **what
 happened**.

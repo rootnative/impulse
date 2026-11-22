@@ -70,7 +70,8 @@ const hold = useLongPress({
 ```
 
 Every end callback works this way: `onTap`, `onDoubleTap`, `onLongPressEnd`,
-and `onDragEnd`. Each fires on both endings, and `cancelled` says which. See
+`onDragEnd`, `onPanEnd`, `onSwipeEnd`, `onPinchEnd` and `onRotateEnd`. Each
+fires on both endings, and `cancelled` says which. See
 [the cancel path](/use-long-press#the-cancel-path) for the full contract.
 
 Before this argument existed, only `onFinalize` reported a cancel, and
