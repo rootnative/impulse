@@ -12,7 +12,7 @@
 
 Declarative gesture primitives for React Native, built as a thin wrapper around [`react-native-gesture-handler`](https://docs.swmansion.com/react-native-gesture-handler/) (RNGH). You write a gesture as an intent, not as a builder chain.
 
-> **Status:** `0.0.0-alpha.2`, an alpha. Today the package ships the composition and coexistence core (`useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options), eight intent hooks (**`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**), and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. A device sweep on 2026-09-19 measured the activation criteria that a scripted touch can reach. Nobody has tested how a gesture feels. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
+> **Status:** `0.0.0-alpha.3`, an alpha. Today the package ships the composition and coexistence core (`useGestures`, `useRawGesture`, and the `alongside` / `blocks` / `deferTo` options), eight intent hooks (**`useTap`, `useDoubleTap`, `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`**), and the `@rootnative/impulse/gesture-handler` interop subpath. `useHover` and `useEdgeSwipe` are **not implemented**. A device sweep on 2026-09-19 measured the activation criteria that a scripted touch can reach. Nobody has tested how a gesture feels. See the [CHANGELOG](https://github.com/rootnative/impulse/blob/main/packages/core/CHANGELOG.md).
 
 ## Install
 

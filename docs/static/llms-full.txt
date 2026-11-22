@@ -2967,7 +2967,7 @@ is missing from the published tarball.
 
 # Roadmap
 
-Impulse is at `0.0.0-alpha.2`. This page says what exists, so nothing on this
+Impulse is at `0.0.0-alpha.3`. This page says what exists, so nothing on this
 site reads as a promise.
 
 ## What ships today
