@@ -131,8 +131,8 @@ function buildLlmsFull() {
   const header = [
     '# Impulse — full documentation',
     '',
-    '> Every documentation page, in sidebar order. Generated from docs/docs by',
-    '> scripts/build-llms.mjs — do not edit by hand.',
+    '> Every documentation page, in sidebar order. scripts/build-llms.mjs builds',
+    "> this file from docs/docs. Don't edit it by hand.",
     '',
     '> Source: https://github.com/rootnative/impulse',
     '> Site:   https://rootnative.github.io/impulse/',
@@ -152,8 +152,8 @@ const checkOnly = process.argv.includes('--check')
 
 if (!existsSync(llmsTxtPath)) {
   throw new Error(
-    `[build-llms] ${llmsTxtPath} is missing. It is written by hand, not ` +
-      `generated — this script only copies it into the package.`,
+    `[build-llms] ${llmsTxtPath} is missing. You write it by hand, and ` +
+      `this script only copies it into the package.`,
   )
 }
 
