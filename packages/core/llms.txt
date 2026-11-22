@@ -27,12 +27,12 @@ npm install @rootnative/impulse
 Peers (the Expo SDK 58 band): react >=19.3.0, react-native >=0.88.0 <0.89.0,
 react-native-gesture-handler >=3.3.0 <4.0.0, react-native-reanimated >=4.7.0
 <4.8.0, react-native-worklets >=0.13.0 <0.14.0. An Expo SDK 57 app uses
-0.0.0-alpha.1. Impulse builds gestures with the Gesture Handler builder API
-(Gesture.Pan()); a Gesture Handler 3 hook gesture (usePanGesture) does not
+0.0.0-alpha.1. Impulse builds gestures with the RNGH builder API
+(Gesture.Pan()); an RNGH 3 hook gesture (usePanGesture) does not
 compose with an Impulse gesture.
 
 Render a <GestureHandlerRootView> above every component that uses a gesture.
-If it is missing, gestures never fire. Gesture Handler 3 throws in development
+If it is missing, gestures never fire. RNGH 3 throws in development
 on iOS and Android, and in Jest (wrap each render: { wrapper:
 GestureHandlerRootView }). On web and in a release build, nothing warns.
 
@@ -122,7 +122,7 @@ deferTo   -> the named gesture wins  (requireExternalGestureToFail)
 Name another hook's .ref, not its .gesture.
 
 TRAP: a relation target must carry a handlerTag. React Native's ScrollView has
-none, and neither has Gesture Handler 3's own ScrollView, so RNGH drops the
+none, and neither has RNGH 3's own ScrollView, so RNGH drops the
 relation SILENTLY on every platform. Use LegacyScrollView / LegacyFlatList,
 from @rootnative/impulse/gesture-handler.
 

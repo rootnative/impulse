@@ -84,7 +84,7 @@ const drag = useDrag({
 })
 ```
 
-> **INFO — Two sharp edges Impulse does not absorb yet**
+> **INFO — Two sharp edges Impulse doesn't absorb yet**
 >
 > `scrollRef` needs an `as unknown as GestureReference` cast in both snippets.
 > RNGH types a relation target as a ref to a component *type*. `ref={}` doesn't
@@ -94,7 +94,7 @@ const drag = useDrag({
 > decision.
 >
 > `scrollRef` must also come from RNGH's `LegacyScrollView`, not from React
-> Native's `ScrollView` or from Gesture Handler 3's `ScrollView`. RNGH resolves
+> Native's `ScrollView` or from RNGH 3's `ScrollView`. RNGH resolves
 > a relation through `ref.current?.handlerTag`. It drops a ref that has no tag,
 > and it doesn't warn. Impulse warns in development when it catches this. See
 > [Coexistence](/coexistence).
@@ -116,7 +116,7 @@ for what happens rather than for the method it calls. The
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
 | A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
-## What Impulse does not do
+## What Impulse doesn't do
 
 Impulse **detects**. It doesn't animate.
 
@@ -140,7 +140,7 @@ Full setup, including the peers and the root view, is on the
 Impulse needs `react-native-gesture-handler` and `react-native-reanimated` as
 peers. Your app must render a `<GestureHandlerRootView>` above any component
 that uses a gesture. **If that view is missing, the gesture never fires.** In
-development on iOS and Android, Gesture Handler 3 throws. On web and in a
+development on iOS and Android, RNGH 3 throws. On web and in a
 release build, nothing warns you.
 
 ## A first gesture
@@ -210,7 +210,7 @@ npx expo install react-dom react-native-web
 ```
 
 The example app runs on web with `react-native-web` 0.21, `react-dom` 19.3.0,
-and Gesture Handler 3.3. [Web behaviour](/web) lists each intent, the
+and RNGH 3.3. [Web behaviour](/web) lists each intent, the
 differences from native, and the open questions.
 
 ## Install the package
@@ -248,12 +248,12 @@ In a bare React Native app, install them with your package manager. Then run
 > purpose. Don't widen them.
 
 Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
-0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+0.88.1, RNGH 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
 SDK 57 app uses `0.0.0-alpha.1`.
 
-Impulse builds its gestures with the builder API of Gesture Handler
-(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+Impulse builds its gestures with the builder API of RNGH
+(`Gesture.Pan()`). RNGH 3 marks that API as deprecated, and it still
+runs it. A gesture from the RNGH 3 hook API (`usePanGesture`)
 doesn't compose with an Impulse gesture. A relation target must be
 `LegacyScrollView` or `LegacyFlatList`. See [Coexistence](/coexistence).
 
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
 > **DANGER — A missing root view fails silently on web and in a release build**
 >
 > Without it, your gestures never fire. In development on iOS and Android,
-> Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
+> RNGH 3 throws: `GestureDetector must be used as a descendant of
 > GestureHandlerRootView`. The same error stops a Jest test that renders a
 > `<GestureDetector>` outside the root view. See [Testing](/testing).
 >
@@ -482,7 +482,7 @@ the boundary.
 their identity stable, because a worklet is a direct gesture dependency.
 See [Threads and callbacks](/threads).
 
-> **NOTE — Being a candidate is not winning**
+> **NOTE — Being a candidate isn't winning**
 >
 > `onBegin` fires on touch-down. In a race with a long press or a drag, the
 > gesture may still fail afterwards. Use `onBegin` to show a pressed state. Undo
@@ -784,7 +784,7 @@ double.ref        // name it in another hook's coexistence options
 double.isActive   // SharedValue<boolean>
 ```
 
-> **DANGER — `isActive` is not a pressed state here**
+> **DANGER — `isActive` isn't a pressed state here**
 >
 > It is `true` from the first finger down until the pair resolves. So it is
 > `true` for **every ordinary single tap on the view**, and most of those end in
@@ -797,7 +797,7 @@ double.isActive   // SharedValue<boolean>
 most touches that reach it are single taps that fail this gesture. Don't show
 a committed state from it.
 
-## Three taps and up are not modelled
+## Three taps and up aren't modelled
 
 A triple tap is rare, so a named intent would be unused API. Build it with
 [`useRawGesture`](/raw-gestures):
@@ -1148,7 +1148,7 @@ up**. Set it when a mostly diagonal move must go to the other gesture.
 > device can tell whether 10 points feels right. `example/screens/DragScreen.tsx`
 > is the screen for that check.
 
-> **DANGER — A threshold does not decide who wins a contested touch**
+> **DANGER — A threshold doesn't decide who wins a contested touch**
 >
 > It decides who moves **first**. For a drag inside a scroll view, say which one
 > the touch belongs to as well: `deferTo` for a drag that is the fallback,
@@ -1241,7 +1241,7 @@ a gesture that never started.
 A touch that never passed `threshold` reaches neither path. `onDragEnd` still
 means the drag activated.
 
-> **CAUTION — The velocity is not a throw on the cancelled path**
+> **CAUTION — The velocity isn't a throw on the cancelled path**
 >
 > The finger never lifted, so `velocity` describes the last movement, not a
 > release. A spring on it flings a view that the finger never released. Return
@@ -1367,7 +1367,7 @@ const pan = usePan({
 `change` is zero outside `onUpdate`. There is no previous frame at the start,
 and no next frame at the end.
 
-> **INFO — The first frame does not carry the threshold**
+> **INFO — The first frame doesn't carry the threshold**
 >
 > RNGH's own `changeX` reports the **whole translation** on the first update,
 > which includes the 10 points the finger travelled before the pan activated. A
@@ -1404,7 +1404,7 @@ that has no such escape.
 > `change` and `pointers`, and it didn't test the threshold.
 > `example/screens/PanScreen.tsx` is the screen for that check.
 
-> **DANGER — A threshold does not decide who wins a contested touch**
+> **DANGER — A threshold doesn't decide who wins a contested touch**
 >
 > It decides who moves **first**. Say which gesture the touch belongs to as
 > well: `deferTo` for a pan that is the fallback, `blocks` for a pan that is the
@@ -1646,7 +1646,7 @@ return (
 )
 ```
 
-## The scale accumulates. RNGH's does not
+## The scale accumulates. RNGH's doesn't
 
 A bare `Gesture.Pinch()` reports a factor that restarts at `1` on every
 gesture, so a viewer built on it snaps back to its original size the moment the
@@ -1697,7 +1697,7 @@ interface PinchEvent {
 }
 ```
 
-## `focal` is the field a zoom viewer cannot skip
+## `focal` is the field a zoom viewer can't skip
 
 A zoom about the centre of the view looks correct in a screenshot, and slides
 the content out from under the fingers in the hand. The zoom has to happen
@@ -1754,7 +1754,7 @@ is an animation, and this library owns no animation vocabulary. See
 There is nothing to set. RNGH's pinch takes the touch as soon as a second
 finger moves, and it exposes no threshold, so Impulse has none to pass on.
 
-> **DANGER — A pinch cannot be separated from a pan by a threshold**
+> **DANGER — A pinch can't be separated from a pan by a threshold**
 >
 > Every other continuous intent has one. This one doesn't, so the **relation is
 > the only thing** that decides how a pinch and a pan share a view. Say it:
@@ -1856,7 +1856,7 @@ call site.
 Positive is clockwise, which is what the `rotate` transform also treats as
 positive.
 
-## The angle accumulates. RNGH's does not
+## The angle accumulates. RNGH's doesn't
 
 A bare `Gesture.Rotation()` reports a value that restarts at zero on every
 gesture, so a control built on it springs back to upright the moment the
@@ -1898,7 +1898,7 @@ interface RotateEvent {
 }
 ```
 
-## It does not wrap at a full turn
+## It doesn't wrap at a full turn
 
 A second revolution reports **720**, not `0`.
 
@@ -1916,7 +1916,7 @@ const shown = ((rotate.angle.value % 360) + 360) % 360
 A rotation about the centre of the view turns the content **under** the
 fingers, not with them. `anchor` is RNGH's anchor: the centre between the
 fingers, relative to the view. It is the rotation counterpart of
-[`usePinch`'s `focal`](/use-pinch#focal-is-the-field-a-zoom-viewer-cannot-skip):
+[`usePinch`'s `focal`](/use-pinch#focal-is-the-field-a-zoom-viewer-cant-skip):
 
 ```tsx
 const style = useAnimatedStyle(() => {
@@ -1964,7 +1964,7 @@ animation vocabulary.
 There is nothing to set. RNGH's rotation takes the touch as soon as two fingers
 turn, and it exposes no threshold.
 
-> **DANGER — A rotation and a pinch cannot be separated by a threshold**
+> **DANGER — A rotation and a pinch can't be separated by a threshold**
 >
 > Neither hook has one. The composition is the only thing holding them together,
 > and the photo-editor pair is the reason both exist:
@@ -2094,7 +2094,7 @@ A member is anything that carries a gesture:
 Pass the hook result itself, not `result.gesture`. Both work, but the result
 is memoised, so you can depend on it.
 
-## Coexistence options do not belong here
+## Coexistence options don't belong here
 
 `useGestures` doesn't accept `alongside`, `blocks`, or `deferTo`. Put them on
 the member hooks.
@@ -2240,7 +2240,7 @@ nothing at runtime tells the two cases apart.
 **Impulse warns once, in development, when it catches this.** The warning names
 the hook, the option, and the fix. It fires after mount, because a ref is empty
 until then. It stays quiet for a ref that is still empty. See
-[the limit below](#what-the-warning-cannot-catch).
+[the limit below](#what-the-warning-cant-catch).
 
 **React Native's `ScrollView` has no `handlerTag`.**
 
@@ -2262,26 +2262,26 @@ const scrollRef = useRef<LegacyScrollView>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Don't use the `ScrollView` of the same subpath. That is Gesture Handler 3's
+Don't use the `ScrollView` of the same subpath. That is RNGH 3's
 own `ScrollView`, and its wrapper gives the ref to React Native's component, so
 the ref has no tag. The same holds for `FlatList`: use `LegacyFlatList`. Both
 come from [`@rootnative/impulse/gesture-handler`](/gesture-handler), so this
 doesn't add an RNGH import to your app.
 
-Gesture Handler 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
+RNGH 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
 together with the gesture builder that Impulse uses, so your editor can show
-them struck through. They work in Gesture Handler 3.
+them struck through. They work in RNGH 3.
 
-> **WARNING — This is not a web-only problem**
+> **WARNING — This isn't a web-only problem**
 >
 > RNGH resolves relations in its shared code, so the behaviour is the same on
 > iOS, Android, and web. A relation against React Native's scroll view, or
-> against Gesture Handler 3's own `ScrollView`, does nothing on every platform.
+> against RNGH 3's own `ScrollView`, does nothing on every platform.
 
 Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
 none of this.
 
-### What the warning cannot catch
+### What the warning can't catch
 
 The check reads the ref after the gesture mounts. Three outcomes:
 
@@ -2487,7 +2487,7 @@ It is a shared value so a pressed state runs on the UI thread with no
 re-render. A read of `.value` during render works, but it tells you only what
 was true at the last commit.
 
-> **WARNING — `isActive` does not mean the same thing in every hook**
+> **WARNING — `isActive` doesn't mean the same thing in every hook**
 >
 > `useTap` and `useDoubleTap` set it at `onBegin`, while the finger is down.
 > `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`
@@ -2593,7 +2593,7 @@ Impulse. Report it.
 
 ---
 
-# Gesture Handler interop
+# RNGH interop
 
 Impulse hides RNGH by default, and its intent hooks cover the common cases. For
 the rest, this subpath re-exports RNGH's own primitives under their original
@@ -2673,7 +2673,7 @@ native one. This page exists so that you don't discover that in each project.
 The first four intents recognize correctly under a mouse on web. We didn't run
 the last four in a browser, so their rows are not claims.
 
-## A mouse cannot drive a two-finger intent
+## A mouse can't drive a two-finger intent
 
 RNGH recognizes pinch and rotation from pointer events, so both need **two
 pointers**: a touchscreen, or a device that reports them. One mouse is one
@@ -2745,7 +2745,7 @@ behaviour.
 
 A relation needs a ref that carries a `handlerTag`, and that rule comes from
 RNGH's shared code, not its platform code. So a relation against React
-Native's `ScrollView`, or Gesture Handler 3's own `ScrollView`, does nothing
+Native's `ScrollView`, or RNGH 3's own `ScrollView`, does nothing
 on web **and** on native.
 
 See [Coexistence](/coexistence) for the working form.
@@ -2792,7 +2792,7 @@ can't assert once it runs.
 
 ## Render inside the root view
 
-Gesture Handler 3 throws when a `<GestureDetector>` renders outside a
+RNGH 3 throws when a `<GestureDetector>` renders outside a
 `<GestureHandlerRootView>`. Jest runs with `__DEV__` set, so a test gets the
 same error as a development build. Pass the root view as the `wrapper` of each
 render:
@@ -2844,7 +2844,7 @@ This is how Impulse pins its own defaults, and it is the most precise check
 available. It asks what configuration the gesture received, not what the mock
 did with it.
 
-## What the mock can and cannot do
+## What the mock can and can't do
 
 The preset mocks Reanimated and `react-native-worklets`, and the mocks are
 thin on purpose. Neither real module runs under Jest: Reanimated loads
@@ -2865,7 +2865,7 @@ The mock **leaves out** `useAnimatedStyle`, the `Animated.*` components, and
 the animation functions, on purpose. Impulse renders none of them and starts
 no animation. If your own test needs them, add them in your own setup.
 
-## Three things the mock cannot see
+## Three things the mock can't see
 
 Each of these needs a check another way. More Jest won't close any of them.
 
@@ -2972,14 +2972,14 @@ discover those from its own output:
   synonyms writes the wrong one. `useDrag` owns a position that accumulates,
   and `bounds` clamps it. `usePan` owns nothing and reports a per-frame
   `change` that you add up.
-- RNGH drops a relation against React Native's `ScrollView`, or Gesture
-  Handler 3's own `ScrollView`, because the ref carries no `handlerTag`. Use
+- RNGH drops a relation against React Native's `ScrollView`, or RNGH 3's own
+  `ScrollView`, because the ref carries no `handlerTag`. Use
   `LegacyScrollView` or `LegacyFlatList` from
   `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled before the gesture mounts. It can't see the case
   where the ref is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire. In
-  development on iOS and Android, and in Jest, Gesture Handler 3 throws an
+  development on iOS and Android, and in Jest, RNGH 3 throws an
   error that names the root view. On web and in a release build the console
   stays empty.
 - A tap and a double tap compose `exclusive` with the double tap first. `race`
@@ -3074,21 +3074,21 @@ It will be an **optional** subpath. Impulse will never require an animation
 library. That is the reason it is a separate package.
 
 > _Gate:_ a swipe-to-dismiss row and a pinch-to-zoom viewer built from Impulse
-> plus Inertia, with no gesture-handler or Reanimated import in the consumer
+> plus Inertia, with no RNGH or Reanimated import in the consumer
 > code.
 
 ## Known gaps
 
 The gaps you can hit:
 
-- **RNGH drops a relation against React Native's `ScrollView`, or Gesture
-  Handler 3's `ScrollView`.** The ref carries no `handlerTag`, so RNGH
+- **RNGH drops a relation against React Native's `ScrollView`, or RNGH 3's
+  `ScrollView`.** The ref carries no `handlerTag`, so RNGH
   installs nothing. Impulse warns once in development when it can see the
   problem, which is when the ref is filled before the gesture mounts. A target
   that mounts later stays silent. Use RNGH's `LegacyScrollView`. See
   [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently on web and in a release
-  build.** In development on iOS and Android, Gesture Handler 3 throws an error
+  build.** In development on iOS and Android, RNGH 3 throws an error
   that names the root view. Impulse adds no warning of its own, because RNGH
   doesn't export the context that would let it detect a missing root view.
 - **Impulse reports a cancel, but the velocity that comes with it is not a

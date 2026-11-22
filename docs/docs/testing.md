@@ -21,7 +21,7 @@ can't assert once it runs.
 
 ## Render inside the root view
 
-Gesture Handler 3 throws when a `<GestureDetector>` renders outside a
+RNGH 3 throws when a `<GestureDetector>` renders outside a
 `<GestureHandlerRootView>`. Jest runs with `__DEV__` set, so a test gets the
 same error as a development build. Pass the root view as the `wrapper` of each
 render:
@@ -73,7 +73,7 @@ This is how Impulse pins its own defaults, and it is the most precise check
 available. It asks what configuration the gesture received, not what the mock
 did with it.
 
-## What the mock can and cannot do
+## What the mock can and can't do
 
 The preset mocks Reanimated and `react-native-worklets`, and the mocks are
 thin on purpose. Neither real module runs under Jest: Reanimated loads
@@ -94,7 +94,7 @@ The mock **leaves out** `useAnimatedStyle`, the `Animated.*` components, and
 the animation functions, on purpose. Impulse renders none of them and starts
 no animation. If your own test needs them, add them in your own setup.
 
-## Three things the mock cannot see
+## Three things the mock can't see
 
 Each of these needs a check another way. More Jest won't close any of them.
 

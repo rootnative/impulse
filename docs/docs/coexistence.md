@@ -110,7 +110,7 @@ nothing at runtime tells the two cases apart.
 **Impulse warns once, in development, when it catches this.** The warning names
 the hook, the option, and the fix. It fires after mount, because a ref is empty
 until then. It stays quiet for a ref that is still empty. See
-[the limit below](#what-the-warning-cannot-catch).
+[the limit below](#what-the-warning-cant-catch).
 
 **React Native's `ScrollView` has no `handlerTag`.**
 
@@ -132,28 +132,28 @@ const scrollRef = useRef<LegacyScrollView>(null)
 const drag = useDrag({ axis: 'x', deferTo: scrollRef })
 ```
 
-Don't use the `ScrollView` of the same subpath. That is Gesture Handler 3's
+Don't use the `ScrollView` of the same subpath. That is RNGH 3's
 own `ScrollView`, and its wrapper gives the ref to React Native's component, so
 the ref has no tag. The same holds for `FlatList`: use `LegacyFlatList`. Both
 come from [`@rootnative/impulse/gesture-handler`](/gesture-handler), so this
 doesn't add an RNGH import to your app.
 
-Gesture Handler 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
+RNGH 3 marks `LegacyScrollView` and `LegacyFlatList` as deprecated,
 together with the gesture builder that Impulse uses, so your editor can show
-them struck through. They work in Gesture Handler 3.
+them struck through. They work in RNGH 3.
 
-:::warning This is not a web-only problem
+:::warning This isn't a web-only problem
 
 RNGH resolves relations in its shared code, so the behaviour is the same on
 iOS, Android, and web. A relation against React Native's scroll view, or
-against Gesture Handler 3's own `ScrollView`, does nothing on every platform.
+against RNGH 3's own `ScrollView`, does nothing on every platform.
 
 :::
 
 Another Impulse hook's `ref` always carries a tag, so `deferTo: drag.ref` needs
 none of this.
 
-### What the warning cannot catch
+### What the warning can't catch
 
 The check reads the ref after the gesture mounts. Three outcomes:
 

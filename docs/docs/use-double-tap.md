@@ -162,7 +162,7 @@ double.ref        // name it in another hook's coexistence options
 double.isActive   // SharedValue<boolean>
 ```
 
-:::danger `isActive` is not a pressed state here
+:::danger `isActive` isn't a pressed state here
 
 It is `true` from the first finger down until the pair resolves. So it is
 `true` for **every ordinary single tap on the view**, and most of those end in
@@ -177,7 +177,7 @@ only for UI that must show while a double tap is in progress.
 most touches that reach it are single taps that fail this gesture. Don't show
 a committed state from it.
 
-## Three taps and up are not modelled
+## Three taps and up aren't modelled
 
 A triple tap is rare, so a named intent would be unused API. Build it with
 [`useRawGesture`](/raw-gestures):

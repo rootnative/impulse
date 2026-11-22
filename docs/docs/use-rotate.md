@@ -44,7 +44,7 @@ call site.
 Positive is clockwise, which is what the `rotate` transform also treats as
 positive.
 
-## The angle accumulates. RNGH's does not
+## The angle accumulates. RNGH's doesn't
 
 A bare `Gesture.Rotation()` reports a value that restarts at zero on every
 gesture, so a control built on it springs back to upright the moment the
@@ -86,7 +86,7 @@ interface RotateEvent {
 }
 ```
 
-## It does not wrap at a full turn
+## It doesn't wrap at a full turn
 
 A second revolution reports **720**, not `0`.
 
@@ -104,7 +104,7 @@ const shown = ((rotate.angle.value % 360) + 360) % 360
 A rotation about the centre of the view turns the content **under** the
 fingers, not with them. `anchor` is RNGH's anchor: the centre between the
 fingers, relative to the view. It is the rotation counterpart of
-[`usePinch`'s `focal`](/use-pinch#focal-is-the-field-a-zoom-viewer-cannot-skip):
+[`usePinch`'s `focal`](/use-pinch#focal-is-the-field-a-zoom-viewer-cant-skip):
 
 ```tsx
 const style = useAnimatedStyle(() => {
@@ -152,7 +152,7 @@ animation vocabulary.
 There is nothing to set. RNGH's rotation takes the touch as soon as two fingers
 turn, and it exposes no threshold.
 
-:::danger A rotation and a pinch cannot be separated by a threshold
+:::danger A rotation and a pinch can't be separated by a threshold
 
 Neither hook has one. The composition is the only thing holding them together,
 and the photo-editor pair is the reason both exist:

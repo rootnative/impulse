@@ -1,10 +1,10 @@
 ---
 id: gesture-handler
-title: Gesture Handler interop
+title: RNGH interop
 description: The @rootnative/impulse/gesture-handler subpath re-exports RNGH's own primitives under their original names.
 ---
 
-# Gesture Handler interop
+# RNGH interop
 
 Impulse hides RNGH by default, and its intent hooks cover the common cases. For
 the rest, this subpath re-exports RNGH's own primitives under their original

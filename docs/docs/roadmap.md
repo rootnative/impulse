@@ -77,21 +77,21 @@ It will be an **optional** subpath. Impulse will never require an animation
 library. That is the reason it is a separate package.
 
 > _Gate:_ a swipe-to-dismiss row and a pinch-to-zoom viewer built from Impulse
-> plus Inertia, with no gesture-handler or Reanimated import in the consumer
+> plus Inertia, with no RNGH or Reanimated import in the consumer
 > code.
 
 ## Known gaps
 
 The gaps you can hit:
 
-- **RNGH drops a relation against React Native's `ScrollView`, or Gesture
-  Handler 3's `ScrollView`.** The ref carries no `handlerTag`, so RNGH
+- **RNGH drops a relation against React Native's `ScrollView`, or RNGH 3's
+  `ScrollView`.** The ref carries no `handlerTag`, so RNGH
   installs nothing. Impulse warns once in development when it can see the
   problem, which is when the ref is filled before the gesture mounts. A target
   that mounts later stays silent. Use RNGH's `LegacyScrollView`. See
   [Coexistence](/coexistence).
 - **A missing `<GestureHandlerRootView>` fails silently on web and in a release
-  build.** In development on iOS and Android, Gesture Handler 3 throws an error
+  build.** In development on iOS and Android, RNGH 3 throws an error
   that names the root view. Impulse adds no warning of its own, because RNGH
   doesn't export the context that would let it detect a missing root view.
 - **Impulse reports a cancel, but the velocity that comes with it is not a

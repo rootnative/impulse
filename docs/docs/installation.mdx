@@ -29,7 +29,7 @@ npx expo install react-dom react-native-web
 ```
 
 The example app runs on web with `react-native-web` 0.21, `react-dom` 19.3.0,
-and Gesture Handler 3.3. [Web behaviour](/web) lists each intent, the
+and RNGH 3.3. [Web behaviour](/web) lists each intent, the
 differences from native, and the open questions.
 
 ## Install the package
@@ -69,12 +69,12 @@ purpose. Don't widen them.
 :::
 
 Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
-0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+0.88.1, RNGH 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
 SDK 57 app uses `0.0.0-alpha.1`.
 
-Impulse builds its gestures with the builder API of Gesture Handler
-(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+Impulse builds its gestures with the builder API of RNGH
+(`Gesture.Pan()`). RNGH 3 marks that API as deprecated, and it still
+runs it. A gesture from the RNGH 3 hook API (`usePanGesture`)
 doesn't compose with an Impulse gesture. A relation target must be
 `LegacyScrollView` or `LegacyFlatList`. See [Coexistence](/coexistence).
 
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
 :::danger A missing root view fails silently on web and in a release build
 
 Without it, your gestures never fire. In development on iOS and Android,
-Gesture Handler 3 throws: `GestureDetector must be used as a descendant of
+RNGH 3 throws: `GestureDetector must be used as a descendant of
 GestureHandlerRootView`. The same error stops a Jest test that renders a
 `<GestureDetector>` outside the root view. See [Testing](/testing).
 

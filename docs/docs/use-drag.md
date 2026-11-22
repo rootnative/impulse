@@ -102,7 +102,7 @@ is the screen for that check.
 
 :::
 
-:::danger A threshold does not decide who wins a contested touch
+:::danger A threshold doesn't decide who wins a contested touch
 
 It decides who moves **first**. For a drag inside a scroll view, say which one
 the touch belongs to as well: `deferTo` for a drag that is the fallback,
@@ -199,7 +199,7 @@ a gesture that never started.
 A touch that never passed `threshold` reaches neither path. `onDragEnd` still
 means the drag activated.
 
-:::caution The velocity is not a throw on the cancelled path
+:::caution The velocity isn't a throw on the cancelled path
 
 The finger never lifted, so `velocity` describes the last movement, not a
 release. A spring on it flings a view that the finger never released. Return

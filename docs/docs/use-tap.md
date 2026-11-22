@@ -45,7 +45,7 @@ the boundary.
 their identity stable, because a worklet is a direct gesture dependency.
 See [Threads and callbacks](/threads).
 
-:::note Being a candidate is not winning
+:::note Being a candidate isn't winning
 
 `onBegin` fires on touch-down. In a race with a long press or a drag, the
 gesture may still fail afterwards. Use `onBegin` to show a pressed state. Undo

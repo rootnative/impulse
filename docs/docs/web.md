@@ -32,7 +32,7 @@ didn't check the rows marked **unverified**, and they are not claims.
 The first four intents recognize correctly under a mouse on web. We didn't run
 the last four in a browser, so their rows are not claims.
 
-## A mouse cannot drive a two-finger intent
+## A mouse can't drive a two-finger intent
 
 RNGH recognizes pinch and rotation from pointer events, so both need **two
 pointers**: a touchscreen, or a device that reports them. One mouse is one
@@ -104,7 +104,7 @@ behaviour.
 
 A relation needs a ref that carries a `handlerTag`, and that rule comes from
 RNGH's shared code, not its platform code. So a relation against React
-Native's `ScrollView`, or Gesture Handler 3's own `ScrollView`, does nothing
+Native's `ScrollView`, or RNGH 3's own `ScrollView`, does nothing
 on web **and** on native.
 
 See [Coexistence](/coexistence) for the working form.

@@ -24,7 +24,7 @@ return (
 )
 ```
 
-## The scale accumulates. RNGH's does not
+## The scale accumulates. RNGH's doesn't
 
 A bare `Gesture.Pinch()` reports a factor that restarts at `1` on every
 gesture, so a viewer built on it snaps back to its original size the moment the
@@ -75,7 +75,7 @@ interface PinchEvent {
 }
 ```
 
-## `focal` is the field a zoom viewer cannot skip
+## `focal` is the field a zoom viewer can't skip
 
 A zoom about the centre of the view looks correct in a screenshot, and slides
 the content out from under the fingers in the hand. The zoom has to happen
@@ -132,7 +132,7 @@ is an animation, and this library owns no animation vocabulary. See
 There is nothing to set. RNGH's pinch takes the touch as soon as a second
 finger moves, and it exposes no threshold, so Impulse has none to pass on.
 
-:::danger A pinch cannot be separated from a pan by a threshold
+:::danger A pinch can't be separated from a pan by a threshold
 
 Every other continuous intent has one. This one doesn't, so the **relation is
 the only thing** that decides how a pinch and a pan share a view. Say it:

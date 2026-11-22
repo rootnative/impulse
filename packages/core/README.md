@@ -26,7 +26,7 @@ In an Expo app, `npx expo install` picks the peer versions that match your SDK, 
 
 **Platforms:** iOS and Android are supported (alpha). Web is partial: `useTap`, `useDoubleTap`, `useLongPress`, and `useDrag` work under a mouse in a desktop browser, and the other four intents are not verified. Web needs `react-dom` and `react-native-web`. Electron, macOS, and Windows are not tested. See [Platforms](https://rootnative.github.io/impulse/installation#platforms).
 
-Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires. In development on iOS and Android, Gesture Handler 3 throws an error that names the root view. On web and in a release build, nothing happens and nothing logs.
+Wrap your app in `<GestureHandlerRootView>`. Without it a gesture never fires. In development on iOS and Android, RNGH 3 throws an error that names the root view. On web and in a release build, nothing happens and nothing logs.
 
 ## Impulse or `@rootnative/inertia-gestures`?
 
@@ -305,7 +305,7 @@ useRawGesture(build, deps, { deferTo: scrollRef })  // the other one wins
 
 You can set all three at once. They are independent relations, not a choice of one. The same gesture in two of them warns in development.
 
-**The ref has to belong to a gesture.** RNGH resolves a relation through `ref.current?.handlerTag`. It drops a ref that has no tag, and it doesn't warn. So `deferTo` on React Native's own `ScrollView`, or on Gesture Handler 3's `ScrollView`, installs nothing, and the drag and the scroll keep competing for the touch. Import `LegacyScrollView` or `LegacyFlatList` from `@rootnative/impulse/gesture-handler` instead. The `ref` of another Impulse hook always carries a tag. Impulse warns once in development when it catches this, which is when the ref is filled before the gesture mounts. A target that mounts in a later commit stays silent.
+**The ref has to belong to a gesture.** RNGH resolves a relation through `ref.current?.handlerTag`. It drops a ref that has no tag, and it doesn't warn. So `deferTo` on React Native's own `ScrollView`, or on RNGH 3's `ScrollView`, installs nothing, and the drag and the scroll keep competing for the touch. Import `LegacyScrollView` or `LegacyFlatList` from `@rootnative/impulse/gesture-handler` instead. The `ref` of another Impulse hook always carries a tag. Impulse warns once in development when it catches this, which is when the ref is filled before the gesture mounts. A target that mounts in a later commit stays silent.
 
 ### `useRawGesture` — the escape hatch
 
@@ -345,7 +345,7 @@ Three further limits today:
 - **Most activation-criteria defaults are still design intentions.** A device sweep on 2026-09-19 drove every intent on Android or iOS and measured what a scripted touch can measure: the library honours `useDrag`'s `bounds` and `elastic`, `usePinch`'s and `useRotate`'s `min` and `max`, `useLongPress`'s `minDuration`, and `useSwipe`'s `commitDistance` exactly. That the library obeys a number is not evidence that the number is right. Only a hand reports that. A deliberate double tap still registers at `maxDelay: 250` on both platforms, so the 500ms default is the one most likely to move. Three numbers stay unmeasured, because no instrument here can produce them: `useTap`'s and `useDoubleTap`'s `maxDistance`, the shared 10-point `threshold`, and `useSwipe`'s `commitSpeed`.
 
 - **`useGestures` doesn't take coexistence options.** RNGH's three relations are methods on a single gesture, and a composed gesture doesn't have them. Set them on the member hooks instead.
-- **No warning of its own when `<GestureHandlerRootView>` is missing.** In development on iOS and Android, Gesture Handler 3 throws. On web and in a release build the absence is silent: the gesture never fires. RNGH doesn't export the context that would let Impulse detect it.
+- **No warning of its own when `<GestureHandlerRootView>` is missing.** In development on iOS and Android, RNGH 3 throws. On web and in a release build the absence is silent: the gesture never fires. RNGH doesn't export the context that would let Impulse detect it.
 
 ## Testing
 
@@ -358,7 +358,7 @@ module.exports = {
 
 The preset also needs `@react-native/jest-preset` as a devDependency at the version matching your `react-native`. React Native 0.86 moved its Jest preset into that package and declares it as an optional peer, so no package manager installs it for you.
 
-Render a component that holds a `<GestureDetector>` inside `<GestureHandlerRootView>`. Gesture Handler 3 throws without it, and Jest runs with `__DEV__` set. Pass the root view as the wrapper: `render(<Card />, { wrapper: GestureHandlerRootView })`.
+Render a component that holds a `<GestureDetector>` inside `<GestureHandlerRootView>`. RNGH 3 throws without it, and Jest runs with `__DEV__` set. Pass the root view as the wrapper: `render(<Card />, { wrapper: GestureHandlerRootView })`.
 
 ## Documentation
 

@@ -157,7 +157,7 @@ It is a shared value so a pressed state runs on the UI thread with no
 re-render. A read of `.value` during render works, but it tells you only what
 was true at the last commit.
 
-:::warning `isActive` does not mean the same thing in every hook
+:::warning `isActive` doesn't mean the same thing in every hook
 
 `useTap` and `useDoubleTap` set it at `onBegin`, while the finger is down.
 `useLongPress`, `useDrag`, `usePan`, `useSwipe`, `usePinch`, and `useRotate`

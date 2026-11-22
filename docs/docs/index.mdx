@@ -84,7 +84,7 @@ const drag = useDrag({
 })
 ```
 
-:::info Two sharp edges Impulse does not absorb yet
+:::info Two sharp edges Impulse doesn't absorb yet
 
 `scrollRef` needs an `as unknown as GestureReference` cast in both snippets.
 RNGH types a relation target as a ref to a component *type*. `ref={}` doesn't
@@ -94,7 +94,7 @@ hide it, and would stop catching upstream drift. This is a known gap, not a
 decision.
 
 `scrollRef` must also come from RNGH's `LegacyScrollView`, not from React
-Native's `ScrollView` or from Gesture Handler 3's `ScrollView`. RNGH resolves
+Native's `ScrollView` or from RNGH 3's `ScrollView`. RNGH resolves
 a relation through `ref.current?.handlerTag`. It drops a ref that has no tag,
 and it doesn't warn. Impulse warns in development when it catches this. See
 [Coexistence](/coexistence).
@@ -118,7 +118,7 @@ for what happens rather than for the method it calls. The
 | Payloads are flat: `translationX`, `velocityY`, `absoluteX`, `focalX`, `numberOfPointers`. You pick the right field per gesture from memory. | Payloads are shaped per intent and grouped: `{ translation, velocity, absolute, settled }` for a drag. The union of RNGH's fields is never the public type. |
 | A gesture-only affordance is invisible to a screen reader and unreachable from a keyboard. No gesture library says so. | Every intent page names its accessibility fallback. Impulse doesn't claim to solve this. It states it. |
 
-## What Impulse does not do
+## What Impulse doesn't do
 
 Impulse **detects**. It doesn't animate.
 
@@ -142,7 +142,7 @@ Full setup, including the peers and the root view, is on the
 Impulse needs `react-native-gesture-handler` and `react-native-reanimated` as
 peers. Your app must render a `<GestureHandlerRootView>` above any component
 that uses a gesture. **If that view is missing, the gesture never fires.** In
-development on iOS and Android, Gesture Handler 3 throws. On web and in a
+development on iOS and Android, RNGH 3 throws. On web and in a
 release build, nothing warns you.
 
 ## A first gesture

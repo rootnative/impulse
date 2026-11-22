@@ -85,7 +85,7 @@ A member is anything that carries a gesture:
 Pass the hook result itself, not `result.gesture`. Both work, but the result
 is memoised, so you can depend on it.
 
-## Coexistence options do not belong here
+## Coexistence options don't belong here
 
 `useGestures` doesn't accept `alongside`, `blocks`, or `deferTo`. Put them on
 the member hooks.

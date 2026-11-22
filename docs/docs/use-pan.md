@@ -91,7 +91,7 @@ const pan = usePan({
 `change` is zero outside `onUpdate`. There is no previous frame at the start,
 and no next frame at the end.
 
-:::info The first frame does not carry the threshold
+:::info The first frame doesn't carry the threshold
 
 RNGH's own `changeX` reports the **whole translation** on the first update,
 which includes the 10 points the finger travelled before the pan activated. A
@@ -132,7 +132,7 @@ The device sweep of 2026-09-20 drove `usePan` on both platforms. It proved
 
 :::
 
-:::danger A threshold does not decide who wins a contested touch
+:::danger A threshold doesn't decide who wins a contested touch
 
 It decides who moves **first**. Say which gesture the touch belongs to as
 well: `deferTo` for a pan that is the fallback, `blocks` for a pan that is the

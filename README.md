@@ -54,14 +54,14 @@
 | --- | --- |
 | **Intents, not mechanisms** | One hook for each intent: tap, double tap, long press, drag, pan, swipe, pinch, and rotate. You don't set activation criteria by hand. |
 | **Composition as data** | `useGestures([tap, doubleTap, pan], { mode: 'race' })` reads from left to right. A composed result can compose again. |
-| **Three coexistence options** | Each hook takes `alongside`, `blocks`, and `deferTo`. Each option maps to exactly one Gesture Handler relation. |
+| **Three coexistence options** | Each hook takes `alongside`, `blocks`, and `deferTo`. Each option maps to exactly one relation of `react-native-gesture-handler` (RNGH). |
 | **Stable gesture identity** | An inline callback never rebuilds the gesture, so `<GestureDetector>` doesn't attach it again in the middle of a drag. A test pins this. |
 | **The callback name states its thread** | `onBegin`, `onUpdate`, and `onFinalize` are worklets. `onTap`, `onSwipe`, and `onDragEnd` run on the JS thread, and Impulse owns the boundary. |
-| **Payloads for each intent** | A drag reports `{ translation, velocity, absolute, settled }`, not the flat fields of Gesture Handler. |
+| **Payloads for each intent** | A drag reports `{ translation, velocity, absolute, settled }`, not the flat fields of RNGH. |
 | **Shared values out, no animation in** | Each hook returns shared values and a gesture. You animate them with the library that you already use. |
 | **Accessibility, stated** | The docs page of each intent names its fallback for a screen reader and a keyboard. |
 | **Web behaviour, stated** | The docs say what works in a browser, and what nobody has checked. |
-| **Escape hatches** | `useRawGesture` gives you the mechanism. `@rootnative/impulse/gesture-handler` re-exports Gesture Handler, so Impulse stays your only gesture import. |
+| **Escape hatches** | `useRawGesture` gives you the mechanism. `@rootnative/impulse/gesture-handler` re-exports RNGH, so Impulse stays your only gesture import. |
 | **One subpath for each hook** | `@rootnative/impulse/drag` ships only `useDrag`. The package has no side effects at import. |
 | **A Jest preset** | `@rootnative/impulse/jest-preset` sets up the mocks in one line. |
 
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
 > [!WARNING]
 > Without the root view, a gesture never fires. In development on iOS and
-> Android, Gesture Handler 3 throws an error that names the root view. On web
+> Android, RNGH 3 throws an error that names the root view. On web
 > and in a release build, nothing throws and nothing warns. If a gesture does
 > nothing at all, check the root view first.
 
@@ -172,7 +172,7 @@ function Card() {
 
 ## 💡 Why Impulse
 
-Gesture Handler is a good library. It gives you **mechanisms**: activation
+RNGH is a good library. It gives you **mechanisms**: activation
 criteria, gesture relations, and state machines. It leaves each **intent** to
 you. So each app builds swipe to dismiss, double tap, and pinch from `Pan` and
 its own maths again. Each copy gets the traps wrong in its own way.
@@ -180,7 +180,7 @@ its own maths again. Each copy gets the traps wrong in its own way.
 The same horizontal drag inside a vertical scroll view, twice:
 
 ```tsx
-// Gesture Handler
+// RNGH
 const x = useSharedValue(0)
 const start = useSharedValue(0)
 
@@ -224,7 +224,7 @@ flowchart LR
     direction LR
     hook["Intent hook<br/>useDrag, useSwipe, ..."] --> detector["GestureDetector"]
   end
-  hook -->|builds once| rngh["Gesture Handler<br/>activation and relations"]
+  hook -->|builds once| rngh["RNGH<br/>activation and relations"]
   rngh -->|phase worklets| values[("Shared values<br/>x, y, scale, angle")]
   rngh -->|scheduleOnRN| intent["Intent callbacks<br/>onTap, onSwipe, onDragEnd"]
   values --> anim["Your animation code"]
@@ -243,7 +243,7 @@ flowchart LR
 
 ### Impulse or `@rootnative/inertia-gestures`?
 
-Both build on Gesture Handler, and both ship a `useDrag`, a `usePan`, and a
+Both build on RNGH, and both ship a `useDrag`, a `usePan`, and a
 `useSwipe`. The names are the same, but the products are different.
 [`@rootnative/inertia-gestures`](https://www.npmjs.com/package/@rootnative/inertia-gestures)
 requires `@rootnative/inertia` and gives back an `animatedStyle` that already
@@ -254,7 +254,7 @@ component follow a finger. Use Impulse for the gesture itself.
 ## 📅 Runtime
 
 Impulse is developed against **Expo SDK 58**: React 19.3.0, React Native
-0.88.1, Gesture Handler 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
+0.88.1, RNGH 3.3.0, Reanimated 4.7.1, and Worklets 0.13.0. An Expo
 SDK 57 app uses `0.0.0-alpha.1`.
 
 | Peer | Range |
@@ -269,9 +269,9 @@ The Reanimated and Worklets ranges are narrow on purpose. The two packages are
 locked to each other, and a wider range lets a package manager pair versions
 that don't install.
 
-Impulse builds its gestures with the builder API of Gesture Handler
-(`Gesture.Pan()`). Gesture Handler 3 marks that API as deprecated, and it still
-runs it. A gesture from the Gesture Handler 3 hook API (`usePanGesture`)
+Impulse builds its gestures with the builder API of RNGH
+(`Gesture.Pan()`). RNGH 3 marks that API as deprecated, and it still
+runs it. A gesture from the RNGH 3 hook API (`usePanGesture`)
 doesn't compose with an Impulse gesture.
 
 ## 🗺️ Roadmap
@@ -300,13 +300,13 @@ files.
 
 | Page | Read it to |
 | --- | --- |
-| [Introduction](https://rootnative.github.io/impulse/introduction/) | Learn what Impulse does differently from raw Gesture Handler |
+| [Introduction](https://rootnative.github.io/impulse/introduction/) | Learn what Impulse does differently from raw RNGH |
 | [Installation](https://rootnative.github.io/impulse/installation/) | Install the peers, add the root view, and see the status of each platform |
 | [Composition](https://rootnative.github.io/impulse/composition/) | Combine gestures with `useGestures` in race, simultaneous, or exclusive mode |
 | [Coexistence](https://rootnative.github.io/impulse/coexistence/) | Choose between `alongside`, `blocks`, and `deferTo` next to a scroll view |
 | [Threads and callbacks](https://rootnative.github.io/impulse/threads/) | Learn which callbacks are worklets and which run on the JS thread |
 | [Raw gestures](https://rootnative.github.io/impulse/raw-gestures/) | Use `useRawGesture` when no intent fits |
-| [Gesture Handler interop](https://rootnative.github.io/impulse/gesture-handler/) | Use a Gesture Handler primitive through `@rootnative/impulse/gesture-handler` |
+| [RNGH interop](https://rootnative.github.io/impulse/gesture-handler/) | Use an RNGH primitive through `@rootnative/impulse/gesture-handler` |
 | [Web behaviour](https://rootnative.github.io/impulse/web/) | See what each intent does in a browser, and what nobody has checked |
 | [Testing](https://rootnative.github.io/impulse/testing/) | Test gestures in Jest with the preset |
 | [Roadmap](https://rootnative.github.io/impulse/roadmap/) | See each milestone and its gate |
@@ -320,7 +320,7 @@ files.
 | Language | TypeScript 5, strict mode |
 | Build | tsup (ESM output), Turborepo |
 | Package manager | pnpm 10 |
-| Tests | Jest 29, `@testing-library/react-native`, and the Gesture Handler Jest utilities |
+| Tests | Jest 29, `@testing-library/react-native`, and the RNGH Jest utilities |
 | Docs | Docusaurus 3 |
 | Delivery | GitHub Actions, GitHub Pages, and npm with trusted publishing |
 
@@ -371,11 +371,11 @@ Inside `packages/core/src`:
 | Path | What it is |
 | --- | --- |
 | `intents/` | One file for each intent hook |
-| `compose/` | `useGestures`, the only place that uses the `Race`, `Simultaneous`, and `Exclusive` of Gesture Handler |
-| `relations/` | The resolution of `alongside`, `blocks`, and `deferTo` to the three relations of Gesture Handler |
+| `compose/` | `useGestures`, the only place that uses the `Race`, `Simultaneous`, and `Exclusive` of RNGH |
+| `relations/` | The resolution of `alongside`, `blocks`, and `deferTo` to the three relations of RNGH |
 | `raw/` | `useRawGesture`, the escape hatch |
 | `internal/` | Not public. The shared memo helper, `useLatestCallback`, `useStableList`, and the dev warnings. |
-| `gesture-handler/` | The re-exports of Gesture Handler, pinned to reference identity by a test |
+| `gesture-handler/` | The re-exports of RNGH, pinned to reference identity by a test |
 
 </details>
 
@@ -385,7 +385,7 @@ To report a vulnerability, read [SECURITY.md](SECURITY.md).
 
 ## 🙏 Credits
 
-- [Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/)
+- [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/)
   and [Reanimated](https://docs.swmansion.com/react-native-reanimated/) by
   Software Mansion recognise and run every gesture.
 

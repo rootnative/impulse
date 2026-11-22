@@ -45,14 +45,14 @@ discover those from its own output:
   synonyms writes the wrong one. `useDrag` owns a position that accumulates,
   and `bounds` clamps it. `usePan` owns nothing and reports a per-frame
   `change` that you add up.
-- RNGH drops a relation against React Native's `ScrollView`, or Gesture
-  Handler 3's own `ScrollView`, because the ref carries no `handlerTag`. Use
+- RNGH drops a relation against React Native's `ScrollView`, or RNGH 3's own
+  `ScrollView`, because the ref carries no `handlerTag`. Use
   `LegacyScrollView` or `LegacyFlatList` from
   `@rootnative/impulse/gesture-handler`. Impulse warns once in development
   when the ref is filled before the gesture mounts. It can't see the case
   where the ref is filled later.
 - A missing `<GestureHandlerRootView>` means gestures never fire. In
-  development on iOS and Android, and in Jest, Gesture Handler 3 throws an
+  development on iOS and Android, and in Jest, RNGH 3 throws an
   error that names the root view. On web and in a release build the console
   stays empty.
 - A tap and a double tap compose `exclusive` with the double tap first. `race`
